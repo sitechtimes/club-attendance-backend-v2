@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "siths-club-attendance",
+  "private_key_id": "87440512645f579e454cf2d3d56bceb55376c6e2",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCVmGHQmml0gyBo\nInB8nfiZEsu+yt3iZbiIOzUoJ4owcrlh5qxEqmBqasHFK3xu1RWVfuMS1ZZ8dE6q\nJdK6YO0POhEIvdQ+3f5M9vC84JnkTJ1Ch5sB0EsAf9UQj70wzeGrBPshR0h/IsbJ\nm5LIx2tj4rTZqNX3O1y4Mf4FNkDvuK76Bfp4B3SJkOoc7Kfc9McDdV1Zu7q7EJHd\n0RIO7CRIkv1XyjM/w7q7V258LkaIBgrOw5FZDWAxOW3eriAYSO2p8qXhsmVNILM4\nHCMJf6GQ8qHHXS233obkkjPsr19NL1FPQfRp1WHhA6Eggp7I1IYUb/IsylP4Ak0r\nWynQlKGfAgMBAAECggEAK2GGNBUjMat48VnTXv/8gH9n4Es6LxYqfi8VSjC1LTmH\nsvFO0ZbK4PFWgdQLgKSAXtruBJ81xZ+A1GylgHDtLfY7zFooO5bq0OzngQ5s8jyZ\nehqTA+KgbWOkqOnWBlod8BdAsDTYvC2ckghwd5ME/HFY2qnQaqKnT68HqAFEsX9e\nibppAuOXxUw1SCbOddheN9QMysEb66YzPV3RZw0GJjGw2j91a/Qn0fjmigLb9xrS\nL02H5IKeTrLoAnrE6TpRqpLC82VTahQzR/ZVhtkQ/ZrHQPdNYapE1aVz6NKmO2Mu\nqzqR6yzA7mnW1iUkpYClnB948bo8SrX/gYNkHpCkAQKBgQDJl2Hev5dETPgyJmBh\n4Ht11IT1KY2trAxQfzVbSKioKwnJ5dFp80RlyCNy9AgVwOSEXm9xL2/n3kOjLUNj\n4p9itoHFXrhlFxPWkdZtbq0NEMHi/weBSK2NB836p2vGdoVz7W1Itu6K5+cPuGZg\nliJHdgGuSkdGkbWBMKBSFkWmAQKBgQC9+GqNy4ffnpCuvqHYJFWX7QatoSDaypYx\nPPj4iZaerUO1N6RVP32tlPFaM39ZhofyvK5i64Y8ihBHKldjBhwNybDyiFV+GPyj\nlnodeHc6TyKhZOdxV14KVmXihOcmlZVuCE4TOGUsvDdX4Dy/zIxaAbtCdEv8dHQE\n1+ylkMiHnwKBgHFbQplyuqiZb2cj1Ua0aDgVzL3fI9/owvPw1BwEe3I04Ug6hstB\nE9D3/ZcCShmRYe5c++V1e0Oy4+254g8ku+NSJR7K6H1PwMQDNcRLW9vg9GWkap/0\nMkL/hH/R7PSoaNqLQ8yDsRdC19crJcZiJdxxKvjKo9G21Y1TvpLqGzgBAoGABzh4\n/Fi/Gl3RjALM7gU7h6HHvjPApvBKUybJI9E++1sEls+9nEvkgAOIRPBuJ734Tt6j\nFjlzibuJsNrIJYhm6pM++Yj7DubuO12N2K7qgTnezBmkvmceuO/dwYVhr9LBskP4\ni7x6BABHbjyksnmY4BbuwjDfboISoth+MzDUnmsCgYEAw8FE8iyUZ6pC/IQaDLAT\n4/eFN/AzYcVxzVTzHAmcs74fMGQuCvS1IfbGBtC+3CO+VDHno+UurSeB++D9v1yO\nOPzqkTmuTNy+CPSRicpSJlEdvqJdbr0jVQ0wBoBGGxXk6dqww7UnlukllYd68Guh\nrFyyDP8Gl9hq3mM9bBIzHXo=\n-----END PRIVATE KEY-----\n",
+  "client_email": "club-attendance@siths-club-attendance.iam.gserviceaccount.com",
+  "client_id": "108434913381676881793",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/club-attendance%40siths-club-attendance.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
