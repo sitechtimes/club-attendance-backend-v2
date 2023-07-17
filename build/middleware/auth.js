@@ -9,19 +9,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.oauth2callback = exports.auth = void 0;
+exports.oauth2callback = exports.oauth2 = void 0;
 const googleapis_1 = require("googleapis");
 const app_1 = require("../app");
-const auth = (req, res, next) => {
+const oauth2 = (req, res, next) => {
     res.redirect(app_1.redirectUri);
 };
-exports.auth = auth;
+exports.oauth2 = oauth2;
 const oauth2callback = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const authorizationCode = req.query.code;
     const { tokens } = yield app_1.oauth2Client.getToken(authorizationCode);
     app_1.oauth2Client.setCredentials(tokens);
     const oauth2 = googleapis_1.google.oauth2({ version: 'v2', auth: app_1.oauth2Client });
-    console.log(oauth2);
+    const userInfo = yield oauth2.userinfo.get();
+    console.log(userInfo.data);
     res.json({ message: 'Authentication successful!' });
 });
 exports.oauth2callback = oauth2callback;

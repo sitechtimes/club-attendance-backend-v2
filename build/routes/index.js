@@ -11,5 +11,5 @@ exports.router = router;
 router.get('/', (req, res) => {
     res.send('Hello World!');
 });
-router.get('/oauth2', auth_1.auth);
+router.get('/oauth2', auth_1.oauth2);
 router.get('/oauth2callback', auth_1.oauth2callback);
