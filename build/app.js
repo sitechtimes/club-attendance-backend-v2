@@ -28,7 +28,12 @@ app.use((0, express_session_1.default)({
     saveUninitialized: false,
     secret: 'secret'
 }));
-app.use(routes_1.router);
+//raw requests are now usable properties on req.body
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({
+    extended: true
+}));
+app.use("/", routes_1.router);
 app.listen(port, () => {
     console.log(`Server is running on port ${port}!`);
 });
