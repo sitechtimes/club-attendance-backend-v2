@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import bodyParser from 'body-parser'
 import { JWT } from 'google-auth-library';
-import keys from './keys.json';
+import keys from '../keys.json';
 
 dotenv.config();
 

@@ -13,7 +13,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const google_spreadsheet_1 = require("google-spreadsheet");
 const body_parser_1 = __importDefault(require("body-parser"));
 const google_auth_library_1 = require("google-auth-library");
-const keys_json_1 = __importDefault(require("./keys.json"));
+const keys_json_1 = __importDefault(require("../keys.json"));
 dotenv_1.default.config();
 console.log(keys_json_1.default);
 const port = process.env.PORT || 3000;
