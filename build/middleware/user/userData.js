@@ -25,6 +25,7 @@ const createUserSheet = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             yield sheet.saveUpdatedCells(); // save all updates in one call
         }
         res.json({ message: 'User Data Sheet Created!' });
+        next();
     }
     catch (error) {
         res.json(error);

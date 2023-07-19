@@ -37,6 +37,7 @@ const serviceAccountAuth = new JWT({
     key: keys.private_key,
     scopes: [
       'https://www.googleapis.com/auth/spreadsheets',
+      "https://www.googleapis.com/auth/drive.file"
     ],
   });
 
@@ -61,6 +62,7 @@ app.use(bodyParser.urlencoded({
 
 
 const doc = new GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
+// const drive = new 
 
 // await doc.loadInfo(); // loads document properties and worksheets
 // console.log(doc.title)
@@ -82,4 +84,4 @@ app.listen(port, () => {
     console.log(`Server is running on port ${port}!`);
 });
 
-export { app, oauth2Client, redirectUri, doc };
+export { app, oauth2Client, redirectUri, doc, serviceAccountAuth };

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doc = exports.redirectUri = exports.oauth2Client = exports.app = void 0;
+exports.serviceAccountAuth = exports.doc = exports.redirectUri = exports.oauth2Client = exports.app = void 0;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const routes_1 = require("./routes");
@@ -35,8 +35,10 @@ const serviceAccountAuth = new google_auth_library_1.JWT({
     key: keys_json_1.default.private_key,
     scopes: [
         'https://www.googleapis.com/auth/spreadsheets',
+        "https://www.googleapis.com/auth/drive.file"
     ],
 });
+exports.serviceAccountAuth = serviceAccountAuth;
 app.use((0, cors_1.default)());
 app.use((0, express_session_1.default)({
     resave: false,
@@ -55,6 +57,7 @@ app.use(body_parser_1.default.urlencoded({
 }));
 const doc = new google_spreadsheet_1.GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
 exports.doc = doc;
+// const drive = new 
 // await doc.loadInfo(); // loads document properties and worksheets
 // console.log(doc.title)
 // // Pre-configure the client with credentials you have stored in e.g. your database

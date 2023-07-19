@@ -20,7 +20,7 @@ export const createUserSheet = async (req: Request, res: Response, next: NextFun
     }
     
     res.json({ message: 'User Data Sheet Created!' })
-
+    next()
  } catch (error) {
     res.json(error)
  }
