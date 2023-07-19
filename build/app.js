@@ -15,7 +15,7 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const google_auth_library_1 = require("google-auth-library");
 const keys_json_1 = __importDefault(require("../keys.json"));
 dotenv_1.default.config();
-console.log(keys_json_1.default);
+// console.log(keys) 
 const port = process.env.PORT || 3000;
 const app = (0, express_1.default)();
 exports.app = app;

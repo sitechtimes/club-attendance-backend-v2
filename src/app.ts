@@ -11,7 +11,7 @@ import keys from '../keys.json';
 
 dotenv.config();
 
-console.log(keys) 
+// console.log(keys) 
 
 const port = process.env.PORT || 3000;
 const app = express();
