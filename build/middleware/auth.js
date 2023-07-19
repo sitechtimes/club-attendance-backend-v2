@@ -29,7 +29,7 @@ const oauth2callback = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     const lastName = userInfo.data.family_name;
     const email = userInfo.data.email;
     yield app_2.doc.loadInfo(); // loads document properties and worksheets
-    const userDataSheet = app_2.doc.sheetsById[0];
+    const userDataSheet = app_2.doc.sheetsById[707523872];
     const rows = yield userDataSheet.getRows();
     const userRow = rows.find(row => row._rawData[3] === email);
     if (userRow) {
@@ -37,7 +37,7 @@ const oauth2callback = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         return;
     }
     else {
-        yield userDataSheet.addRow([uid, firstName, lastName, email]);
+        yield userDataSheet.addRow([uid, firstName, lastName, email, "user"]);
     }
     res.json({ message: 'Authentication successful!' });
 });

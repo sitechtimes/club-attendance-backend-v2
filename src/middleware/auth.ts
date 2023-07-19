@@ -21,7 +21,7 @@ export const oauth2callback = async (req: Request, res: Response, next: NextFunc
 
     await doc.loadInfo(); // loads document properties and worksheets
 
-    const userDataSheet = doc.sheetsById[0];
+    const userDataSheet = doc.sheetsById[707523872];
     const rows = await userDataSheet.getRows();
     const userRow = rows.find(row => row._rawData[3] === email);
 
@@ -29,7 +29,7 @@ export const oauth2callback = async (req: Request, res: Response, next: NextFunc
         res.json({ message: 'User already exists!' });
         return;
     } else {
-        await userDataSheet.addRow([uid, firstName, lastName, email]);
+        await userDataSheet.addRow([uid, firstName, lastName, email, "user"]);
     }
 
 
