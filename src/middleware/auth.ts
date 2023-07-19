@@ -15,3 +15,5 @@ export const oauth2callback = async (req: Request, res: Response, next: NextFunc
     console.log(userInfo.data);
     res.json({ message: 'Authentication successful!' });
 }
+
+

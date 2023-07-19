@@ -2,7 +2,7 @@
   "name": "club-attendance-backend-v2",
   "version": "1.0.0",
   "description": "Henry and Johnson rewrite the entire backend",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon build/app.js",
@@ -13,10 +13,12 @@
   "dependencies": {
     "@types/es6-shim": "^0.31.42",
     "@types/express": "^4.17.17",
+    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
+    "google-auth-library": "^8.9.0",
     "google-spreadsheet": "^4.0.2",
     "googleapis": "^122.0.0",
     "multer": "^1.4.5-lts.1",
