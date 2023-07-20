@@ -17,3 +17,4 @@ router.get('/oauth2', auth_1.oauth2);
 router.get('/oauth2callback', auth_1.oauth2callback);
 router.post("/createUserSheet", userData_1.createUserSheet);
 router.post("/createClubTemplate", drive_1.createClubTemplate);
+router.post("/createClubMeta", drive_1.createClubMeta);
