@@ -8,6 +8,8 @@ const express_1 = __importDefault(require("express"));
 const auth_1 = require("../middleware/auth");
 const userData_1 = require("../middleware/user/userData");
 const drive_1 = require("../middleware/scripts/drive");
+const uploadImage_1 = require("../middleware/user/uploadImage");
+const multer_1 = require("../middleware/user/multer");
 const router = express_1.default.Router();
 exports.router = router;
 router.get('/', (req, res) => {
@@ -18,3 +20,4 @@ router.get('/oauth2callback', auth_1.oauth2callback);
 router.post("/createUserSheet", userData_1.createUserSheet);
 router.post("/createClubTemplate", drive_1.createClubTemplate);
 router.post("/createClubMeta", drive_1.createClubMeta);
+router.post("/uploadImage", multer_1.upload.single("image"), uploadImage_1.uploadImage);
