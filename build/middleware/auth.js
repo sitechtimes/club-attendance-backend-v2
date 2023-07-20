@@ -17,6 +17,7 @@ const oauth2 = (req, res, next) => {
 };
 exports.oauth2 = oauth2;
 const oauth2callback = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    //need to store authentication on client side so it can be used for authentication for other routes (ex. you cant perform certaian actions unless you're an admin)
     const authorizationCode = req.query.code;
     const { tokens } = yield app_1.oauth2Client.getToken(authorizationCode);
     app_1.oauth2Client.setCredentials(tokens);

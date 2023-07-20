@@ -7,6 +7,7 @@ export const oauth2 = (req: Request, res: Response, next: NextFunction) => {
 }
 
 export const oauth2callback = async (req: Request, res: Response, next: NextFunction) => {
+    //need to store authentication on client side so it can be used for authentication for other routes (ex. you cant perform certaian actions unless you're an admin)
     const authorizationCode = req.query.code;
     const { tokens } = await oauth2Client.getToken(authorizationCode as string);
     oauth2Client.setCredentials(tokens);
