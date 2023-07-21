@@ -10,6 +10,7 @@ const routes_1 = require("./routes");
 const express_session_1 = __importDefault(require("express-session"));
 const googleapis_1 = require("googleapis");
 const dotenv_1 = __importDefault(require("dotenv"));
+const google_spreadsheet_1 = require("google-spreadsheet");
 const body_parser_1 = __importDefault(require("body-parser"));
 const google_auth_library_1 = require("google-auth-library");
 const keys_json_1 = __importDefault(require("../keys.json"));
@@ -51,9 +52,10 @@ app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({
     extended: true
 }));
-// const doc = new GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
-// const drive = new 
-// await doc.loadInfo(); // loads document properties and worksheets
+const doc = new google_spreadsheet_1.GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
+const driveDoc = new google_spreadsheet_1.GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
+// await doc.loadInfo(); 
+// await driveDoc.loadInfo(); // loads document properties and worksheets
 // console.log(doc.title)
 // // Pre-configure the client with credentials you have stored in e.g. your database
 // // NOTE - `refresh_token` is required, `access_token` and `expiry_date` are optional

@@ -12,33 +12,58 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createClubTemplate = void 0;
 const app_1 = require("../../app");
 const { google } = require("googleapis");
+const fs = require("fs");
 const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("TRIGGERED");
-    const folderName = req.body.folderName;
+    const folderName = "club 411";
+    console.log(folderName);
     const folderMetaData = {
         name: folderName,
-        mimeType: 'application/vnd.google-apps.folder',
+        mimeType: "application/vnd.google-apps.folder",
         parents: [process.env.CLUB_ATTENDANCE_FOLDER_ID],
     };
+    const permissions = {
+        role: "writer",
+        type: "user",
+        emailAddress: "harveyjiang11@gmail.com",
+    };
+    function createSheets(parentID) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const sheetsRequestBody = {
+                name: "sheets20",
+                mimeType: "application/vnd.google-apps.spreadsheet",
+                parents: [parentID],
+            };
+            const sheetsFolder = yield app_1.service.files.create({
+                resource: sheetsRequestBody,
+                fields: "id",
+            });
+            const sheetsFileId = sheetsFolder.data.id;
+            yield app_1.service.permissions.create({
+                fileId: sheetsFileId,
+                requestBody: permissions,
+            });
+        });
+    }
+    function createClubFolder() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const folder = yield app_1.service.files.create({
+                resource: folderMetaData,
+                fields: "id",
+            });
+            const folderId = folder.data.id;
+            //You can also set this to viewable by everyone or viewable to everyone in the organization in production
+            yield app_1.service.permissions.create({
+                fileId: folderId,
+                requestBody: permissions,
+            });
+            createSheets(folderId);
+        });
+    }
     console.log(process.env.CLUB_ATTENDANCE_FOLDER_ID);
     //Folder is being created but it seems like the user doesn't have access (folder id is defined)
     try {
-        const folder = yield app_1.service.files.create({
-            resource: folderMetaData,
-            fields: 'id',
-        });
-        const folderId = folder.data.id;
-        //You can also set this to viewable by everyone or viewable to everyone in the organization in production
-        const permissions = {
-            role: 'writer',
-            type: 'user',
-            emailAddress: 'zhenghenry2@gmail.com',
-        };
-        yield app_1.service.permissions.create({
-            fileId: folderId,
-            requestBody: permissions
-        });
-        res.json(`Created google drive folder with id ${folderId} and shared successfully.`);
+        createClubFolder();
+        res.json(`Created google drive folder with id and shared successfully.`);
     }
     catch (error) {
         console.error(error);

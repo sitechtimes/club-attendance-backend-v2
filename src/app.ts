@@ -55,10 +55,11 @@ app.use(bodyParser.urlencoded({
 }));
 
 
-// const doc = new GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
-// const drive = new 
+const doc = new GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
+const driveDoc = new GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
 
-// await doc.loadInfo(); // loads document properties and worksheets
+// await doc.loadInfo(); 
+// await driveDoc.loadInfo(); // loads document properties and worksheets
 // console.log(doc.title)
   
 
