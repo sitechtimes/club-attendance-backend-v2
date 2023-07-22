@@ -56,7 +56,7 @@ app.use(bodyParser.urlencoded({
 
 
 const doc = new GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
-const driveDoc = new GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
+const clubNameDoc = new GoogleSpreadsheet('1FtAMFePt-jzHfn3Ez8FRzB9wie2mBRtBCyhyQjMEJ_w', serviceAccountAuth);
 
 // await doc.loadInfo(); 
 // await driveDoc.loadInfo(); // loads document properties and worksheets
@@ -79,4 +79,4 @@ app.listen(port, () => {
     console.log(`Server is running on port ${port}!`);
 });
 
-export { app, oauth2Client, redirectUri, serviceAccountAuth, service };
+export { app, oauth2Client, redirectUri, serviceAccountAuth, service, doc , clubNameDoc };

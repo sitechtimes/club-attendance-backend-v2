@@ -11,13 +11,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createClubTemplate = void 0;
 const app_1 = require("../../app");
-const { google } = require("googleapis");
-const fs = require("fs");
+const google_spreadsheet_1 = require("google-spreadsheet");
+const app_2 = require("../../app");
 const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const folderName = "club 411";
-    console.log(folderName);
-    const folderMetaData = {
-        name: folderName,
+    let arrFolderName = [];
+    let headerValues = [
+        "UID",
+        "First Name",
+        "Last Name",
+        "Email",
+        "Client Authority",
+        "Grade",
+        "Official Class",
+        "Email Domain",
+        "Club Data",
+        "Present Location",
+    ];
+    // let arrFolderId: string[] = [];
+    const date = new Date();
+    const year = date.getFullYear();
+    const yearFolderMetaData = {
+        name: `${year}-${year + 1}`,
         mimeType: "application/vnd.google-apps.folder",
         parents: [process.env.CLUB_ATTENDANCE_FOLDER_ID],
     };
@@ -26,10 +40,77 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
         type: "user",
         emailAddress: "harveyjiang11@gmail.com",
     };
-    function createSheets(parentID) {
+    function getClubNames() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield app_2.clubNameDoc.loadInfo();
+            const infoSheet = app_2.clubNameDoc.sheetsByIndex[0];
+            const infoSheetLen = infoSheet.rowCount;
+            yield infoSheet.loadCells(`A1:A${infoSheetLen}`);
+            for (let i = 1; i < infoSheetLen; i++) {
+                const clubName = infoSheet.getCell(i, 0);
+                if (clubName.value === null) {
+                    break;
+                }
+                else {
+                    const name = clubName.value;
+                    arrFolderName.push(name);
+                }
+            }
+        });
+    }
+    function createYearFolder() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const folder = yield app_1.service.files.create({
+                resource: yearFolderMetaData,
+                fields: "id",
+            });
+            const folderId = folder.data.id;
+            try {
+                for (let i = 0; i < arrFolderName.length; i++) {
+                    const folderName = arrFolderName[i];
+                    yield createClubFolder(folderId, folderName);
+                }
+            }
+            catch (error) {
+                console.error(`create year Folder function ${error}`);
+            }
+        });
+    }
+    function createClubFolder(parentID, folderName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const folderMetaData = {
+                name: folderName,
+                mimeType: "application/vnd.google-apps.folder",
+                parents: [parentID],
+            };
+            const folder = yield app_1.service.files.create({
+                resource: folderMetaData,
+                fields: "id",
+            });
+            const folderId = folder.data.id;
+            try {
+                yield createFolder(folderId);
+            }
+            catch (error) {
+                console.error(`create club photo folder function ${error}`);
+            }
+            try {
+                yield createSheets(folderId, folderName);
+            }
+            catch (error) {
+                console.error(`create sheets function ${error}`);
+            }
+            //You can also set this to viewable by everyone or viewable to everyone in the organization in production
+            // await service.permissions.create({   ?perm wrong ig
+            //   fileId: folderId,
+            //   requestBody: permissions,
+            // });
+        });
+    }
+    function createSheets(parentID, sheetName) {
         return __awaiter(this, void 0, void 0, function* () {
             const sheetsRequestBody = {
-                name: "sheets20",
+                name: sheetName,
                 mimeType: "application/vnd.google-apps.spreadsheet",
                 parents: [parentID],
             };
@@ -42,31 +123,48 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
                 fileId: sheetsFileId,
                 requestBody: permissions,
             });
+            const doc = new google_spreadsheet_1.GoogleSpreadsheet(sheetsFileId, app_1.serviceAccountAuth);
+            yield doc.loadInfo();
+            const sheet = doc.sheetsByIndex[0];
+            yield sheet.loadCells("A1:K1");
+            for (let i = 0; i < 11; i++) {
+                const cell = sheet.getCell(0, i); // access cells using a zero-based index
+                cell.value = headerValues[i];
+                cell.textFormat = { bold: true };
+                // save all updates in one call
+            }
+            yield sheet.saveUpdatedCells();
         });
     }
-    function createClubFolder() {
+    function createFolder(parentID) {
         return __awaiter(this, void 0, void 0, function* () {
+            const folderMetaData = {
+                name: "Club Attendence Photos",
+                mimeType: "application/vnd.google-apps.folder",
+                parents: [parentID],
+            };
             const folder = yield app_1.service.files.create({
                 resource: folderMetaData,
                 fields: "id",
             });
-            const folderId = folder.data.id;
-            //You can also set this to viewable by everyone or viewable to everyone in the organization in production
-            yield app_1.service.permissions.create({
-                fileId: folderId,
-                requestBody: permissions,
-            });
-            createSheets(folderId);
         });
     }
-    console.log(process.env.CLUB_ATTENDANCE_FOLDER_ID);
+    try {
+        yield getClubNames();
+    }
+    catch (error) {
+        console.error(`get club names from sheet error ${error}`);
+    }
     //Folder is being created but it seems like the user doesn't have access (folder id is defined)
     try {
-        createClubFolder();
-        res.json(`Created google drive folder with id and shared successfully.`);
+        yield createYearFolder();
+        res.json(`Script Finished`);
     }
     catch (error) {
         console.error(error);
     }
+    try {
+    }
+    catch (error) { }
 });
 exports.createClubTemplate = createClubTemplate;

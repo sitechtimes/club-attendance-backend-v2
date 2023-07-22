@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.service = exports.serviceAccountAuth = exports.redirectUri = exports.oauth2Client = exports.app = void 0;
+exports.clubNameDoc = exports.doc = exports.service = exports.serviceAccountAuth = exports.redirectUri = exports.oauth2Client = exports.app = void 0;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const routes_1 = require("./routes");
@@ -53,7 +53,9 @@ app.use(body_parser_1.default.urlencoded({
     extended: true
 }));
 const doc = new google_spreadsheet_1.GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
-const driveDoc = new google_spreadsheet_1.GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
+exports.doc = doc;
+const clubNameDoc = new google_spreadsheet_1.GoogleSpreadsheet('1FtAMFePt-jzHfn3Ez8FRzB9wie2mBRtBCyhyQjMEJ_w', serviceAccountAuth);
+exports.clubNameDoc = clubNameDoc;
 // await doc.loadInfo(); 
 // await driveDoc.loadInfo(); // loads document properties and worksheets
 // console.log(doc.title)
