@@ -8,11 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createClubTemplate = void 0;
+exports.createQRCode = exports.createClubTemplate = void 0;
 const app_1 = require("../../app");
 const google_spreadsheet_1 = require("google-spreadsheet");
 const app_2 = require("../../app");
+const qrcode_1 = __importDefault(require("qrcode"));
 const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     let arrFolderName = [];
     let headerValues = [
@@ -67,7 +71,7 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
             });
             const folderId = folder.data.id;
             function timeout(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
+                return new Promise((resolve) => setTimeout(resolve, ms));
             }
             try {
                 for (let i = 0; i < arrFolderName.length; i++) {
@@ -173,3 +177,16 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
     catch (error) { }
 });
 exports.createClubTemplate = createClubTemplate;
+const createQRCode = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const text = "https://www.youtube.com/";
+    const generateQR = (text) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            console.log(yield qrcode_1.default.toString(text, { type: "svg" }));
+        }
+        catch (err) {
+            console.error(err);
+        }
+    });
+    yield generateQR(text);
+});
+exports.createQRCode = createQRCode;

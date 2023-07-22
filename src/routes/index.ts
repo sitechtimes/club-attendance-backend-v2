@@ -1,7 +1,7 @@
 import express from 'express';
 import { oauth2, oauth2callback } from '../middleware/auth';
 import { createUserSheet } from '../middleware/user/userData';
-import { createClubTemplate } from '../middleware/scripts/drive';
+import { createClubTemplate, createQRCode } from '../middleware/scripts/drive';
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -14,5 +14,8 @@ router.get('/oauth2callback', oauth2callback)
 router.post("/createUserSheet", createUserSheet)
 
 router.post("/createClubTemplate", createClubTemplate)
+
+
+router.post("/createQRCode", createQRCode)
 
 export { router };

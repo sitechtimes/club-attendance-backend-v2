@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth, service } from "../../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { clubNameDoc } from "../../app";
+import QRCode from "qrcode";
 
 export const createClubTemplate = async (
   req: Request,
@@ -67,7 +68,7 @@ export const createClubTemplate = async (
     const folderId: string = folder.data.id;
 
     function timeout(ms: Number) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+      return new Promise((resolve) => setTimeout(resolve, ms));
     }
     try {
       for (let i = 0; i < arrFolderName.length; i++) {
@@ -169,7 +170,6 @@ export const createClubTemplate = async (
   try {
     await createYearFolder();
 
-
     res.json(`Script Finished`);
   } catch (error) {
     console.error(error);
@@ -177,4 +177,24 @@ export const createClubTemplate = async (
 
   try {
   } catch (error) {}
+};
+
+export const createQRCode = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+
+  const text: string = "https://www.youtube.com/"
+
+  const generateQR = async( text: string) => {
+    try {
+      console.log(await QRCode.toString( text, {type: "svg"} ))
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  await generateQR(text)
+
 };
