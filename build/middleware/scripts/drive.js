@@ -39,6 +39,7 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
         role: "writer",
         type: "user",
         emailAddress: "harveyjiang11@gmail.com",
+        sendNotificationEmails: false,
     };
     function getClubNames() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -65,8 +66,12 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
                 fields: "id",
             });
             const folderId = folder.data.id;
+            function timeout(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
             try {
                 for (let i = 0; i < arrFolderName.length; i++) {
+                    yield timeout(3000);
                     const folderName = arrFolderName[i];
                     yield createClubFolder(folderId, folderName);
                 }
@@ -119,10 +124,10 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
                 fields: "id",
             });
             const sheetsFileId = sheetsFolder.data.id;
-            yield app_1.service.permissions.create({
-                fileId: sheetsFileId,
-                requestBody: permissions,
-            });
+            // await service.permissions.create({
+            //   fileId: sheetsFileId,
+            //   requestBody: permissions,
+            // });
             const doc = new google_spreadsheet_1.GoogleSpreadsheet(sheetsFileId, app_1.serviceAccountAuth);
             yield doc.loadInfo();
             const sheet = doc.sheetsByIndex[0];

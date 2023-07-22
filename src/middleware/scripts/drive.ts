@@ -35,6 +35,7 @@ export const createClubTemplate = async (
     role: "writer",
     type: "user",
     emailAddress: "harveyjiang11@gmail.com",
+    sendNotificationEmails: false,
   };
 
   async function getClubNames() {
@@ -65,8 +66,12 @@ export const createClubTemplate = async (
 
     const folderId: string = folder.data.id;
 
+    function timeout(ms: Number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     try {
       for (let i = 0; i < arrFolderName.length; i++) {
+        await timeout(3000);
         const folderName = arrFolderName[i];
         await createClubFolder(folderId, folderName);
       }
@@ -121,10 +126,10 @@ export const createClubTemplate = async (
 
     const sheetsFileId = sheetsFolder.data.id;
 
-    await service.permissions.create({
-      fileId: sheetsFileId,
-      requestBody: permissions,
-    });
+    // await service.permissions.create({
+    //   fileId: sheetsFileId,
+    //   requestBody: permissions,
+    // });
 
     const doc = new GoogleSpreadsheet(sheetsFileId, serviceAccountAuth);
     await doc.loadInfo();
