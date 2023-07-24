@@ -29,8 +29,8 @@ const oauth2callback = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     const firstName = userInfo.data.given_name;
     const lastName = userInfo.data.family_name;
     const email = userInfo.data.email;
-    yield app_2.doc.loadInfo(); // loads document properties and worksheets
-    const userDataSheet = app_2.doc.sheetsById[0];
+    yield app_2.userDataSpreadSheet.loadInfo(); // loads document properties and worksheets
+    const userDataSheet = app_2.userDataSpreadSheet.sheetsById[0];
     const rows = yield userDataSheet.getRows();
     const userRow = rows.find(row => row._rawData[3] === email);
     if (userRow) {

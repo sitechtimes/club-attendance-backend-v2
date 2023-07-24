@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 import { GoogleSpreadsheet } from 'google-spreadsheet';
-import { doc } from '../../app';
+import { userDataSpreadSheet } from '../../app';
 
 export const createUserSheet = async (req: Request, res: Response, next: NextFunction) => {
  try {
-    await doc.loadInfo(); // loads document properties and worksheets
-    console.log(doc)
+    await userDataSpreadSheet.loadInfo(); // loads document properties and worksheets
+    console.log(userDataSpreadSheet)
     
-    const sheet = await doc.addSheet({ headerValues: ["UID", 'First Name', 'Last Name', "Email", "Client Authority", "Osis", "Grade", "Official Class", "Email Domain", "Club Data", "Present Location"] });
+    const sheet = await userDataSpreadSheet.addSheet({ headerValues: ["UID", 'First Name', 'Last Name', "Email", "Client Authority", "Osis", "Grade", "Official Class", "Email Domain", "Club Data", "Present Location"] });
     await sheet.updateProperties({ title: 'User Data' });
     
     await sheet.loadCells("A1:L1")

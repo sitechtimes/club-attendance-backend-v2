@@ -13,9 +13,9 @@ exports.createUserSheet = void 0;
 const app_1 = require("../../app");
 const createUserSheet = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield app_1.doc.loadInfo(); // loads document properties and worksheets
-        console.log(app_1.doc);
-        const sheet = yield app_1.doc.addSheet({ headerValues: ["UID", 'First Name', 'Last Name', "Email", "Client Authority", "Osis", "Grade", "Official Class", "Email Domain", "Club Data", "Present Location"] });
+        yield app_1.userDataSpreadSheet.loadInfo(); // loads document properties and worksheets
+        console.log(app_1.userDataSpreadSheet);
+        const sheet = yield app_1.userDataSpreadSheet.addSheet({ headerValues: ["UID", 'First Name', 'Last Name', "Email", "Client Authority", "Osis", "Grade", "Official Class", "Email Domain", "Club Data", "Present Location"] });
         yield sheet.updateProperties({ title: 'User Data' });
         yield sheet.loadCells("A1:L1");
         for (let i = 0; i < 12; i++) {

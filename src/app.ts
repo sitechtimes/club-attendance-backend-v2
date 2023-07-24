@@ -55,7 +55,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 
-const doc = new GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID, serviceAccountAuth);
+const userDataSpreadSheet = new GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID, serviceAccountAuth);
 // const drive = new 
 // const doc = new GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
 const clubNameDoc = new GoogleSpreadsheet('1FtAMFePt-jzHfn3Ez8FRzB9wie2mBRtBCyhyQjMEJ_w', serviceAccountAuth);
@@ -81,4 +81,4 @@ app.listen(port, () => {
     console.log(`Server is running on port ${port}!`);
 });
 
-export { app, oauth2Client, redirectUri, serviceAccountAuth, service, doc , clubNameDoc };
+export { app, oauth2Client, redirectUri, serviceAccountAuth, service, userDataSpreadSheet , clubNameDoc };

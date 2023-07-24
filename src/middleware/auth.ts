@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { google } from 'googleapis';
 import { oauth2Client, redirectUri } from '../app';
-import { doc } from '../app';
+import { userDataSpreadSheet } from '../app';
 
 export const oauth2 = (req: Request, res: Response, next: NextFunction) => {
     res.redirect(redirectUri);
@@ -20,9 +20,9 @@ export const oauth2callback = async (req: Request, res: Response, next: NextFunc
     const lastName = userInfo.data.family_name;
     const email = userInfo.data.email;
 
-    await doc.loadInfo(); // loads document properties and worksheets
+    await userDataSpreadSheet.loadInfo(); // loads document properties and worksheets
 
-    const userDataSheet = doc.sheetsById[0];
+    const userDataSheet = userDataSpreadSheet.sheetsById[0];
     const rows = await userDataSheet.getRows();
     const userRow = rows.find(row => row._rawData[3] === email);
 
