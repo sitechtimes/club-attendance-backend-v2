@@ -55,15 +55,6 @@ app.use(body_parser_1.default.urlencoded({
 const doc = new google_spreadsheet_1.GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID, serviceAccountAuth);
 exports.doc = doc;
 // const drive = new 
-// await doc.loadInfo(); // loads document properties and worksheets
-// console.log(doc.title)
-// // Pre-configure the client with credentials you have stored in e.g. your database
-// // NOTE - `refresh_token` is required, `access_token` and `expiry_date` are optional
-// // (the refresh token is used to generate a missing/expired access token)
-// const { accessToken, refreshToken, expiryDate } = await fetchUserGoogleCredsFromDatabase();
-// oauth2Client.credentials.access_token = accessToken;
-// oauth2Client.credentials.refresh_token = refreshToken;
-// oauth2Client.credentials.expiry_date = expiryDate; // Unix epoch milliseconds
 app.use("/", routes_1.router);
 app.listen(port, () => {
     console.log(`Server is running on port ${port}!`);

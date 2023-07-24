@@ -21,3 +21,4 @@ router.post("/createUserSheet", userData_1.createUserSheet);
 router.post("/createClubTemplate", drive_1.createClubTemplate);
 router.post("/createClubMeta", drive_1.createClubMeta);
 router.post("/uploadImage", multer_1.upload.single("image"), uploadImage_1.uploadImage);
+router.post("/createQRCode", drive_1.createQRCode);

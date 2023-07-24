@@ -1,7 +1,7 @@
 import express from 'express';
 import { oauth2, oauth2callback } from '../middleware/auth';
 import { createUserSheet } from '../middleware/user/userData';
-import { createClubMeta, createClubTemplate } from '../middleware/scripts/drive';
+import { createClubMeta, createClubTemplate, createQRCode } from '../middleware/scripts/drive';
 import { uploadImage } from '../middleware/user/uploadImage';
 import { upload } from '../middleware/user/multer';
 
@@ -19,5 +19,8 @@ router.post("/createUserSheet", createUserSheet)
 router.post("/createClubTemplate", createClubTemplate)
 router.post("/createClubMeta", createClubMeta)
 router.post("/uploadImage", upload.single("image"), uploadImage)
+
+
+router.post("/createQRCode", createQRCode)
 
 export { router };
