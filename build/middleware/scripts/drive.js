@@ -12,10 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createClubMeta = exports.createQRCode = exports.createClubTemplate = void 0;
+exports.createClubMeta = exports.createClubTemplate = void 0;
 const app_1 = require("../../app");
 const google_spreadsheet_1 = require("google-spreadsheet");
-const app_2 = require("../../app");
+const uuid_1 = require("uuid");
 const qrcode_1 = __importDefault(require("qrcode"));
 const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     let arrFolderName = [];
@@ -27,7 +27,7 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
         "Position",
         "Grade",
         "Official Class",
-        "# of Attendence",
+        "# of Attendences",
     ];
     // let arrFolderId: string[] = [];
     const date = new Date();
@@ -43,31 +43,16 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
         emailAddress: "harveyjiang11@gmail.com",
         sendNotificationEmails: false,
     };
-    function getClubNames() {
+    function createQRCode(parentID, folderName) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield app_2.clubNameDoc.loadInfo();
-            const infoSheet = app_2.clubNameDoc.sheetsByIndex[0];
-            const infoSheetLen = infoSheet.rowCount;
-            yield infoSheet.loadCells(`A1:A${infoSheetLen}`);
-            const generateQR = (text, clubName) => __awaiter(this, void 0, void 0, function* () {
-                try {
-                    console.log(yield qrcode_1.default.toFile(`./imgs/{clubName}.png`, text, { type: "png" }));
-                }
-                catch (err) {
-                    console.error(err);
-                }
-            });
-            for (let i = 1; i < infoSheetLen; i++) {
-                const clubName = infoSheet.getCell(i, 0);
-                if (clubName.value === null) {
-                    break;
-                }
-                else {
-                    const name = clubName.value;
-                    const text = `https://www.test.com/${name}`;
-                    generateQR(text, name);
-                    arrFolderName.push(name);
-                }
+            try {
+                const link = `https://www.test.com/${folderName}`;
+                const qrcode = yield qrcode_1.default.toFile(`./imgs/${folderName}.png`, link, { type: "png" });
+                //Johnson please save the qrcode to the drive, the parent ID is here 
+                return qrcode;
+            }
+            catch (error) {
+                console.error(error);
             }
         });
     }
@@ -78,10 +63,10 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
                 fields: "id",
             });
             const folderId = folder.data.id;
-            function timeout(ms) {
-                return new Promise((resolve) => setTimeout(resolve, ms));
-            }
             try {
+                function timeout(ms) {
+                    return new Promise((resolve) => setTimeout(resolve, ms));
+                }
                 for (let i = 0; i < arrFolderName.length; i++) {
                     yield timeout(3000);
                     const folderName = arrFolderName[i];
@@ -89,7 +74,7 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
                 }
             }
             catch (error) {
-                console.error(`create year Folder function ${error}`);
+                console.error(error);
             }
         });
     }
@@ -100,105 +85,95 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
                 mimeType: "application/vnd.google-apps.folder",
                 parents: [parentID],
             };
-            const folder = yield app_1.service.files.create({
+            const clubFolder = yield app_1.service.files.create({
                 resource: folderMetaData,
                 fields: "id",
             });
-            const folderId = folder.data.id;
+            const folderId = clubFolder.data.id;
+            console.log(folderName);
             try {
-                yield createFolder(folderId);
+                const photoSheetId = yield createPhotoFolder(folderId, folderName);
+                const attendanceSheetId = yield createAttendanceSheet(folderId, folderName);
+                const qrCode = yield createQRCode(folderId, folderName);
+                //add club to metadata spreadsheet given club name, and ids of the spreadsheets
+                const metaSheet = addToMeta(folderName, folderId, photoSheetId, attendanceSheetId, qrCode);
+                console.log(`Created all drive content for ${folderName}!`);
             }
             catch (error) {
-                console.error(`create club photo folder function ${error}`);
+                res.json(error);
             }
-            try {
-                yield createSheets(folderId, folderName);
-            }
-            catch (error) {
-                console.error(`create sheets function ${error}`);
-            }
-            //You can also set this to viewable by everyone or viewable to everyone in the organization in production
-            // await service.permissions.create({   ?perm wrong ig
-            //   fileId: folderId,
-            //   requestBody: permissions,
-            // });
         });
     }
-    function createSheets(parentID, sheetName) {
+    function addToMeta(folderName, clubFolderId, photoSheetId, attendanceSheetId, qrCode) {
         return __awaiter(this, void 0, void 0, function* () {
-            const sheetsRequestBody = {
+            const metaDataSpreadSheet = new google_spreadsheet_1.GoogleSpreadsheet(process.env.CLUB_METADATA_SPREADSHEET_ID, app_1.serviceAccountAuth);
+            const metaDataSheet = metaDataSpreadSheet.sheetsByIndex[0];
+            const metaDataSheetLen = metaDataSheet.rowCount;
+            yield metaDataSheet.loadCells(`A1:A${metaDataSheetLen}`);
+            yield metaDataSheet.addRow([
+                folderName,
+                "advisor email",
+                "president email",
+                "next meeting date",
+                JSON.stringify(qrCode),
+                clubFolderId,
+                attendanceSheetId,
+                photoSheetId,
+                (0, uuid_1.v4)()
+            ]);
+            yield metaDataSheet.saveUpdatedCells();
+        });
+    }
+    function createAttendanceSheet(parentID, sheetName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const attendanceRequestBody = {
                 name: sheetName,
                 mimeType: "application/vnd.google-apps.spreadsheet",
                 parents: [parentID],
             };
-            const sheetsFolder = yield app_1.service.files.create({
-                resource: sheetsRequestBody,
+            const attendanceSpreadsheet = yield app_1.service.files.create({
+                resource: attendanceRequestBody,
                 fields: "id",
             });
-            const sheetsFileId = sheetsFolder.data.id;
-            // await service.permissions.create({
-            //   fileId: sheetsFileId,
-            //   requestBody: permissions,
-            // });
-            const doc = new google_spreadsheet_1.GoogleSpreadsheet(sheetsFileId, app_1.serviceAccountAuth);
-            yield doc.loadInfo();
-            const sheet = doc.sheetsByIndex[0];
+            const attendanceSpreadsheetId = attendanceSpreadsheet.data.id;
+            //Opening the created spreadsheet to add header row values
+            const attendanceDoc = new google_spreadsheet_1.GoogleSpreadsheet(attendanceSpreadsheetId, app_1.serviceAccountAuth);
+            yield attendanceDoc.loadInfo();
+            const sheet = attendanceDoc.sheetsByIndex[0];
             yield sheet.loadCells("A1:K1");
             for (let i = 0; i < 9; i++) {
                 const cell = sheet.getCell(0, i); // access cells using a zero-based index
                 cell.value = headerValues[i];
                 cell.textFormat = { bold: true };
-                // save all updates in one call
             }
             yield sheet.saveUpdatedCells();
+            return attendanceSpreadsheetId;
         });
     }
-    function createFolder(parentID) {
+    function createPhotoFolder(parentID, folderName) {
         return __awaiter(this, void 0, void 0, function* () {
-            const folderMetaData = {
-                name: "Club Attendence Photos",
-                mimeType: "application/vnd.google-apps.folder",
-                parents: [parentID],
-            };
-            const folder = yield app_1.service.files.create({
-                resource: folderMetaData,
-                fields: "id",
-            });
+            try {
+                const photoFolderMetaData = {
+                    name: `${folderName} Attendence Photos`,
+                    mimeType: "application/vnd.google-apps.folder",
+                    parents: [parentID],
+                };
+                const photoFolder = yield app_1.service.files.create({
+                    resource: photoFolderMetaData,
+                    fields: "id",
+                });
+                res.json(`Created folder for ${folderName} attendence photos.`);
+                return photoFolder.data.id;
+            }
+            catch (error) {
+                res.json(error);
+            }
         });
     }
-    try {
-        yield getClubNames();
-    }
-    catch (error) {
-        console.error(`get club names from sheet error ${error}`);
-    }
-    //Folder is being created but it seems like the user doesn't have access (folder id is defined)
-    try {
-        yield createYearFolder();
-        res.json(`Script Finished`);
-    }
-    catch (error) {
-        console.error(error);
-    }
-    try {
-    }
-    catch (error) { }
+    createYearFolder();
+    res.json({ message: "Successfully created all club folders for the school year!" });
 });
 exports.createClubTemplate = createClubTemplate;
-const createQRCode = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const clubName = "clubname";
-    const text = `https://www.test.com/${clubName}`;
-    const generateQR = (text) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            console.log(yield qrcode_1.default.toFile("./imgs/qrcode.png", text, { type: "png" }));
-        }
-        catch (err) {
-            console.error(err);
-        }
-    });
-    yield generateQR(text);
-});
-exports.createQRCode = createQRCode;
 const createClubMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     //using user email for now
     const userEmail = req.body.email;
