@@ -13,7 +13,7 @@ exports.createClubMeta = exports.createClubTemplate = void 0;
 const app_1 = require("../../app");
 const google_spreadsheet_1 = require("google-spreadsheet");
 const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("TRIGGERED");
+    //add UID to the club template
     const folderName = req.body.folderName;
     const folderMetaData = {
         name: folderName,

@@ -5,6 +5,8 @@ import { Readable } from 'stream'
 
 export const uploadImage = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const clubName = req.body.clubName;
+        console.log(clubName)
         const file = await service.files.create({
             requestBody: {
                 name: req.file?.originalname,

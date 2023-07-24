@@ -2,13 +2,15 @@ import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth, service } from "../../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { google } from "googleapis";
+import { v4 as uuidv4 } from 'uuid';
 
 export const createClubTemplate = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  console.log("TRIGGERED")
+  //add UID to the club template
+  
   const folderName = req.body.folderName;
   const folderMetaData = {
     name: folderName,
