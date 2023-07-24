@@ -30,11 +30,11 @@ const oauth2callback = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     const lastName = userInfo.data.family_name;
     const email = userInfo.data.email;
     yield app_2.doc.loadInfo(); // loads document properties and worksheets
-    const userDataSheet = app_2.doc.sheetsById[707523872];
+    const userDataSheet = app_2.doc.sheetsById[0];
     const rows = yield userDataSheet.getRows();
     const userRow = rows.find(row => row._rawData[3] === email);
     if (userRow) {
-        res.json({ message: 'User already exists!' });
+        // res.json({ message: 'User already exists!' });
         return;
     }
     else {

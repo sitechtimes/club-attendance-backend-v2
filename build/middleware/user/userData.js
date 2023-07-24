@@ -22,8 +22,9 @@ const createUserSheet = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             const cell = sheet.getCell(0, i); // access cells using a zero-based index
             console.log(cell.value);
             cell.textFormat = { bold: true };
-            yield sheet.saveUpdatedCells(); // save all updates in one call
+            // save all updates in one call
         }
+        yield sheet.saveUpdatedCells();
         res.json({ message: 'User Data Sheet Created!' });
         next();
     }

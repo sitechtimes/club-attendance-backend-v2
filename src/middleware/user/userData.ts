@@ -16,8 +16,9 @@ export const createUserSheet = async (req: Request, res: Response, next: NextFun
         const cell = sheet.getCell(0, i); // access cells using a zero-based index
         console.log(cell.value)
         cell.textFormat = { bold: true };
-        await sheet.saveUpdatedCells(); // save all updates in one call
+         // save all updates in one call
     }
+    await sheet.saveUpdatedCells();
     
     res.json({ message: 'User Data Sheet Created!' })
     next()
