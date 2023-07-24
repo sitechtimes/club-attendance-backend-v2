@@ -24,12 +24,10 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
         "First Name",
         "Last Name",
         "Email",
-        "Client Authority",
+        "Position",
         "Grade",
         "Official Class",
-        "Email Domain",
-        "Club Data",
-        "Present Location",
+        "# of Attendence",
     ];
     // let arrFolderId: string[] = [];
     const date = new Date();
@@ -51,6 +49,14 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
             const infoSheet = app_2.clubNameDoc.sheetsByIndex[0];
             const infoSheetLen = infoSheet.rowCount;
             yield infoSheet.loadCells(`A1:A${infoSheetLen}`);
+            const generateQR = (text, clubName) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    console.log(yield qrcode_1.default.toFile(`./imgs/{clubName}.png`, text, { type: "png" }));
+                }
+                catch (err) {
+                    console.error(err);
+                }
+            });
             for (let i = 1; i < infoSheetLen; i++) {
                 const clubName = infoSheet.getCell(i, 0);
                 if (clubName.value === null) {
@@ -58,6 +64,8 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
                 }
                 else {
                     const name = clubName.value;
+                    const text = `https://www.test.com/${name}`;
+                    generateQR(text, name);
                     arrFolderName.push(name);
                 }
             }
@@ -136,7 +144,7 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
             yield doc.loadInfo();
             const sheet = doc.sheetsByIndex[0];
             yield sheet.loadCells("A1:K1");
-            for (let i = 0; i < 11; i++) {
+            for (let i = 0; i < 9; i++) {
                 const cell = sheet.getCell(0, i); // access cells using a zero-based index
                 cell.value = headerValues[i];
                 cell.textFormat = { bold: true };
@@ -178,10 +186,11 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
 });
 exports.createClubTemplate = createClubTemplate;
 const createQRCode = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const text = "https://www.youtube.com/";
+    const clubName = "clubname";
+    const text = `https://www.test.com/${clubName}`;
     const generateQR = (text) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            console.log(yield qrcode_1.default.toString(text, { type: "svg" }));
+            console.log(yield qrcode_1.default.toFile("./imgs/qrcode.png", text, { type: "png" }));
         }
         catch (err) {
             console.error(err);

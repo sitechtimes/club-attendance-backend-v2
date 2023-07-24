@@ -15,12 +15,11 @@ export const createClubTemplate = async (
     "First Name",
     "Last Name",
     "Email",
-    "Client Authority",
+    "Position",
     "Grade",
     "Official Class",
-    "Email Domain",
-    "Club Data",
-    "Present Location",
+    "# of Attendence",
+
   ];
   // let arrFolderId: string[] = [];
   const date = new Date();
@@ -47,6 +46,14 @@ export const createClubTemplate = async (
 
     await infoSheet.loadCells(`A1:A${infoSheetLen}`);
 
+    const generateQR = async( text: string, clubName: string) => {
+      try {
+        console.log(await QRCode.toFile( `./imgs/{clubName}.png`,text, {type: "png"} ))
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
     for (let i = 1; i < infoSheetLen; i++) {
       const clubName = infoSheet.getCell(i, 0);
 
@@ -54,8 +61,12 @@ export const createClubTemplate = async (
         break;
       } else {
         const name: string = clubName.value;
+        const text: string = `https://www.test.com/${name}`
+
+        generateQR(text, name)
         arrFolderName.push(name);
       }
+  
     }
   }
 
@@ -138,7 +149,7 @@ export const createClubTemplate = async (
 
     await sheet.loadCells("A1:K1");
 
-    for (let i = 0; i < 11; i++) {
+    for (let i = 0; i < 9; i++) {
       const cell = sheet.getCell(0, i); // access cells using a zero-based index
       cell.value = headerValues[i];
       cell.textFormat = { bold: true };
@@ -185,11 +196,13 @@ export const createQRCode = async (
   next: NextFunction
 ) => {
 
-  const text: string = "https://www.youtube.com/"
+  const clubName = "clubname"
+
+  const text: string = `https://www.test.com/${clubName}`
 
   const generateQR = async( text: string) => {
     try {
-      console.log(await QRCode.toString( text, {type: "svg"} ))
+      console.log(await QRCode.toFile( "./imgs/qrcode.png",text, {type: "png"} ))
     } catch (err) {
       console.error(err)
     }
