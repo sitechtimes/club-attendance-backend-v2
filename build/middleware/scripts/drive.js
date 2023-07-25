@@ -47,8 +47,9 @@ const createClubTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
     function createQRCode(parentID, folderName) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const link = `https://www.test.com/${folderName}`;
-                const qrcode = yield qrcode_1.default.toFile(`./imgs/${folderName}.png`, link, { type: "png" });
+                const trimFolderName = folderName.trim();
+                const link = `https://www.test.com/${trimFolderName}`;
+                const qrcode = yield qrcode_1.default.toFile(`./imgs/${trimFolderName}.png`, link, { type: "png" });
                 //Johnson please save the qrcode to the drive, the parent ID is here 
                 return qrcode;
             }

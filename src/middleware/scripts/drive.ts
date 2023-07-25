@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth, service } from "../../app";
-import { GoogleSpreadsheet } from "google-spreadsheet";
+import { GoogleSpreadsheet, GoogleSpreadsheetCell } from "google-spreadsheet";
 import { google } from "googleapis";
 import { v4 as uuidv4 } from 'uuid';
 import { clubNameDoc } from "../../app";
@@ -44,8 +44,9 @@ export const createClubTemplate = async (
 
   async function createQRCode(parentID: string, folderName: string) {
     try {
-      const link = `https://www.test.com/${folderName}`;
-      const qrcode = await QRCode.toFile( `./imgs/${folderName}.png`, link, { type: "png"} )
+      const trimFolderName = folderName.trim()
+      const link = `https://www.test.com/${trimFolderName}`;
+      const qrcode = await QRCode.toFile( `./imgs/${trimFolderName}.png`, link, { type: "png"} )
 
       //Johnson please save the qrcode to the drive, the parent ID is here 
       return qrcode;
@@ -81,14 +82,14 @@ export const createClubTemplate = async (
 
     const folderId: string = folder.data.id;
     try {
-      function timeout(ms: Number) {
+      function timeout(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
       }
       const clubNames = await getClubNames();
       console.log(clubNames)
       for (let i=0; i < clubNames.length; i++) {
         await timeout(3000);
-        const folderName = clubNames[i];
+        const folderName: any = clubNames[i];
         console.log("line 70")
         await createClubFolder(folderId, folderName);
       }
