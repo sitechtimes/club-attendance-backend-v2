@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doc = exports.service = exports.serviceAccountAuth = exports.redirectUri = exports.oauth2Client = exports.app = void 0;
+exports.clubNameDoc = exports.userDataSpreadSheet = exports.service = exports.serviceAccountAuth = exports.redirectUri = exports.oauth2Client = exports.app = void 0;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const routes_1 = require("./routes");
@@ -52,9 +52,22 @@ app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({
     extended: true
 }));
-const doc = new google_spreadsheet_1.GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID, serviceAccountAuth);
-exports.doc = doc;
+const userDataSpreadSheet = new google_spreadsheet_1.GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID, serviceAccountAuth);
+exports.userDataSpreadSheet = userDataSpreadSheet;
 // const drive = new 
+// const doc = new GoogleSpreadsheet('1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI', serviceAccountAuth);
+const clubNameDoc = new google_spreadsheet_1.GoogleSpreadsheet('1FtAMFePt-jzHfn3Ez8FRzB9wie2mBRtBCyhyQjMEJ_w', serviceAccountAuth);
+exports.clubNameDoc = clubNameDoc;
+// await doc.loadInfo(); 
+// await driveDoc.loadInfo(); // loads document properties and worksheets
+// console.log(doc.title)
+// // Pre-configure the client with credentials you have stored in e.g. your database
+// // NOTE - `refresh_token` is required, `access_token` and `expiry_date` are optional
+// // (the refresh token is used to generate a missing/expired access token)
+// const { accessToken, refreshToken, expiryDate } = await fetchUserGoogleCredsFromDatabase();
+// oauth2Client.credentials.access_token = accessToken;
+// oauth2Client.credentials.refresh_token = refreshToken;
+// oauth2Client.credentials.expiry_date = expiryDate; // Unix epoch milliseconds
 app.use("/", routes_1.router);
 app.listen(port, () => {
     console.log(`Server is running on port ${port}!`);

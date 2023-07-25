@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { clubNameDoc } from "../../app";
 import QRCode from "qrcode";
 import { upload } from "../user/multer";
+import { cloudbuild } from "googleapis/build/src/apis/cloudbuild";
 
 export const createClubTemplate = async (
   req: Request,
@@ -53,7 +54,26 @@ export const createClubTemplate = async (
     }
   }
 
+  async function getClubNames() {
+    await clubNameDoc.loadInfo();
+    const clubNameSheet = clubNameDoc.sheetsByIndex[0];
+    const clubNameSheetLen = clubNameSheet.rowCount;
+    await clubNameSheet.loadCells(`A1:A${clubNameSheetLen}`);
+
+    let clubNames = [];
+    for (let i=1; i < clubNameSheetLen; i++) {
+      const cell = clubNameSheet.getCell(i, 0);
+      //Stop iterating when the row is empty
+      if (cell.value === null) {
+        break
+      }
+      clubNames.push(cell.value);
+    }
+    return clubNames;
+  }
+
   async function createYearFolder() {
+
     const folder = await service.files.create({
       resource: yearFolderMetaData,
       fields: "id",
@@ -64,44 +84,20 @@ export const createClubTemplate = async (
       function timeout(ms: Number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
       }
-      for (let i=0; i < arrFolderName.length; i++) {
+      const clubNames = await getClubNames();
+      console.log(clubNames)
+      for (let i=0; i < clubNames.length; i++) {
         await timeout(3000);
-        const folderName = arrFolderName[i];
+        const folderName = clubNames[i];
+        console.log("line 70")
         await createClubFolder(folderId, folderName);
       }
+
+    console.log("year folder created")
     } catch (error) {
       console.error(error);
     }
   }
-
-  async function createClubFolder(parentID: string, folderName: string) {
-    const folderMetaData = {
-      name: folderName,
-      mimeType: "application/vnd.google-apps.folder",
-      parents: [parentID],
-    };
-
-    const clubFolder = await service.files.create({
-      resource: folderMetaData,
-      fields: "id",
-    });
-
-    const folderId: string = clubFolder.data.id;
-    console.log(folderName)
-
-    try {
-      const photoSheetId = await createPhotoFolder(folderId, folderName);
-      const attendanceSheetId = await createAttendanceSheet(folderId, folderName);
-      const qrCode = await createQRCode(folderId, folderName);
-
-      //add club to metadata spreadsheet given club name, and ids of the spreadsheets
-      const metaSheet = addToMeta(folderName, folderId, photoSheetId, attendanceSheetId, qrCode);
-      console.log(`Created all drive content for ${folderName}!`);
-    } catch (error) {
-      res.json(error);
-    }
-  }
-
   async function addToMeta(folderName: string, clubFolderId: string, photoSheetId: string, attendanceSheetId: string, qrCode: any) {
     const metaDataSpreadSheet = new GoogleSpreadsheet(process.env.CLUB_METADATA_SPREADSHEET_ID, serviceAccountAuth);
     const metaDataSheet = metaDataSpreadSheet.sheetsByIndex[0];
@@ -141,7 +137,7 @@ export const createClubTemplate = async (
     await attendanceDoc.loadInfo();
     const sheet = attendanceDoc.sheetsByIndex[0];
     await sheet.loadCells("A1:K1");
-
+    console.log("askjdjajsdaslkjdaksjldjaksjdla")
     for (let i = 0; i < 9; i++) {
       const cell = sheet.getCell(0, i); // access cells using a zero-based index
       cell.value = headerValues[i];
@@ -166,13 +162,47 @@ export const createClubTemplate = async (
         fields: "id",
       });
 
-      res.json(`Created folder for ${folderName} attendence photos.`);
+      // res.json(`Created folder for ${folderName} attendence photos.`);
       return photoFolder.data.id;
 
     } catch (error) {
       res.json(error);
     }
   }
+
+  async function createClubFolder(parentID: string, folderName: string) {
+    console.log("this si the club folder hahaha")
+    const folderMetaData = {
+      name: folderName,
+      mimeType: "application/vnd.google-apps.folder",
+      parents: [parentID],
+    };
+
+    const clubFolder = await service.files.create({
+      resource: folderMetaData,
+      fields: "id",
+    });
+
+    const folderId: string = clubFolder.data.id;
+    console.log(folderName)
+
+    try {
+      console.log(parentID)
+      console.log("PHOTO")
+      const photoSheetId = await createPhotoFolder(folderId, folderName);
+      console.log("ATTENDANCE")
+      const attendanceSheetId = await createAttendanceSheet(folderId, folderName);
+      console.log("QR CODE")
+      const qrCode = await createQRCode(folderId, folderName);
+
+      //add club to metadata spreadsheet given club name, and ids of the spreadsheets
+      const metaSheet = addToMeta(folderName, folderId, photoSheetId, attendanceSheetId, qrCode);
+      console.log(`Created all drive content for ${folderName}!`);
+    } catch (error) {
+      res.json(error);
+    }
+  }
+
   createYearFolder();
   res.json({ message: "Successfully created all club folders for the school year!" });
 };
