@@ -7,6 +7,8 @@ import { clubNameDoc } from "../../app";
 import QRCode from "qrcode";
 import { upload } from "../user/multer";
 import { cloudbuild } from "googleapis/build/src/apis/cloudbuild";
+import fs from "fs";
+import { Readable } from 'stream'
 
 export const createClubTemplate = async (
   req: Request,
@@ -44,11 +46,28 @@ export const createClubTemplate = async (
 
   async function createQRCode(parentID: string, folderName: string) {
     try {
-      const trimFolderName = folderName.trim()
+      const trimFolderName = folderName.replace(/ /g, "_");
+      console.log(trimFolderName)
       const link = `https://www.test.com/${trimFolderName}`;
-      const qrcode = await QRCode.toFile( `./imgs/${trimFolderName}.png`, link, { type: "png"} )
+      const qrcode = await QRCode.toFile( `./imgs/${trimFolderName}.png`, link, { type: "png"})
+
+      const buffer = fs.readFileSync(`./imgs/${trimFolderName}.png`);
+
+      console.log(qrcode)
 
       //Johnson please save the qrcode to the drive, the parent ID is here 
+      const file = await service.files.create({
+        requestBody: {
+            name: `${folderName} QR Code`,
+            parents: [`${parentID}`],
+          },
+          media: {
+            mimeType: "image/png",
+            body: Readable.from([buffer]),
+          },
+    });
+      console.log('File Id:', file.data.id);
+
       return qrcode;
     } catch (error) {
       console.error(error);
@@ -88,10 +107,11 @@ export const createClubTemplate = async (
       const clubNames = await getClubNames();
       console.log(clubNames)
       for (let i=0; i < clubNames.length; i++) {
-        await timeout(3000);
+        // await timeout(3000);
         const folderName: any = clubNames[i];
         console.log("line 70")
         await createClubFolder(folderId, folderName);
+        console.log("line96")
       }
 
     console.log("year folder created")
@@ -101,6 +121,7 @@ export const createClubTemplate = async (
   }
   async function addToMeta(folderName: string, clubFolderId: string, photoSheetId: string, attendanceSheetId: string, qrCode: any) {
     const metaDataSpreadSheet = new GoogleSpreadsheet(process.env.CLUB_METADATA_SPREADSHEET_ID, serviceAccountAuth);
+    await metaDataSpreadSheet.loadInfo();
     const metaDataSheet = metaDataSpreadSheet.sheetsByIndex[0];
     const metaDataSheetLen = metaDataSheet.rowCount;
 
