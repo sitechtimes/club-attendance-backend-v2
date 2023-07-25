@@ -18,7 +18,7 @@ router.get('/oauth2callback', oauth2callback)
 router.post("/createUserSheet", createUserSheet)
 router.post("/createClubTemplate", createClubTemplate)
 router.post("/createClubMeta", createClubMeta)
-router.post("/uploadImage", upload.single("image"), uploadImage)
+router.post("/uploadImage", upload.array("image"), uploadImage)
 
 
 export { router };

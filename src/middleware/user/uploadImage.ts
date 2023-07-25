@@ -8,6 +8,7 @@ export const uploadImage = async (
   next: NextFunction
 ) => {
 
+    console.log("11",  req.files)
   const year = req.body.year
   const clubName = req.body.clubName
 
@@ -48,19 +49,21 @@ export const uploadImage = async (
 
 
   try {
-    console.log(req.file);
+    req.files?.forEach(async (file: any) => {
+      console.log(req.file);
 
-    const file = await service.files.create({
-      requestBody: {
-        name: req.file?.originalname,
-        parents: [`${attendanceFolderId}`],
-      },
-      media: {
-        mimeType: req.file?.mimetype,
-        body: Readable.from([req.file?.buffer]),
-      },
-    });
-    console.log("File Id:", file.data.id);
+      const img = await service.files.create({
+        requestBody: {
+          name: file.originalname,
+          parents: [`${attendanceFolderId}`],
+        },
+        media: {
+          mimeType: file.mimetype,
+          body: Readable.from([file.buffer]),
+        },
+      });
+      console.log("File Id:", img.data.id);
+    })
     // return file.data.id;
     res.json({ message: "File uploaded successfully!" });
   } catch (err) {
