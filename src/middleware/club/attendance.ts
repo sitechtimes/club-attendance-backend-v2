@@ -30,7 +30,7 @@ export const updateAttendance = async (
   // const x = user_rows[0].get('UID')
   // console.log(x)
 
-  async function updateAttendance(uid: string,attendanceID: string) {
+  async function updateAttendance(uid: string, attendanceID: string) {
     const userDoc = new GoogleSpreadsheet(
       userSpreadSheetID,
       serviceAccountAuth
@@ -70,29 +70,30 @@ export const updateAttendance = async (
         // console.log(user_rows[i].get("UID"))
       }
     }
-
-    console.log(attendanceArrUID);
-    const userUID = attendanceArrUID.includes(uid);
-    console.log(userUID);
-    if (userUID) {
-      const rowNum: number = attendanceArrUID.indexOf(uid);
-      const attNum: string = attendanceRows[rowNum].get("# of Attendances");
-      const turnNum = Number(attNum);
-      console.log(turnNum + 1);
-      attendanceRows[rowNum].set("# of Attendances", turnNum + 1);
-      await attendanceRows[rowNum].save();
+    if (arrUID.includes(uid)) {
+      const userUID = attendanceArrUID.includes(uid);
+      console.log(userUID);
+      if (userUID) {
+        const rowNum: number = attendanceArrUID.indexOf(uid);
+        const attNum: string = attendanceRows[rowNum].get("# of Attendances");
+        const turnNum = Number(attNum);
+        console.log(turnNum + 1);
+        attendanceRows[rowNum].set("# of Attendances", turnNum + 1);
+        await attendanceRows[rowNum].save();
+      } else {
+        const rowObject = await attendanceSheet.addRow({
+          UID: uid,
+          "First Name": data.first_name,
+          "Last Name": data.last_name,
+          Email: data.email,
+          Position: data.position,
+          Grade: data.grade,
+          "Official Class": data.off_class,
+          "# of Attendances": data.num_attendance + 1,
+        });
+      }
     } else {
-      const rowObject = await attendanceSheet.addRow({
-        UID: uid,
-        "First Name": data.first_name,
-        "Last Name": data.last_name,
-        Email: data.email,
-        Position: data.position,
-        Grade: data.grade,
-        "Official Class": data.off_class,
-        "# of Attendances": data.num_attendance + 1,
-      });
-
+      res.json("UID IS not Valid")
     }
   }
 
