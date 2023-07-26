@@ -30,7 +30,7 @@ export const updateAttendance = async (
   // const x = user_rows[0].get('UID')
   // console.log(x)
 
-  async function updateAttendance(attendanceID: string) {
+  async function updateAttendance(uid: string,attendanceID: string) {
     const userDoc = new GoogleSpreadsheet(
       userSpreadSheetID,
       serviceAccountAuth
@@ -72,10 +72,10 @@ export const updateAttendance = async (
     }
 
     console.log(attendanceArrUID);
-    const userUID = attendanceArrUID.includes(data.uuid);
+    const userUID = attendanceArrUID.includes(uid);
     console.log(userUID);
     if (userUID) {
-      const rowNum: number = attendanceArrUID.indexOf(data.uuid);
+      const rowNum: number = attendanceArrUID.indexOf(uid);
       const attNum: string = attendanceRows[rowNum].get("# of Attendances");
       const turnNum = Number(attNum);
       console.log(turnNum + 1);
@@ -83,7 +83,7 @@ export const updateAttendance = async (
       await attendanceRows[rowNum].save();
     } else {
       const rowObject = await attendanceSheet.addRow({
-        UID: data.uuid,
+        UID: uid,
         "First Name": data.first_name,
         "Last Name": data.last_name,
         Email: data.email,
@@ -97,7 +97,7 @@ export const updateAttendance = async (
   }
 
   try {
-    await updateAttendance(attendanceSpreadsheetId);
+    await updateAttendance(data.uuid, attendanceSpreadsheetId);
     res.json("work");
   } catch (error) {
     res.json(error);
