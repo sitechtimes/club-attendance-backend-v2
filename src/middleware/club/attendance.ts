@@ -25,13 +25,12 @@ export const updateAttendance = async (
   const attendanceArrUID: string[] = [];
   const attendanceSpreadsheetId: string =
     "1BnI_D9ktnQJ6U_nhT-ukos82UmyNCWR9YFYDaSF-i3Q";
-  const userSpreadSheetID: string =
-    "1vA3tmBdtr7tltg9FNGp8McoBHF5qB3N1ohvnuOP-kiI";
+  const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID;
 
   // const x = user_rows[0].get('UID')
   // console.log(x)
 
-  async function updateAttendance(uid: string, attendanceID: string) {
+  async function updateAttendance(attendanceID: string) {
     const userDoc = new GoogleSpreadsheet(
       userSpreadSheetID,
       serviceAccountAuth
@@ -73,10 +72,10 @@ export const updateAttendance = async (
     }
 
     console.log(attendanceArrUID);
-    const userUID = attendanceArrUID.includes(uid);
+    const userUID = attendanceArrUID.includes(data.uuid);
     console.log(userUID);
     if (userUID) {
-      const rowNum: number = attendanceArrUID.indexOf(uid);
+      const rowNum: number = attendanceArrUID.indexOf(data.uuid);
       const attNum: string = attendanceRows[rowNum].get("# of Attendances");
       const turnNum = Number(attNum);
       console.log(turnNum + 1);
@@ -93,13 +92,13 @@ export const updateAttendance = async (
         "Official Class": data.off_class,
         "# of Attendances": data.num_attendance + 1,
       });
-      res.json(rowObject);
+
     }
   }
 
   try {
-    const x = "116007774216187700433";
-    await updateAttendance(x, attendanceSpreadsheetId);
+    await updateAttendance(attendanceSpreadsheetId);
+    res.json("work");
   } catch (error) {
     res.json(error);
   }
