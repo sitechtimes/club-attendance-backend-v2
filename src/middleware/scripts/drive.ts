@@ -243,11 +243,11 @@ export const createClubMeta = async (
     await doc.loadInfo();
 
     const meta_sheet = doc.sheetsByIndex[0];
-    await meta_sheet.setHeaderRow(["Advisor Email", "President Email", "Next Meeting", "QR Code", "Club Folder ID", "Club Spreadsheet", "Club Photo Folder ID", "Club Code"]);
+    await meta_sheet.setHeaderRow(["Club Name", "Advisor Email", "President Email", "Next Meeting", "QR Code", "Club Folder ID", "Club Spreadsheet", "Club Photo Folder ID", "Club Code"]);
     await meta_sheet.updateProperties({ title: 'userMetaData' })
-    await meta_sheet.loadCells("A1:H1");
+    await meta_sheet.loadCells("A1:I1");
     
-    for(let i = 0; i < 8; i++) {
+    for(let i = 0; i < 9; i++) {
       const cell = meta_sheet.getCell(0, i); // access cells using a zero-based index
       console.log(cell.value)
       cell.textFormat = { fontFamily: 'Times New Roman'};
