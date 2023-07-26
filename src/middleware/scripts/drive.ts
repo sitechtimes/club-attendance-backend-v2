@@ -4,7 +4,7 @@ import { GoogleSpreadsheet, GoogleSpreadsheetCell } from "google-spreadsheet";
 import { google } from "googleapis";
 import { v4 as uuidv4 } from 'uuid';
 import { clubNameDoc } from "../../app";
-import QRCode from "qrcode";
+import QRCode, { create } from "qrcode";
 import { upload } from "../user/multer";
 import { cloudbuild } from "googleapis/build/src/apis/cloudbuild";
 import fs from "fs";
@@ -24,12 +24,13 @@ export const createClubTemplate = async (
     "Position",
     "Grade",
     "Official Class",
-    "# of Attendences",
+    "# of Attendances",
 
   ];
   // let arrFolderId: string[] = [];
   const date = new Date();
   const year = date.getFullYear();
+  const email = req.body.email;
 
   const yearFolderMetaData = {
     name: `${year}-${year + 1}`,
@@ -104,6 +105,7 @@ export const createClubTemplate = async (
       function timeout(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
       }
+      createClubMeta(folderId, email);
       const clubNames = await getClubNames();
       console.log(clubNames)
       for (let i=0; i < clubNames.length; i++) {
@@ -115,12 +117,26 @@ export const createClubTemplate = async (
       }
 
     console.log("year folder created")
+    console.log(email, "118")
     } catch (error) {
       console.error(error);
     }
   }
-  async function addToMeta(folderName: string, clubFolderId: string, photoSheetId: string, attendanceSheetId: string, qrCode: any) {
-    const metaDataSpreadSheet = new GoogleSpreadsheet(process.env.CLUB_METADATA_SPREADSHEET_ID, serviceAccountAuth);
+  async function addToMeta(folderName: string, clubFolderId: string, photoSheetId: string, attendanceSheetId: string, qrCode: any, parentID: string) {
+    //search for the metadata spreadsheet in the year folder
+    const metaName = "Club MetaData";
+    let result = await service.files
+    .list({
+      q: `mimeType='application/vnd.google-apps.spreadsheet' and '${parentID}' in parents`,
+      fields: "nextPageToken, files(id, name)",
+      spaces: "drive",
+    })
+    .catch((error) => console.log(error));
+    let metadata = result;
+
+    console.log(metadata.data.files[0].id, "136")
+
+    const metaDataSpreadSheet = new GoogleSpreadsheet(metadata.data.files[0].id, serviceAccountAuth);
     await metaDataSpreadSheet.loadInfo();
     const metaDataSheet = metaDataSpreadSheet.sheetsByIndex[0];
     const metaDataSheetLen = metaDataSheet.rowCount;
@@ -174,7 +190,7 @@ export const createClubTemplate = async (
     try {
 
       const photoFolderMetaData = {
-        name: `${folderName} Attendence Photos`,
+        name: `${folderName} Attendance Photos`,
         mimeType: "application/vnd.google-apps.folder",
         parents: [parentID],
       };
@@ -218,7 +234,8 @@ export const createClubTemplate = async (
       const qrCode = await createQRCode(folderId, folderName);
 
       //add club to metadata spreadsheet given club name, and ids of the spreadsheets
-      const metaSheet = addToMeta(folderName, folderId, photoSheetId, attendanceSheetId, qrCode);
+      
+      const metaSheet = addToMeta(folderName, folderId, photoSheetId, attendanceSheetId, qrCode, parentID);
       console.log(`Created all drive content for ${folderName}!`);
     } catch (error) {
       res.json(error);
@@ -226,17 +243,13 @@ export const createClubTemplate = async (
   }
 
   createYearFolder();
+
   res.json({ message: "Successfully created all club folders for the school year!" });
 };
 
-export const createClubMeta = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+ const createClubMeta = async (parentID: string, email: string) => {
   //using user email for now
-  const userEmail = req.body.email;
-  console.log(userEmail);
+  const userEmail = email;
   const userSpreadsheet = new GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID, serviceAccountAuth);
   await userSpreadsheet.loadInfo();
   const userSheet = userSpreadsheet.sheetsByIndex[0];
@@ -245,15 +258,16 @@ export const createClubMeta = async (
   //check if the user is an admin before performing 
   const foundUser = users.filter(e => (e.get('Email') === userEmail) && (e.get('Client Authority') === 'admin'));
   if (foundUser.length === 0) {
-    res.status(400);
-    res.json({ error: 'Forbidden'});
+    // res.status(400);
+    console.log("Forbidden")
+    // res.json({ error: 'Forbidden'});
     return
   }
   console.log(`${userEmail} exists and is an admin`);
   const fileMetaData = {
     name: 'Club MetaData',
     mimeType: 'application/vnd.google-apps.spreadsheet',
-    parents: [process.env.CLUB_ATTENDANCE_FOLDER_ID]
+    parents: [parentID]
   }
   try {
     const spreadsheet = await service.files.create({
@@ -261,11 +275,12 @@ export const createClubMeta = async (
       fields: 'id'
     })
     const spreadsheetId = spreadsheet.data.id;
+    console.log(spreadsheetId, "278")
     const doc = new GoogleSpreadsheet(spreadsheetId, serviceAccountAuth);
     await doc.loadInfo();
 
     const meta_sheet = doc.sheetsByIndex[0];
-    await meta_sheet.setHeaderRow(["Advisor Email", "President Email", "Next Meeting", "QR Code", "Club Folder ID", "Club Spreadsheet", "Club Photo Folder ID", "Club Code"]);
+    await meta_sheet.setHeaderRow(["Club Name", "Advisor Email", "President Email", "Next Meeting", "QR Code", "Club Folder ID", "Club Spreadsheet", "Club Photo Folder ID", "Club Code"]);
     await meta_sheet.updateProperties({ title: 'userMetaData' })
     await meta_sheet.loadCells("A1:H1");
     
@@ -275,9 +290,9 @@ export const createClubMeta = async (
       cell.textFormat = { fontFamily: 'Times New Roman'};
       await meta_sheet.saveUpdatedCells(); // save all updates in one call
   }
-  
-  res.json({ message: 'Club MetaData Sheet Created!' });
-  next();
+  console.log("Club MetaData Sheet Created!");
+  // res.json({ message: 'Club MetaData Sheet Created!' });
+  // next();
 
   } catch (error) {
     console.error(error);
