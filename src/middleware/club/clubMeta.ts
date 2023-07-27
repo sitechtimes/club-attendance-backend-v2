@@ -102,7 +102,7 @@ export const addClubMeeting = async (
   
    const selectedClub = await getSelectedClub(year, clubName)
 
-    selectedClub.set("Next Meeting", "");
+    selectedClub.set("Next Meeting", "No Meeting Scheduled");
 
     await selectedClub.save()
 

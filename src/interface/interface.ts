@@ -7,6 +7,7 @@ export interface clubData {
     room: string;
     advisorEmail: string;
     presidentEmail: string;
+    nextMeeting: string;
 }
 
 export interface clubMeta {
