@@ -44,21 +44,63 @@ export const getClubMeta = async (
 
 
 try {
-    const selectedClub = await getSelectedClub(year, clubName)
-      const clubMeta: clubMeta = {
-        clubName: selectedClub?.get("Club Name"),
-        advisorEmail: selectedClub?.get("Advisor Email"),
-        presidentEmail: selectedClub?.get("President Email"),
-        nextMeeting: selectedClub?.get("Next Meeting"),
-        qrCode: selectedClub?.get("QR Code"),
-        clubFolderId: selectedClub?.get("Club Folder ID"),
-        clubSpreadsheet: selectedClub?.get("Club Spreadsheet"),
-        clubPhotoFolderId: selectedClub?.get("Club Photo Folder ID"),
-        clubCode: selectedClub?.get("Club Code")
-      }
+
+    let result = await service.files
+  .list({
+    q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
+    fields: "nextPageToken, files(id, name)",
+    spaces: "drive",
+  })
+  .catch((error) => console.log(error));
+let folder = result.data.files;
+const selectedYearFolder = folder?.filter((folder) => folder.name === year);
+
+
+const metaSheetData = await service.files.list({
+  q: `name = 'Club MetaData' and '${selectedYearFolder[0].id}' in parents`,
+  fields: "nextPageToken, files(id, name)",
+})
+
+const metaSheetDoc = new GoogleSpreadsheet(
+    metaSheetData.data.files[0].id,
+    serviceAccountAuth
+  );
+  await metaSheetDoc.loadInfo();
+  const metaSheet = metaSheetDoc.sheetsByIndex[0];
+  const rows = await metaSheet.getRows();
+
+    const allClubMeta: clubMeta[] = []
+
+    rows.forEach(row => {
+        const clubMeta: clubMeta = {
+            clubName: row.get("Club Name"),
+            advisorEmail: row.get("Advisor Email"),
+            presidentEmail: row.get("President Email"),
+            nextMeeting: row.get("Next Meeting"),
+            qrCode: row.get("QR Code"),
+            clubFolderId: row.get("Club Folder ID"),
+            clubSpreadsheet: row.get("Club Spreadsheet"),
+            clubPhotoFolderId: row.get("Club Photo Folder ID"),
+            clubCode: row.get("Club Code")
+        }
+        allClubMeta.push(clubMeta)
+
+    })
+    // const selectedClub = await getSelectedClub(year, clubName)
+    //   const clubMeta: clubMeta = {
+    //     clubName: selectedClub?.get("Club Name"),
+    //     advisorEmail: selectedClub?.get("Advisor Email"),
+    //     presidentEmail: selectedClub?.get("President Email"),
+    //     nextMeeting: selectedClub?.get("Next Meeting"),
+    //     qrCode: selectedClub?.get("QR Code"),
+    //     clubFolderId: selectedClub?.get("Club Folder ID"),
+    //     clubSpreadsheet: selectedClub?.get("Club Spreadsheet"),
+    //     clubPhotoFolderId: selectedClub?.get("Club Photo Folder ID"),
+    //     clubCode: selectedClub?.get("Club Code")
+    //   }
     
     
-      res.json(clubMeta);
+      res.json(allClubMeta);
 } catch (error) {
     res.json(error)
 }
