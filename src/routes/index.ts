@@ -6,6 +6,7 @@ import { createClubTemplate } from '../middleware/scripts/drive';
 import { uploadImage } from '../middleware/user/uploadImage';
 import { upload } from '../middleware/user/multer';
 import { updateAttendance } from '../middleware/club/attendance';
+import { verifyAdmin } from '../middleware/user/verifyAdmin';
 
 
 const router = express.Router();
@@ -19,10 +20,10 @@ router.get('/oauth2callback', oauth2callback)
 router.get("/getClubData", getClubData)
 
 router.post("/createUserSheet", createUserSheet)
-router.patch("/updateAttendance", updateAttendance)
-router.post("/createClubTemplate", createClubTemplate)
+router.post("/createClubTemplate",verifyAdmin, createClubTemplate)
 // router.post("/createClubMeta", createClubMeta)
 router.post("/uploadImage", upload.array("image"), uploadImage)
 
+router.patch("/updateAttendance", updateAttendance)
 
 export { router };

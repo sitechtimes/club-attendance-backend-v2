@@ -256,13 +256,13 @@ export const createClubTemplate = async (
   const users = await userSheet.getRows();
 
   //check if the user is an admin before performing 
-  const foundUser = users.filter(e => (e.get('Email') === userEmail) && (e.get('Client Authority') === 'admin'));
-  if (foundUser.length === 0) {
-    // res.status(400);
-    console.log("Forbidden")
-    // res.json({ error: 'Forbidden'});
-    return
-  }
+  // const foundUser = users.filter(e => (e.get('Email') === userEmail) && (e.get('Client Authority') === 'admin'));
+  // if (foundUser.length === 0) {
+  //   // res.status(400);
+  //   console.log("Forbidden")
+  //   // res.json({ error: 'Forbidden'});
+  //   return
+  // }
   console.log(`${userEmail} exists and is an admin`);
   const fileMetaData = {
     name: 'Club MetaData',
