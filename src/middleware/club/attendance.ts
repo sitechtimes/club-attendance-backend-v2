@@ -92,14 +92,15 @@ export const updateAttendance = async (
           "# of Attendances": data.num_attendance + 1,
         });
       }
+      res.json("it worked")
     } else {
-      res.json("UID IS not Valid")
+      res.json("use a valid uid");
     }
   }
 
   try {
     await updateAttendance(data.uuid, attendanceSpreadsheetId);
-    res.json("work");
+
   } catch (error) {
     res.json(error);
   }
