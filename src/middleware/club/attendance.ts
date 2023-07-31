@@ -5,6 +5,7 @@ import { google } from "googleapis";
 import { v4 as uuidv4 } from "uuid";
 
 interface attendanceData {
+  club_name: string,
   uuid: string;
   first_name: string;
   last_name: string;
@@ -15,6 +16,10 @@ interface attendanceData {
   num_attendance: number;
 }
 
+interface metaData {
+  club_name: string;
+  club_spreadsheet_id: string;
+}
 export const updateAttendance = async (
   req: Request,
   res: Response,
@@ -22,19 +27,63 @@ export const updateAttendance = async (
 ) => {
   const data = req.body as attendanceData;
   const arrUID: string[] = [];
+  const metaArr: metaData[] = [];
   const attendanceArrUID: string[] = [];
   const attendanceSpreadsheetId: string =
     "1BnI_D9ktnQJ6U_nhT-ukos82UmyNCWR9YFYDaSF-i3Q";
-  const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID;
+  const userSpreadSheetID: string = process.env.USER_DATA_SPREADSHEET_ID;
+  const metaDataSheetID: string =
+    "1vCC8ercuyn8ayszYSYEtpHFs0lxkLhxn0rF_IMyTU5E";
+  const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
+
+
+
+  async function findClassID(clubName: string) {
+    const metaDoc = new GoogleSpreadsheet(metaDataSheetID, serviceAccountAuth);
+
+    await metaDoc.loadInfo();
+  
+    const metaSheet = metaDoc.sheetsByIndex[0];
+    const metaRows = await metaSheet.getRows();
+    const metaSheetLen: number = metaSheet.rowCount;
+
+    for (let i = 0; i < metaSheetLen; i++) {
+      if (metaRows[i] === undefined) {
+        break;
+      } else {
+    
+        const data: metaData = {
+          
+          club_name: metaRows[i].get("Club Name"),
+          club_spreadsheet_id: metaRows[i].get("Club Spreadsheet"),
+        };
+
+        metaArr.push(data);
+
+        // console.log(user_rows[i].get("UID"))
+      }
+    }
+
+    const ID = metaArr.filter(el => el.club_name === clubName );
+
+    return ID
+  }
 
   // const x = user_rows[0].get('UID')
   // console.log(x)
 
-  async function updateAttendance(uid: string, attendanceID: string) {
-    const userDoc = new GoogleSpreadsheet(
-      userSpreadSheetID,
-      serviceAccountAuth
-    );
+  async function updateAttendance(uid: string, clubName: string) {
+    const arrAttendanceID = await findClassID(clubName)
+    let attendanceID: string = ""
+
+      if(arrAttendanceID === undefined) {
+        return res.json("invalid class name")
+      }
+      else {
+        attendanceID = arrAttendanceID[0].club_spreadsheet_id
+      }
+
+
     const attendanceDoc = new GoogleSpreadsheet(
       attendanceID,
       serviceAccountAuth
@@ -92,14 +141,15 @@ export const updateAttendance = async (
           "# of Attendances": data.num_attendance + 1,
         });
       }
+      res.json("updated attendance");
     } else {
-      res.json("UID IS not Valid")
+      res.json("use a valid uid");
     }
   }
 
   try {
-    await updateAttendance(data.uuid, attendanceSpreadsheetId);
-    res.json("work");
+    await updateAttendance(data.uuid, data.club_name);
+
   } catch (error) {
     res.json(error);
   }
