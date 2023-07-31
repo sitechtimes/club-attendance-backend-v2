@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { clubNameDoc, service, serviceAccountAuth } from '../../app';
-import { clubData } from '../../interface/interface';
+import { clubData, memberData } from '../../interface/interface';
 import { getSelectedClub } from './clubMeta';
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { google } from 'googleapis';
@@ -135,15 +135,25 @@ export const getClubMembers = async (req: Request, res: Response, next: NextFunc
 
       console.log(rows)
 
-      const allMembers = []
+      const allMembers: memberData[] = []
 
       rows.forEach(row => {
             const member = {
-                
+                UID: row.get("UID"),
+                firstName: row.get("First Name"),
+                lastName: row.get("Last Name"),
+                email: row.get("Email"),
+                grade: row.get("Grade"),
+                position: row.get("Position"),
+                officialClass: row.get("Official Class"),
+                numAttendance: row.get("# of Attendances"),
+                date: row.get("Date"),
             }
+            allMembers.push(member)
 
       })
 
+      res.json(allMembers)
       
     } catch (error) {
         res.json(error)

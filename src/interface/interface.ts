@@ -21,3 +21,15 @@ export interface clubMeta {
     clubPhotoFolderId: string;
     clubCode: string;
 }
+
+export interface memberData {
+    UID: string,
+    firstName: string,
+    lastName: string,
+    email: string,
+    grade: string,
+    position: string,
+    officialClass: string,
+    numAttendance: string,
+    date: string,
+}
