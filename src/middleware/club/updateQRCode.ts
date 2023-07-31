@@ -90,7 +90,9 @@ export const updateQRCode = async (
   }
 
   try {
-    res.json(genID)
+    const date = new Date().toLocaleDateString()
+
+    res.json(date)
   } catch (error) {
     
   }

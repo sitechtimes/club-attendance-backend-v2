@@ -14,6 +14,7 @@ interface attendanceData {
   grade: number;
   off_class: string;
   num_attendance: number;
+  date: Date;
 }
 
 interface metaData {
@@ -25,12 +26,12 @@ export const updateAttendance = async (
   res: Response,
   next: NextFunction
 ) => {
+  const date = new Date().toLocaleDateString()
+
   const data = req.body as attendanceData;
   const arrUID: string[] = [];
   const metaArr: metaData[] = [];
   const attendanceArrUID: string[] = [];
-  const attendanceSpreadsheetId: string =
-    "1BnI_D9ktnQJ6U_nhT-ukos82UmyNCWR9YFYDaSF-i3Q";
   const userSpreadSheetID: string = process.env.USER_DATA_SPREADSHEET_ID;
   const metaDataSheetID: string =
     "1vCC8ercuyn8ayszYSYEtpHFs0lxkLhxn0rF_IMyTU5E";
@@ -139,6 +140,7 @@ export const updateAttendance = async (
           Grade: data.grade,
           "Official Class": data.off_class,
           "# of Attendances": data.num_attendance + 1,
+          Date: date
         });
       }
       res.json("updated attendance");
