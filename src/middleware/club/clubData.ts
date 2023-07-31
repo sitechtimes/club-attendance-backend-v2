@@ -93,7 +93,7 @@ try{
 }
 
 
-const getClubSheet = async (clubName: string, year: string) => {
+export const getClubSheet = async (clubName: string, year: string) => {
     let result = await service.files
         .list({
           q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
@@ -118,9 +118,7 @@ const getClubSheet = async (clubName: string, year: string) => {
       })
 
 
-
-      const attendanceSheetId: string = attendanceData.data.files?.find((file) => file.name === `${clubName}`)?.id
-      return attendanceSheetId
+      return attendanceData
 }
 
 //get all students in club
@@ -131,7 +129,9 @@ export const getClubMembers = async (req: Request, res: Response, next: NextFunc
         
         
 
-       const attendanceSheetId = await getClubSheet(clubName, year)
+       const attendanceSheetFile = await getClubSheet(clubName, year)
+
+       const attendanceSheetId: string = attendanceSheetFile.data.files?.find((file) => file.name === `${clubName}`)?.id
 
     
       const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId, serviceAccountAuth);
@@ -174,7 +174,9 @@ export const removeStudentFromClub = async (req: Request, res: Response, next: N
         const clubName = req.body.clubName
         const UID = req.body.UID
 
-        const attendanceSheetId = await getClubSheet(clubName, year)
+        const attendanceSheetFile = await getClubSheet(clubName, year)
+
+        const attendanceSheetId: string = attendanceSheetFile.data.files?.find((file) => file.name === `${clubName}`)?.id
 
         const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId, serviceAccountAuth);
         await attendanceSheetData.loadInfo()
@@ -190,3 +192,4 @@ export const removeStudentFromClub = async (req: Request, res: Response, next: N
         res.json(error)
     }
 }
+

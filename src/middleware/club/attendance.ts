@@ -2,7 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth, service } from "../../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { google } from "googleapis";
+import { getClubSheet } from "./clubData";
 import { v4 as uuidv4 } from "uuid";
+import { file } from "googleapis/build/src/apis/file";
 
 interface attendanceData {
   club_name: string,
@@ -154,3 +156,29 @@ export const updateAttendance = async (
     res.json(error);
   }
 };
+
+
+//show attendance photos
+export const showAttendancePhotos = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const clubName = req.body.clubName
+    const year = req.body.year
+
+    const attendanceData = await getClubSheet(clubName, year)
+
+    console.log(attendanceData.data.files)
+
+    const photosFolderId = attendanceData.data.files?.filter(file => file.name === `${clubName} Attendance Photos`)[0].id
+
+    const photos = await service.files.list({
+      q: `'${photosFolderId}' in parents`,
+      fields: 'files(id, name, webViewLink, webContentLink, thumbnailLink)',
+      pageSize: 1000
+    })
+
+    res.json(photos.data.files)
+
+  } catch (error) {
+    res.json(error)
+  }
+}

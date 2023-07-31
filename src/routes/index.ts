@@ -5,7 +5,7 @@ import { getClubData, addClubData, deleteClubData, getClubMembers, removeStudent
 import { createClubTemplate } from '../middleware/scripts/drive';
 import { uploadImage } from '../middleware/user/uploadImage';
 import { upload } from '../middleware/user/multer';
-import { updateAttendance } from '../middleware/club/attendance';
+import { updateAttendance, showAttendancePhotos } from '../middleware/club/attendance';
 import { verifyAdmin } from '../middleware/user/verifyAdmin';
 import { getClubMeta, addClubMeeting, deleteClubMeeting } from '../middleware/club/clubMeta';
 
@@ -22,6 +22,7 @@ router.get('/oauth2callback', oauth2callback)
 router.get("/getClubData", getClubData)
 router.get("/getClubMeta", getClubMeta)
 router.get("/getClubMembers", getClubMembers)
+router.get("/showAttendancePhotos", showAttendancePhotos)
 
 router.post("/createUserSheet", createUserSheet)
 router.post("/createClubTemplate",verifyAdmin, createClubTemplate)
