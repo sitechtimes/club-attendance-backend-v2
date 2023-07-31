@@ -6,6 +6,7 @@ import { createClubTemplate } from '../middleware/scripts/drive';
 import { uploadImage } from '../middleware/user/uploadImage';
 import { upload } from '../middleware/user/multer';
 import { updateAttendance } from '../middleware/club/attendance';
+import { updateQRCode } from '../middleware/club/updateQRCode';
 
 
 const router = express.Router();
@@ -20,6 +21,7 @@ router.get("/getClubData", getClubData)
 
 router.post("/createUserSheet", createUserSheet)
 router.patch("/updateAttendance", updateAttendance)
+router.patch("/updateQRCode",  updateQRCode)
 router.post("/createClubTemplate", createClubTemplate)
 // router.post("/createClubMeta", createClubMeta)
 router.post("/uploadImage", upload.array("image"), uploadImage)
