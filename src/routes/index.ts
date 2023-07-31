@@ -1,13 +1,14 @@
 import express from 'express';
 import { oauth2, oauth2callback } from '../middleware/auth';
 import { createUserSheet } from '../middleware/user/userData';
-import { getClubData, addClubData, deleteClubData, getClubMembers } from '../middleware/club/clubData';
+import { getClubData, addClubData, deleteClubData, getClubMembers, removeStudentFromClub } from '../middleware/club/clubData';
 import { createClubTemplate } from '../middleware/scripts/drive';
 import { uploadImage } from '../middleware/user/uploadImage';
 import { upload } from '../middleware/user/multer';
 import { updateAttendance } from '../middleware/club/attendance';
 import { verifyAdmin } from '../middleware/user/verifyAdmin';
 import { getClubMeta, addClubMeeting, deleteClubMeeting } from '../middleware/club/clubMeta';
+
 
 
 const router = express.Router();
@@ -34,5 +35,6 @@ router.patch("/updateAttendance", updateAttendance)
 
 router.delete("/deleteClubMeeting", deleteClubMeeting)
 router.delete("/deleteClub", deleteClubData)
+router.delete("/removeStudentFromClub", removeStudentFromClub)
 
 export { router };

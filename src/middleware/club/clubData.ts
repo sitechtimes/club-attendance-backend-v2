@@ -92,13 +92,9 @@ try{
     }
 }
 
-//get all students in club
-export const getClubMembers = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const year = req.body.year
-        const clubName = req.body.clubName
-        
-        let result = await service.files
+
+const getClubSheet = async (clubName: string, year: string) => {
+    let result = await service.files
         .list({
           q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
           fields: "nextPageToken, files(id, name)",
@@ -114,7 +110,7 @@ export const getClubMembers = async (req: Request, res: Response, next: NextFunc
         fields: "nextPageToken, files(id, name)",
       })
 
-      const attendanceId = attendanceFolderData.data.files[0].id
+      const attendanceId: string = attendanceFolderData.data.files[0].id
 
       const attendanceData = await service.files.list({
         q: `'${attendanceId}' in parents`,
@@ -124,9 +120,20 @@ export const getClubMembers = async (req: Request, res: Response, next: NextFunc
 
 
       const attendanceSheetId: string = attendanceData.data.files?.find((file) => file.name === `${clubName}`)?.id
+      return attendanceSheetId
+}
 
+//get all students in club
+export const getClubMembers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const year = req.body.year
+        const clubName = req.body.clubName
+        
+        
 
+       const attendanceSheetId = await getClubSheet(clubName, year)
 
+    
       const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId, serviceAccountAuth);
       await attendanceSheetData.loadInfo()
 
@@ -155,6 +162,30 @@ export const getClubMembers = async (req: Request, res: Response, next: NextFunc
 
       res.json(allMembers)
       
+    } catch (error) {
+        res.json(error)
+    }
+}
+
+//remove student from club
+export const removeStudentFromClub = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const year = req.body.year
+        const clubName = req.body.clubName
+        const UID = req.body.UID
+
+        const attendanceSheetId = await getClubSheet(clubName, year)
+
+        const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId, serviceAccountAuth);
+        await attendanceSheetData.loadInfo()
+
+        const attendanceSheet = attendanceSheetData.sheetsByIndex[0]
+        const rows = await attendanceSheet.getRows()
+
+        const selectedStudent = rows.filter(row => row.get("UID") === UID)[0]
+        await selectedStudent.delete()
+
+        res.json(`${selectedStudent.get("First Name")} ${selectedStudent.get("Last Name")} has been removed from ${clubName}`)
     } catch (error) {
         res.json(error)
     }
