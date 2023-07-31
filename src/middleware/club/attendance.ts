@@ -157,7 +157,7 @@ export const updateAttendance = async (
   }
 };
 
-s
+
 export const showAttendancePhotos = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const clubName = req.body.clubName
