@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express'
-import { clubNameDoc, service } from '../../app';
+import { clubNameDoc, service, serviceAccountAuth } from '../../app';
 import { clubData } from '../../interface/interface';
 import { getSelectedClub } from './clubMeta';
+import { GoogleSpreadsheet } from "google-spreadsheet";
+import { google } from 'googleapis';
+const sheets = google.sheets('v4');
 
 
 export const getClubData = async (req: Request, res: Response, next: NextFunction) => {
@@ -75,9 +78,74 @@ export const addClubData = async (req: Request, res: Response, next: NextFunctio
 //delete club
 export const deleteClubData = async (req: Request, res: Response, next: NextFunction) => {
 try{
-    res.json("sdcjsndnc")
+    const clubName = req.body.clubName
+
+    await clubNameDoc.loadInfo()
+    const clubNameSheet = clubNameDoc.sheetsById[0]
+    const rows = await clubNameSheet.getRows()
+
+    const selectedClub = rows.filter(row => row.get("Club Name") === clubName)[0]
+    await selectedClub.delete()
+    res.json(`${clubName} has been deleted!`)
     } catch (error) {
         res.json(error)
     }
 }
 
+//get all students in club
+export const getClubMembers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const year = req.body.year
+        const clubName = req.body.clubName
+        
+        let result = await service.files
+        .list({
+          q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
+          fields: "nextPageToken, files(id, name)",
+          spaces: "drive",
+        })
+        .catch((error) => console.log(error));
+      let folder = result.data.files;
+      const selectedYearFolder = folder?.filter((folder) => folder.name === year);
+      
+      
+      const attendanceFolderData = await service.files.list({
+        q: `name = '${clubName}' and '${selectedYearFolder[0].id}' in parents`,
+        fields: "nextPageToken, files(id, name)",
+      })
+
+      const attendanceId = attendanceFolderData.data.files[0].id
+
+      const attendanceData = await service.files.list({
+        q: `'${attendanceId}' in parents`,
+        fields: "nextPageToken, files(id, name)",
+      })
+
+
+
+      const attendanceSheetId: string = attendanceData.data.files?.find((file) => file.name === `${clubName}`)?.id
+
+
+
+      const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId, serviceAccountAuth);
+      await attendanceSheetData.loadInfo()
+
+      const attendanceSheet = attendanceSheetData.sheetsByIndex[0]
+      const rows = await attendanceSheet.getRows()
+
+      console.log(rows)
+
+      const allMembers = []
+
+      rows.forEach(row => {
+            const member = {
+                
+            }
+
+      })
+
+      
+    } catch (error) {
+        res.json(error)
+    }
+}
