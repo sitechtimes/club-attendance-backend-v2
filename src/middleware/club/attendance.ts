@@ -172,7 +172,6 @@ export const showAttendancePhotos = async (req: Request, res: Response, next: Ne
     const photos = await service.files.list({
       q: `'${photosFolderId}' in parents`,
       fields: 'files(id, name, webViewLink, webContentLink, thumbnailLink)',
-      pageSize: 1000
     })
 
     res.json(photos.data.files)
