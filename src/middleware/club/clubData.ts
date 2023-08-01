@@ -131,7 +131,7 @@ export const getClubMembers = async (req: Request, res: Response, next: NextFunc
 
        const attendanceSheetFile = await getClubSheet(clubName, year)
 
-       const attendanceSheetId: string = attendanceSheetFile.data.files?.find((file) => file.name === `${clubName}`)?.id
+       const attendanceSheetId: string | undefined | null = attendanceSheetFile.data.files?.find((file) => file.name === `${clubName}`)?.id
 
     
       const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId, serviceAccountAuth);
@@ -176,7 +176,7 @@ export const removeStudentFromClub = async (req: Request, res: Response, next: N
 
         const attendanceSheetFile = await getClubSheet(clubName, year)
 
-        const attendanceSheetId: string = attendanceSheetFile.data.files?.find((file) => file.name === `${clubName}`)?.id
+        const attendanceSheetId: string | null | undefined = attendanceSheetFile.data.files?.find((file) => file.name === `${clubName}`)?.id
 
         const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId, serviceAccountAuth);
         await attendanceSheetData.loadInfo()

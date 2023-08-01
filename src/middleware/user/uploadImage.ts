@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { clubMetaData, serviceAccountAuth, service } from "../../app";
+import { serviceAccountAuth, service } from "../../app";
 import { Readable } from "stream";
 import { google } from "googleapis";
 import { GoogleSpreadsheet } from 'google-spreadsheet';
