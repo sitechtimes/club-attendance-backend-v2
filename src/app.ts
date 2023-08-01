@@ -55,10 +55,10 @@ app.use(bodyParser.urlencoded({
 }));
 
 
-const userDataSpreadSheet = new GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID, serviceAccountAuth);
+const userDataSpreadSheet = new GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID as string, serviceAccountAuth);
 // const drive = new 
 
-const clubNameDoc = new GoogleSpreadsheet(process.env.CLUB_DATA_SPREADSHEET_ID, serviceAccountAuth);
+const clubNameDoc = new GoogleSpreadsheet(process.env.CLUB_DATA_SPREADSHEET_ID as string, serviceAccountAuth);
 
 // const clubMetaData = new GoogleSpreadsheet(process.env.CLUB_METADATA_SPREADSHEET_ID, serviceAccountAuth);
 

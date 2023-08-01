@@ -4,7 +4,7 @@ import { GoogleSpreadsheet, GoogleSpreadsheetCell } from "google-spreadsheet";
 
 
 export const verifyAdmin = async (req: Request, res: Response, next: NextFunction) => {
-    const userDoc = new GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID, serviceAccountAuth)
+    const userDoc = new GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID as string, serviceAccountAuth)
     await userDoc.loadInfo()
     const userSheet = userDoc.sheetsByIndex[0]
     const userRows = await userSheet.getRows()

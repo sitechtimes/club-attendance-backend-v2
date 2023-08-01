@@ -26,7 +26,7 @@ export const uploadImage = async (
     .catch((error) => console.log(error));
   let folder = result.data.files;
   const selectedYearFolder = folder?.filter((folder) => folder.name === year);
-  const folderId = selectedYearFolder[0].id;
+  const folderId = selectedYearFolder![0].id;
   console.log(folderId, "line 25")
 
 
@@ -37,9 +37,9 @@ export const uploadImage = async (
 
   console.log(metaSheet.data.files, "meta")
 
-  const metaSheetId = metaSheet.data.files[0].id
+  const metaSheetId = metaSheet.data.files![0].id
 
-  const metaDataSpreadSheet = new GoogleSpreadsheet(metaSheetId, serviceAccountAuth);
+  const metaDataSpreadSheet = new GoogleSpreadsheet(metaSheetId as string, serviceAccountAuth);
   await metaDataSpreadSheet.loadInfo();
   const metaDataSheet = metaDataSpreadSheet.sheetsByIndex[0];
   const rows = await metaDataSheet.getRows()

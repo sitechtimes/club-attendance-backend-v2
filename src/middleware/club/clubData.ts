@@ -9,8 +9,8 @@ const sheets = google.sheets('v4');
 
 export const getClubData = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const clubName = req.body.clubName
-        const year = req.body.year
+        const clubName: string = req.body.clubName
+        const year: string = req.body.year
         await clubNameDoc.loadInfo()
         const clubNameSheet = clubNameDoc.sheetsById[0]
         const rows = await clubNameSheet.getRows()
@@ -43,15 +43,15 @@ export const getClubData = async (req: Request, res: Response, next: NextFunctio
 //add club
 export const addClubData = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const clubName = req.body.clubName
-        const clubAdvisor = req.body.clubAdvisor
-        const clubPresident = req.body.clubPresident
-        const frequency = req.body.frequency
-        const day = req.body.day
-        const room = req.body.room
-        const activtyType = req.body.activityType
+        const clubName: string = req.body.clubName
+        const clubAdvisor: string = req.body.clubAdvisor
+        const clubPresident: string = req.body.clubPresident
+        const frequency: string = req.body.frequency
+        const day: string = req.body.day
+        const room: string = req.body.room
+        const activtyType: string = req.body.activityType
         const status = req.body.status
-        const email = req.body.email
+        const email: string = req.body.email
 
         await clubNameDoc.loadInfo()
         const clubNameSheet = clubNameDoc.sheetsById[0]
@@ -78,7 +78,7 @@ export const addClubData = async (req: Request, res: Response, next: NextFunctio
 //delete club
 export const deleteClubData = async (req: Request, res: Response, next: NextFunction) => {
 try{
-    const clubName = req.body.clubName
+    const clubName: string = req.body.clubName
 
     await clubNameDoc.loadInfo()
     const clubNameSheet = clubNameDoc.sheetsById[0]
@@ -106,11 +106,11 @@ export const getClubSheet = async (clubName: string, year: string) => {
       
       
       const attendanceFolderData = await service.files.list({
-        q: `name = '${clubName}' and '${selectedYearFolder[0].id}' in parents`,
+        q: `name = '${clubName}' and '${selectedYearFolder![0].id}' in parents`,
         fields: "nextPageToken, files(id, name)",
       })
 
-      const attendanceId: string = attendanceFolderData.data.files[0].id
+      const attendanceId: string | undefined | null = attendanceFolderData.data.files![0].id
 
       const attendanceData = await service.files.list({
         q: `'${attendanceId}' in parents`,
@@ -124,8 +124,8 @@ export const getClubSheet = async (clubName: string, year: string) => {
 //get all students in club
 export const getClubMembers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const year = req.body.year
-        const clubName = req.body.clubName
+        const year: string = req.body.year
+        const clubName: string = req.body.clubName
         
         
 
@@ -134,7 +134,7 @@ export const getClubMembers = async (req: Request, res: Response, next: NextFunc
        const attendanceSheetId: string | undefined | null = attendanceSheetFile.data.files?.find((file) => file.name === `${clubName}`)?.id
 
     
-      const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId, serviceAccountAuth);
+      const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId as string, serviceAccountAuth);
       await attendanceSheetData.loadInfo()
 
       const attendanceSheet = attendanceSheetData.sheetsByIndex[0]
@@ -178,7 +178,7 @@ export const removeStudentFromClub = async (req: Request, res: Response, next: N
 
         const attendanceSheetId: string | null | undefined = attendanceSheetFile.data.files?.find((file) => file.name === `${clubName}`)?.id
 
-        const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId, serviceAccountAuth);
+        const attendanceSheetData = new GoogleSpreadsheet(attendanceSheetId as string, serviceAccountAuth);
         await attendanceSheetData.loadInfo()
 
         const attendanceSheet = attendanceSheetData.sheetsByIndex[0]

@@ -17,12 +17,12 @@ export async function getSelectedClub(year: string, clubName: string) {
 
 
   const metaSheetData = await service.files.list({
-    q: `name = 'Club MetaData' and '${selectedYearFolder[0].id}' in parents`,
+    q: `name = 'Club MetaData' and '${selectedYearFolder![0].id}' in parents`,
     fields: "nextPageToken, files(id, name)",
   })
 
   const metaSheetDoc = new GoogleSpreadsheet(
-    metaSheetData.data.files[0].id,
+    metaSheetData.data.files![0].id as string,
     serviceAccountAuth
   );
   await metaSheetDoc.loadInfo();
@@ -57,12 +57,12 @@ export const getClubMeta = async (
 
 
     const metaSheetData = await service.files.list({
-      q: `name = 'Club MetaData' and '${selectedYearFolder[0].id}' in parents`,
+      q: `name = 'Club MetaData' and '${selectedYearFolder![0].id}' in parents`,
       fields: "nextPageToken, files(id, name)",
     })
 
     const metaSheetDoc = new GoogleSpreadsheet(
-      metaSheetData.data.files[0].id,
+      metaSheetData.data.files![0].id as string,
       serviceAccountAuth
     );
     await metaSheetDoc.loadInfo();
