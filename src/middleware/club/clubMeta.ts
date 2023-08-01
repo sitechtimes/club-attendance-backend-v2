@@ -39,7 +39,7 @@ export const getClubMeta = async (
   res: Response,
   next: NextFunction
 ) => {
-  const year = req.body.year;
+  const year: string = req.body.year;
   const clubName = req.body.clubName;
 
 
@@ -115,9 +115,9 @@ export const addClubMeeting = async (
 ) => {
 
   try {
-    const year = req.body.year;
-    const clubName = req.body.clubName;
-    const nextMeeting = req.body.nextMeeting;
+    const year: string = req.body.year;
+    const clubName: string = req.body.clubName;
+    const nextMeeting: string = req.body.nextMeeting;
 
     const selectedClub = await getSelectedClub(year, clubName)
 
@@ -138,8 +138,8 @@ export const deleteClubMeeting = async (
 ) => {
 
   try {
-    const year = req.body.year;
-    const clubName = req.body.clubName;
+    const year: string = req.body.year;
+    const clubName: string = req.body.clubName;
     // const nextMeeting = req.body.nextMeeting;
 
     const selectedClub = await getSelectedClub(year, clubName)

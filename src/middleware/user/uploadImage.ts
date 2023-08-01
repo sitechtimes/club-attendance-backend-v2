@@ -14,8 +14,8 @@ export const uploadImage = async (
 ) => {
 
     console.log("11",  req.body.year)
-  const year = req.body.year
-  const clubName = req.body.clubName
+  const year: string = req.body.year
+  const clubName: string = req.body.clubName
 
   let result = await service.files
     .list({

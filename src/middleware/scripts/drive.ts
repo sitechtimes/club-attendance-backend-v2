@@ -134,9 +134,9 @@ export const createClubTemplate = async (
     .catch((error) => console.log(error));
     let metadata = result;
 
-    console.log(metadata.data.files[0].id, "136")
+    console.log(metadata.data.files![0].id, "136")
 
-    const metaDataSpreadSheet = new GoogleSpreadsheet(metadata.data.files[0].id, serviceAccountAuth);
+    const metaDataSpreadSheet = new GoogleSpreadsheet(metadata.data.files![0].id as string, serviceAccountAuth);
     await metaDataSpreadSheet.loadInfo();
     const metaDataSheet = metaDataSpreadSheet.sheetsByIndex[0];
     const metaDataSheetLen = metaDataSheet.rowCount;
@@ -250,7 +250,7 @@ export const createClubTemplate = async (
  const createClubMeta = async (parentID: string, email: string) => {
   //using user email for now
   const userEmail = email;
-  const userSpreadsheet = new GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID, serviceAccountAuth);
+  const userSpreadsheet = new GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID as string, serviceAccountAuth);
   await userSpreadsheet.loadInfo();
   const userSheet = userSpreadsheet.sheetsByIndex[0];
   const users = await userSheet.getRows();

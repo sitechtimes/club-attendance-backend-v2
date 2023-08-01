@@ -30,7 +30,7 @@ export const oauth2callback = async (req: Request, res: Response, next: NextFunc
         // res.json({ message: 'User already exists!' });
         return;
     } else {
-        await userDataSheet.addRow([uid, firstName, lastName, email, "user"]);
+        await userDataSheet.addRow([uid as string, firstName as string, lastName as string, email as string, "user"]);
     }
 
 
