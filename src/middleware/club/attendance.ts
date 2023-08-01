@@ -5,7 +5,7 @@ import { google } from "googleapis";
 import { v4 as uuidv4 } from "uuid";
 
 interface attendanceData {
-  club_name: string,
+  club_name: string;
   uuid: string;
   first_name: string;
   last_name: string;
@@ -14,36 +14,40 @@ interface attendanceData {
   grade: number;
   off_class: string;
   num_attendance: number;
-  date: Date;
+  // date: Date;
 }
 
 interface metaData {
   club_name: string;
   club_spreadsheet_id: string;
 }
+
+interface dateData {
+  uid: string;
+  date: Date;
+}
 export const updateAttendance = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const date = new Date().toLocaleDateString()
-
+  const date = new Date().toLocaleDateString();
   const data = req.body as attendanceData;
   const arrUID: string[] = [];
+  const dateArr: dateData[] = [];
   const metaArr: metaData[] = [];
   const attendanceArrUID: string[] = [];
+
   const userSpreadSheetID: string = process.env.USER_DATA_SPREADSHEET_ID;
   const metaDataSheetID: string =
     "1vCC8ercuyn8ayszYSYEtpHFs0lxkLhxn0rF_IMyTU5E";
   const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
 
-
-
   async function findClassID(clubName: string) {
     const metaDoc = new GoogleSpreadsheet(metaDataSheetID, serviceAccountAuth);
 
     await metaDoc.loadInfo();
-  
+
     const metaSheet = metaDoc.sheetsByIndex[0];
     const metaRows = await metaSheet.getRows();
     const metaSheetLen: number = metaSheet.rowCount;
@@ -52,9 +56,7 @@ export const updateAttendance = async (
       if (metaRows[i] === undefined) {
         break;
       } else {
-    
         const data: metaData = {
-          
           club_name: metaRows[i].get("Club Name"),
           club_spreadsheet_id: metaRows[i].get("Club Spreadsheet"),
         };
@@ -65,25 +67,23 @@ export const updateAttendance = async (
       }
     }
 
-    const ID = metaArr.filter(el => el.club_name === clubName );
+    const ID = metaArr.filter((el) => el.club_name === clubName);
 
-    return ID
+    return ID;
   }
 
   // const x = user_rows[0].get('UID')
   // console.log(x)
 
   async function updateAttendance(uid: string, clubName: string) {
-    const arrAttendanceID = await findClassID(clubName)
-    let attendanceID: string = ""
+    const arrAttendanceID = await findClassID(clubName);
+    let attendanceID: string = "";
 
-      if(arrAttendanceID === undefined) {
-        return res.json("invalid class name")
-      }
-      else {
-        attendanceID = arrAttendanceID[0].club_spreadsheet_id
-      }
-
+    if (arrAttendanceID === undefined) {
+      return res.json("invalid class name");
+    } else {
+      attendanceID = arrAttendanceID[0].club_spreadsheet_id;
+    }
 
     const attendanceDoc = new GoogleSpreadsheet(
       attendanceID,
@@ -116,21 +116,19 @@ export const updateAttendance = async (
       if (attendanceRows[i] === undefined) {
         break;
       } else {
-        attendanceArrUID.push(attendanceRows[i].get("UID"));
+        const x = attendanceRows[i].get("UID");
+
+        attendanceArrUID.push(x);
+        // console.log(attendanceArrUID)
         // console.log(user_rows[i].get("UID"))
       }
     }
+    const rowNum: number = attendanceArrUID.indexOf(uid);
+
+    console.log(arrUID.includes(uid));
     if (arrUID.includes(uid)) {
       const userUID = attendanceArrUID.includes(uid);
-      console.log(userUID);
-      if (userUID) {
-        const rowNum: number = attendanceArrUID.indexOf(uid);
-        const attNum: string = attendanceRows[rowNum].get("# of Attendances");
-        const turnNum = Number(attNum);
-        console.log(turnNum + 1);
-        attendanceRows[rowNum].set("# of Attendances", turnNum + 1);
-        await attendanceRows[rowNum].save();
-      } else {
+      if (rowNum === -1) {
         const rowObject = await attendanceSheet.addRow({
           UID: uid,
           "First Name": data.first_name,
@@ -140,10 +138,22 @@ export const updateAttendance = async (
           Grade: data.grade,
           "Official Class": data.off_class,
           "# of Attendances": data.num_attendance + 1,
-          Date: date
+          Date: date,
         });
+
+        res.json("added user to club attendance");
+      } else if (attendanceRows[rowNum].get("Date") === date) {
+        res.json("You may only update attendance once a day");
+        console.log(attendanceRows[rowNum].get("Date"), date)
+      } else {
+        const attNum: string = attendanceRows[rowNum].get("# of Attendances");
+        const turnNum = Number(attNum);
+        console.log(turnNum + 1);
+        attendanceRows[rowNum].set("# of Attendances", turnNum + 1);
+        attendanceRows[rowNum].set("Date", date);
+        await attendanceRows[rowNum].save();
+        res.json("updated attendance ");
       }
-      res.json("updated attendance");
     } else {
       res.json("use a valid uid");
     }
@@ -151,7 +161,6 @@ export const updateAttendance = async (
 
   try {
     await updateAttendance(data.uuid, data.club_name);
-
   } catch (error) {
     res.json(error);
   }
