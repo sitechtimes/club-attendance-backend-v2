@@ -10,6 +10,7 @@ import { cloudbuild } from "googleapis/build/src/apis/cloudbuild";
 import fs from "fs";
 import { Readable } from 'stream'
 
+
 export const createClubTemplate = async (
   req: Request,
   res: Response,
@@ -25,7 +26,7 @@ export const createClubTemplate = async (
     "Grade",
     "Official Class",
     "# of Attendances",
-
+    "Date"
   ];
   // let arrFolderId: string[] = [];
   const date = new Date();
@@ -50,11 +51,11 @@ export const createClubTemplate = async (
       const trimFolderName = folderName.replace(/ /g, "_");
       console.log(trimFolderName)
       const link = `https://www.test.com/${trimFolderName}`;
-      const qrcode = await QRCode.toFile( `./imgs/${trimFolderName}.png`, link, { type: "png"})
+      const qrcode = await QRCode.toFile( `src/imgs/${trimFolderName}.png`, link, { type: "png"})
+      console.log("this is the qrcode:",qrcode)
+      const buffer = fs.readFileSync(`src/imgs/${trimFolderName}.png`);
 
-      const buffer = fs.readFileSync(`./imgs/${trimFolderName}.png`);
-
-      console.log(qrcode)
+     
 
       //Johnson please save the qrcode to the drive, the parent ID is here 
       const file = await service.files.create({
@@ -69,7 +70,7 @@ export const createClubTemplate = async (
     });
       console.log('File Id:', file.data.id);
 
-      return qrcode;
+      return file.data.id;
     } catch (error) {
       console.error(error);
     }
@@ -122,7 +123,7 @@ export const createClubTemplate = async (
       console.error(error);
     }
   }
-  async function addToMeta(folderName: string, clubFolderId: string, photoSheetId: string, attendanceSheetId: string, qrCode: any, parentID: string) {
+  async function addToMeta(folderName: string, clubFolderId: string, photoSheetId: string, attendanceSheetId: string, qrCodeId: any, parentID: string) {
     //search for the metadata spreadsheet in the year folder
     const metaName = "Club MetaData";
     let result = await service.files
@@ -147,7 +148,7 @@ export const createClubTemplate = async (
         "advisor email", 
         "president email", 
         "next meeting date", 
-        JSON.stringify(qrCode), 
+        qrCodeId, 
         clubFolderId, 
         attendanceSheetId, 
         photoSheetId, 
@@ -231,11 +232,11 @@ export const createClubTemplate = async (
       console.log("ATTENDANCE")
       const attendanceSheetId = await createAttendanceSheet(folderId, folderName);
       console.log("QR CODE")
-      const qrCode = await createQRCode(folderId, folderName);
+      const qrCodeId = await createQRCode(folderId, folderName);
 
       //add club to metadata spreadsheet given club name, and ids of the spreadsheets
       
-      const metaSheet = addToMeta(folderName, folderId, photoSheetId, attendanceSheetId, qrCode, parentID);
+      const metaSheet = addToMeta(folderName, folderId, photoSheetId, attendanceSheetId, qrCodeId, parentID);
       console.log(`Created all drive content for ${folderName}!`);
     } catch (error) {
       res.json(error);
