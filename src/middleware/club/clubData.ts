@@ -3,8 +3,6 @@ import { clubNameDoc, service, serviceAccountAuth } from '../../app';
 import { clubData, memberData } from '../../interface/interface';
 import { getSelectedClub } from './clubMeta';
 import { GoogleSpreadsheet } from "google-spreadsheet";
-import { google } from 'googleapis';
-const sheets = google.sheets('v4');
 
 
 export const getClubData = async (req: Request, res: Response, next: NextFunction) => {

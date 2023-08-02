@@ -1,12 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth, service } from "../../app";
-import { GoogleSpreadsheet, GoogleSpreadsheetCell } from "google-spreadsheet";
-import { google } from "googleapis";
+import { GoogleSpreadsheet } from "google-spreadsheet";
 import uniqid from "uniqid";
-import { clubNameDoc } from "../../app";
-import QRCode, { create } from "qrcode";
-import { upload } from "../user/multer";
-import { cloudbuild } from "googleapis/build/src/apis/cloudbuild";
+import QRCode from "qrcode";
 import fs from "fs";
 import { Readable } from "stream";
 
@@ -25,7 +21,7 @@ export const updateQRCode = async (
   const clubName: string = req.body.club_name;
 
   const genID = uniqid();
-  
+
   const metaArr: metaData[] = [];
 
   const metaDataSheetID: string =

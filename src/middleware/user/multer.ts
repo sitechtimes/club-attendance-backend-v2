@@ -1,5 +1,4 @@
 import multer from 'multer'
-import { Request, Response, NextFunction } from 'express'
 
   const upload = multer({
         limits: {

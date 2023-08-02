@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth, service } from "../../app";
 import { Readable } from "stream";
-import { google } from "googleapis";
-import { GoogleSpreadsheet } from 'google-spreadsheet';
+import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet';
 
 // const service = google.drive({ version: 'v3', auth: serviceAccountAuth});
 

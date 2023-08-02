@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@googleapis/drive": "^8.0.0",
     "@types/es6-shim": "^0.31.42",
     "@types/express": "^4.17.17",
     "@types/qrcode": "^1.5.1",

@@ -1,33 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth, service } from "../../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
-import { google } from "googleapis";
 import { getClubSheet } from "./clubData";
-import { v4 as uuidv4 } from "uuid";
-import { file } from "googleapis/build/src/apis/file";
+import { attendanceData, dateData, metaData } from "../../interface/interface";
 
-interface attendanceData {
-  club_name: string;
-  uuid: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  position: string;
-  grade: number;
-  off_class: string;
-  num_attendance: number;
-  // date: Date;
-}
-
-interface metaData {
-  club_name: string;
-  club_spreadsheet_id: string;
-}
-
-interface dateData {
-  uid: string;
-  date: Date;
-}
 export const updateAttendance = async (
   req: Request,
   res: Response,
@@ -40,9 +16,9 @@ export const updateAttendance = async (
   const metaArr: metaData[] = [];
   const attendanceArrUID: string[] = [];
 
-  const userSpreadSheetID: string = process.env.USER_DATA_SPREADSHEET_ID;
-  const metaDataSheetID: string =
-    "1vCC8ercuyn8ayszYSYEtpHFs0lxkLhxn0rF_IMyTU5E";
+  const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
+  const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string
+
   const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
 
   async function findClassID(clubName: string) {
@@ -96,8 +72,8 @@ export const updateAttendance = async (
     await userDoc.loadInfo();
     const attendanceSheet = attendanceDoc.sheetsByIndex[0];
     const userSheet = userDoc.sheetsByIndex[0];
-    const userSheetLen: number = userSheet.rowCount;
-    const attendanceSheetLen: number = attendanceSheet.rowCount;
+    const userSheetLen = userSheet.rowCount;
+    const attendanceSheetLen = attendanceSheet.rowCount;
 
     const userRows = await userSheet.getRows();
     const attendanceRows = await attendanceSheet.getRows();
@@ -127,7 +103,6 @@ export const updateAttendance = async (
     }
     const rowNum: number = attendanceArrUID.indexOf(uid);
 
-    console.log(arrUID.includes(uid));
     if (arrUID.includes(uid)) {
       const userUID = attendanceArrUID.includes(uid);
       if (rowNum === -1) {
@@ -146,15 +121,14 @@ export const updateAttendance = async (
         res.json("added user to club attendance");
       } else if (attendanceRows[rowNum].get("Date") === date) {
         res.json("You may only update attendance once a day");
-        console.log(attendanceRows[rowNum].get("Date"), date)
+        console.log(attendanceRows[rowNum].get("Date"), date);
       } else {
         const attNum: string = attendanceRows[rowNum].get("# of Attendances");
         const turnNum = Number(attNum);
-        console.log(turnNum + 1);
         attendanceRows[rowNum].set("# of Attendances", turnNum + 1);
         attendanceRows[rowNum].set("Date", date);
         await attendanceRows[rowNum].save();
-        res.json("updated attendance ");
+        res.json(`updated attendance: ${attNum} `);
       }
     } else {
       res.json("use a valid uid");
@@ -168,26 +142,30 @@ export const updateAttendance = async (
   }
 };
 
-
-export const showAttendancePhotos = async (req: Request, res: Response, next: NextFunction) => {
+export const showAttendancePhotos = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const clubName = req.body.clubName
-    const year = req.body.year
+    const clubName = req.body.clubName;
+    const year = req.body.year;
 
-    const attendanceData = await getClubSheet(clubName, year)
+    const attendanceData = await getClubSheet(clubName, year);
 
-    console.log(attendanceData.data.files)
+    console.log(attendanceData.data.files);
 
-    const photosFolderId = attendanceData.data.files?.filter(file => file.name === `${clubName} Attendance Photos`)[0].id
+    const photosFolderId = attendanceData.data.files?.filter(
+      (file) => file.name === `${clubName} Attendance Photos`
+    )[0].id;
 
     const photos = await service.files.list({
       q: `'${photosFolderId}' in parents`,
-      fields: 'files(id, name, webViewLink, webContentLink, thumbnailLink)',
-    })
+      fields: "files(id, name, webViewLink, webContentLink, thumbnailLink)",
+    });
 
-    res.json(photos.data.files)
-
+    res.json(photos.data.files);
   } catch (error) {
-    res.json(error)
+    res.json(error);
   }
-}
+};

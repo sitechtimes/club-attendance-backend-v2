@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express'
-import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { userDataSpreadSheet } from '../../app';
 
 export const createUserSheet = async (req: Request, res: Response, next: NextFunction) => {
