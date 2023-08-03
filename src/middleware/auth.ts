@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { google } from 'googleapis';
 import { oauth2Client, redirectUri } from '../app';
 import { userDataSpreadSheet } from '../app';
+import { content } from 'googleapis/build/src/apis/content';
 
 export const oauth2 = (req: Request, res: Response, next: NextFunction) => {
     res.redirect(redirectUri);
@@ -31,14 +32,26 @@ export const oauth2callback = async (req: Request, res: Response, next: NextFunc
     if (!userRow) {
         // res.json({ message: 'User already exists!' });
         await userDataSheet.addRow([uid as string, firstName as string, lastName as string, email as string, "user"]);
-        res.json({ message: 'User added!' });
-    } else {
-        res.json({ message: 'Authentication successful!' });
-    }
+        // res.send({ message: 'User added!' });
+    } 
+
+    res.cookie('user_data', {
+        uid: uid,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        picture: userInfo.data.picture,
+        role: userRow?.get("Client Authority"),
+        osis: userRow?.get("OSIS"),
+        grade: userRow?.get("Grade")
+    }, { maxAge: 900000, httpOnly: true });
+    res.redirect('http://localhost:5173');
 
 
     
 
 }
 
-
+export const returnRedirecUrl = (req: Request, res: Response, next: NextFunction) => { 
+    res.json({ redirectUri: redirectUri });
+}
