@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import bodyParser from 'body-parser'
 import { JWT, GoogleAuth } from 'google-auth-library';
-import keys from "/Users/harveyjiang/Documents/GitHub/club-attendance-backend-v2/src/keys.json"
+import keys from "../keys.json"
 
 dotenv.config();
 const port = process.env.PORT || 3000;

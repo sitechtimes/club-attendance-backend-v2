@@ -20,22 +20,25 @@ export const oauth2callback = async (req: Request, res: Response, next: NextFunc
     const lastName = userInfo.data.family_name;
     const email = userInfo.data.email;
 
+
+
     await userDataSpreadSheet.loadInfo(); // loads document properties and worksheets
 
     const userDataSheet = userDataSpreadSheet.sheetsById[0];
     const rows = await userDataSheet.getRows();
     const userRow = rows.find(row => row._rawData[3] === email);
 
-    if (userRow) {
+    if (!userRow) {
         // res.json({ message: 'User already exists!' });
-        return;
-    } else {
         await userDataSheet.addRow([uid as string, firstName as string, lastName as string, email as string, "user"]);
+        res.json({ message: 'User added!' });
+    } else {
+        res.json({ message: 'Authentication successful!' });
     }
 
 
     
-    res.json({ message: 'Authentication successful!' });
+
 }
 
 
