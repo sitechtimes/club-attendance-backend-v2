@@ -43,7 +43,8 @@ export const oauth2callback = async (req: Request, res: Response, next: NextFunc
         picture: userInfo.data.picture,
         role: userRow?.get("Client Authority"),
         osis: userRow?.get("OSIS"),
-        grade: userRow?.get("Grade")
+        grade: userRow?.get("Grade"),
+        isAuthenicated: true
     }, { maxAge: 900000, httpOnly: true });
     res.redirect('http://localhost:5173');
 

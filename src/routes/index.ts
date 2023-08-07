@@ -1,7 +1,7 @@
 import express from 'express';
 import { oauth2, oauth2callback, returnRedirecUrl } from '../middleware/auth';
 import { createUserSheet } from '../middleware/user/userData';
-import { getClubData, addClubData, deleteClubData, getClubMembers, removeStudentFromClub } from '../middleware/club/clubData';
+import { getClubData, addClubData, deleteClubData, getClubMembers, removeStudentFromClub, getAllClubData } from '../middleware/club/clubData';
 import { createClubTemplate } from '../middleware/scripts/drive';
 import { uploadImage } from '../middleware/user/uploadImage';
 import { upload } from '../middleware/user/multer';
@@ -26,6 +26,7 @@ router.get("/getClubData", getClubData)
 router.get("/getClubMeta", getClubMeta)
 router.get("/getClubMembers", getClubMembers)
 router.get("/showAttendancePhotos", showAttendancePhotos)
+router.get("/getAllClubData", getAllClubData)
 router.get("/returnRedirectUrl", returnRedirecUrl)
 
 router.post("/createUserSheet", createUserSheet)

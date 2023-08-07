@@ -38,6 +38,57 @@ export const getClubData = async (req: Request, res: Response, next: NextFunctio
     }
 }
 
+
+export const getAllClubData = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const year: string = req.body.year
+        await clubNameDoc.loadInfo()
+        const clubNameSheet = clubNameDoc.sheetsById[0]
+        const rows = await clubNameSheet.getRows()
+
+        const allClubData: clubData[] = []
+
+        rows.forEach(row => {
+            const clubData: clubData = {
+                clubName: row.get("Club Name"),
+                clubAdivsor: row.get("Club Advisor"),
+                clubPresident: row.get("Club President(s)"),
+                frequency: row.get("Frequency"),
+                day: row.get("Day"),
+                room: row.get("Room"),
+                advisorEmail: row.get("Advisor Email"),
+                presidentEmail: row.get("President Email"),
+                nextMeeting: row.get("Next Meeting"),
+            }
+            allClubData.push(clubData)
+        })
+
+
+        
+
+
+
+        // const selectedClub = rows.find(row => row._rawData[0] === clubName)
+
+        // console.log(selectedClub?.get("Club Name"))
+        // const clubData: clubData = {
+        //     clubName: selectedClub?.get("Club Name"),
+        //     clubAdivsor: selectedClub?.get("Club Advisor"),
+        //     clubPresident: selectedClub?.get("Club President(s)"),
+        //     frequency: selectedClub?.get("Frequency"),
+        //     day: selectedClub?.get("Day"),
+        //     room: selectedClub?.get("Room"),
+        //     advisorEmail: club?.get("Advisor Email"),
+        //     presidentEmail: club?.get("President Email"),
+        //     nextMeeting: club?.get("Next Meeting"),
+        // }
+
+        res.json(allClubData)
+    } catch (error) {
+        res.json(error)
+    }
+}
+
 //add club
 export const addClubData = async (req: Request, res: Response, next: NextFunction) => {
     try {
