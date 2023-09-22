@@ -17,9 +17,15 @@ export const updateAttendance = async (
   const attendanceArrUID: string[] = [];
 
   const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
-  const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string
+  const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string;
+  const masterDataSpreadSheetID = process.env
+    .MASTER_DATA_SPREADSHEET_ID as string;
 
   const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
+  const masterDoc = new GoogleSpreadsheet(
+    masterDataSpreadSheetID,
+    serviceAccountAuth
+  );
 
   async function findClassID(clubName: string) {
     const metaDoc = new GoogleSpreadsheet(metaDataSheetID, serviceAccountAuth);
@@ -134,6 +140,8 @@ export const updateAttendance = async (
       res.json("use a valid uid");
     }
   }
+
+  async function updateMasterAttendance(uid: string, clubName: string) {}
 
   try {
     await updateAttendance(data.uuid, data.club_name);
