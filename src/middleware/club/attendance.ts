@@ -86,10 +86,11 @@ export const updateAttendance = async (
       "Grade",
       "Official Class",
     ];
-    if (attendanceDoc.sheetsByTitle[`${new Date()}`]) {
+    if (attendanceDoc.sheetsByTitle[`${date}`]) {
+      console.log(`${attendanceDoc.sheetsByTitle[`${date}`]}`);
     } else {
       //creates new sheet but need to set up inital creation values for row 1
-      newAttendanceSheet = attendanceDoc.addSheet({ title: `${new Date()}` });
+      newAttendanceSheet = attendanceDoc.addSheet({ title: `${date}` });
       const sheet = newAttendanceSheet.loadCells("A1:I1");
       for (let i = 0; i < 9; i++) {
         const cell = sheet.getCell(0, i); // access cells using a zero-based index
