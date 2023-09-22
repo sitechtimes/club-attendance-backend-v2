@@ -16,11 +16,12 @@ export const updateAttendance = async (
   const metaArr: metaData[] = [];
   const attendanceArrUID: string[] = [];
 
-  const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
-  const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string
+  const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string; // need to get id of new spread sheet for new day
+  const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string;
 
   const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
 
+  // takes club name, from metaData sheet get club name and club spreadsheet id, return club name
   async function findClassID(clubName: string) {
     const metaDoc = new GoogleSpreadsheet(metaDataSheetID, serviceAccountAuth);
 
@@ -45,6 +46,7 @@ export const updateAttendance = async (
       }
     }
 
+    // get current club object from metaArr
     const ID = metaArr.filter((el) => el.club_name === clubName);
 
     return ID;
@@ -53,6 +55,7 @@ export const updateAttendance = async (
   // const x = user_rows[0].get('UID')
   // console.log(x)
 
+  // get club sheet id,
   async function updateAttendance(uid: string, clubName: string) {
     const arrAttendanceID = await findClassID(clubName);
     let attendanceID: string = "";
@@ -68,15 +71,39 @@ export const updateAttendance = async (
       serviceAccountAuth
     );
 
-    await attendanceDoc.loadInfo();
+    await attendanceDoc.loadInfo(); // this is the current clubs sheet
     await userDoc.loadInfo();
-    const attendanceSheet = attendanceDoc.sheetsByIndex[0];
+    /* const attendanceSheet = attendanceDoc.sheetsByIndex[0]; */
+
+    //create a sheet for each day
+    let newAttendanceSheet: any = "";
+    let headerValues: string[] = [
+      "UID",
+      "First Name",
+      "Last Name",
+      "Email",
+      "Position",
+      "Grade",
+      "Official Class",
+    ];
+    if (attendanceDoc.sheetsByTitle[`${new Date()}`]) {
+    } else {
+      //creates new sheet but need to set up inital creation values for row 1
+      newAttendanceSheet = attendanceDoc.addSheet({ title: `${new Date()}` });
+      const sheet = newAttendanceSheet.loadCells("A1:I1");
+      for (let i = 0; i < 9; i++) {
+        const cell = sheet.getCell(0, i); // access cells using a zero-based index
+        cell.value = headerValues[i];
+        cell.textFormat = { bold: true };
+      }
+    }
     const userSheet = userDoc.sheetsByIndex[0];
     const userSheetLen = userSheet.rowCount;
-    const attendanceSheetLen = attendanceSheet.rowCount;
+    const attendanceSheetLen = newAttendanceSheet.rowCount;
 
     const userRows = await userSheet.getRows();
-    const attendanceRows = await attendanceSheet.getRows();
+    const newAttendanceSheetRows = await newAttendanceSheet.getRows();
+    /* const attendanceRows = await attendanceSheet.getRows(); */
     // await attendance_sheet.loadCells("A1:K1");
     // const uid: number =
 
@@ -91,10 +118,10 @@ export const updateAttendance = async (
     }
 
     for (let i = 0; i < attendanceSheetLen; i++) {
-      if (attendanceRows[i] === undefined) {
+      if (newAttendanceSheetRows[i] === undefined) {
         break;
       } else {
-        const x = attendanceRows[i].get("UID");
+        const x = newAttendanceSheetRows[i].get("UID");
 
         attendanceArrUID.push(x);
         // console.log(attendanceArrUID)
@@ -106,7 +133,7 @@ export const updateAttendance = async (
     if (arrUID.includes(uid)) {
       const userUID = attendanceArrUID.includes(uid);
       if (rowNum === -1) {
-        const rowObject = await attendanceSheet.addRow({
+        const rowObject = await newAttendanceSheet.addRow({
           UID: uid,
           "First Name": data.first_name,
           "Last Name": data.last_name,
@@ -119,15 +146,16 @@ export const updateAttendance = async (
         });
 
         res.json("added user to club attendance");
-      } else if (attendanceRows[rowNum].get("Date") === date) {
+      } else if (newAttendanceSheetRows[rowNum].get("Date") === date) {
         res.json("You may only update attendance once a day");
-        console.log(attendanceRows[rowNum].get("Date"), date);
+        console.log(newAttendanceSheetRows[rowNum].get("Date"), date);
       } else {
-        const attNum: string = attendanceRows[rowNum].get("# of Attendances");
+        const attNum: string =
+          newAttendanceSheetRows[rowNum].get("# of Attendances");
         const turnNum = Number(attNum);
-        attendanceRows[rowNum].set("# of Attendances", turnNum + 1);
-        attendanceRows[rowNum].set("Date", date);
-        await attendanceRows[rowNum].save();
+        newAttendanceSheet[rowNum].set("# of Attendances", turnNum + 1);
+        newAttendanceSheetRows[rowNum].set("Date", date);
+        await newAttendanceSheetRows[rowNum].save();
         res.json(`updated attendance: ${attNum} `);
       }
     } else {
