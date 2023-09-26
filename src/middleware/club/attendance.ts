@@ -17,9 +17,21 @@ export const updateAttendance = async (
   const attendanceArrUID: string[] = [];
 
   const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
-  const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string
+  const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string;
 
   const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
+
+  let headerValues: string[] = [
+    "UID",
+    "First Name",
+    "Last Name",
+    "Email",
+    "Position",
+    "Grade",
+    "Official Class",
+    "# of Attendances",
+    "Date",
+  ];
 
   async function findClassID(clubName: string) {
     const metaDoc = new GoogleSpreadsheet(metaDataSheetID, serviceAccountAuth);
@@ -70,13 +82,33 @@ export const updateAttendance = async (
 
     await attendanceDoc.loadInfo();
     await userDoc.loadInfo();
-    const attendanceSheet = attendanceDoc.sheetsByIndex[0];
+
+    let newSheet: any = "";
+    if (!attendanceDoc.sheetsByTitle[date]) {
+      console.log("creating new worksheet");
+      newSheet = await attendanceDoc.addSheet({ title: date });
+
+      await newSheet.loadCells("A1:K1");
+      console.log("adding header");
+      for (let i = 0; i < 9; i++) {
+        const cell = newSheet.getCell(0, i); // access cells using a zero-based index
+        console.log(headerValues[i]);
+        cell.value = headerValues[i];
+        cell.textFormat = { bold: true };
+      }
+
+      await newSheet.saveUpdatedCells();
+    } else {
+      console.log("sheet not created");
+    }
+
+    /* const attendanceSheet = attendanceDoc.sheetsByIndex[0]; */
     const userSheet = userDoc.sheetsByIndex[0];
     const userSheetLen = userSheet.rowCount;
-    const attendanceSheetLen = attendanceSheet.rowCount;
+    const attendanceSheetLen = newSheet.rowCount;
 
     const userRows = await userSheet.getRows();
-    const attendanceRows = await attendanceSheet.getRows();
+    const attendanceRows = await newSheet.getRows();
     // await attendance_sheet.loadCells("A1:K1");
     // const uid: number =
 
@@ -106,7 +138,7 @@ export const updateAttendance = async (
     if (arrUID.includes(uid)) {
       const userUID = attendanceArrUID.includes(uid);
       if (rowNum === -1) {
-        const rowObject = await attendanceSheet.addRow({
+        const rowObject = await newSheet.addRow({
           UID: uid,
           "First Name": data.first_name,
           "Last Name": data.last_name,
