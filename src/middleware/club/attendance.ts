@@ -99,7 +99,8 @@ export const updateAttendance = async (
 
       await newSheet.saveUpdatedCells();
     } else {
-      console.log("sheet not created");
+      console.log("updating existing worksheet");
+      newSheet = attendanceDoc.sheetsByTitle[date];
     }
 
     /* const attendanceSheet = attendanceDoc.sheetsByIndex[0]; */
