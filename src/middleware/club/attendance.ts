@@ -16,9 +16,11 @@ export const updateAttendance = async (
   const metaArr: metaData[] = [];
   const attendanceArrUID: string[] = [];
 
+  //ENVIRONMENT VARIABLES
   const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
   const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string;
 
+  //GET USER INFORMATION
   const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
 
   let headerValues: string[] = [
@@ -32,7 +34,7 @@ export const updateAttendance = async (
     "# of Attendances",
     "Date",
   ];
-
+  //FROM META DATA SHEET GET CLUB SHEET ID AND NAME
   async function findClassID(clubName: string) {
     const metaDoc = new GoogleSpreadsheet(metaDataSheetID, serviceAccountAuth);
 
@@ -75,19 +77,23 @@ export const updateAttendance = async (
       attendanceID = arrAttendanceID[0].club_spreadsheet_id;
     }
 
+    //GET CLUBS ATTENDANCE SHEET
     const attendanceDoc = new GoogleSpreadsheet(
       attendanceID,
       serviceAccountAuth
     );
 
+    //LOAD SHEETS
     await attendanceDoc.loadInfo();
     await userDoc.loadInfo();
 
+    //CREATE SHEET FOR THE DAY THE CLUB MEMBERS SIGN IN
     let newSheet: any = "";
     if (!attendanceDoc.sheetsByTitle[date]) {
       console.log("creating new worksheet");
       newSheet = await attendanceDoc.addSheet({ title: date });
 
+      //CREATE HEADERS
       await newSheet.loadCells("A1:K1");
       console.log("adding header");
       for (let i = 0; i < 9; i++) {
@@ -102,17 +108,17 @@ export const updateAttendance = async (
       console.log("updating existing worksheet");
       newSheet = attendanceDoc.sheetsByTitle[date];
     }
+    //END OF CREATING SHEETS
 
     /* const attendanceSheet = attendanceDoc.sheetsByIndex[0]; */
     const userSheet = userDoc.sheetsByIndex[0];
     const userSheetLen = userSheet.rowCount;
     const attendanceSheetLen = newSheet.rowCount;
-
     const userRows = await userSheet.getRows();
     const attendanceRows = await newSheet.getRows();
     // await attendance_sheet.loadCells("A1:K1");
     // const uid: number =
-
+    //gets all users
     for (let i = 0; i < userSheetLen; i++) {
       if (userRows[i] === undefined) {
         break;
@@ -136,8 +142,10 @@ export const updateAttendance = async (
     }
     const rowNum: number = attendanceArrUID.indexOf(uid);
 
+    //MATCH USER INFO FROM USER SPREAD SHEET WITH THE UID
     if (arrUID.includes(uid)) {
       const userUID = attendanceArrUID.includes(uid);
+      //IF USER IS NOT IN THE ATTENDANCE SHEET
       if (rowNum === -1) {
         const rowObject = await newSheet.addRow({
           UID: uid,
