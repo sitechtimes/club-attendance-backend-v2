@@ -15,9 +15,6 @@ export const updateAttendance = async (
   next: NextFunction
 ) => {
   const date = new Date().toLocaleDateString();
-  // const time = new Date();
-  // const h = time.getHours();
-
   const data = req.body as attendanceData;
   const clubData = req.body as clubData;
 
@@ -131,11 +128,6 @@ export const updateAttendance = async (
     }
     const rowNum: number = attendanceArrUID.indexOf(uid);
 
-    if (data.club_name === clubData.clubName) {
-      const r = clubData.room;
-      masterArr.push(r);
-    }
-
     if (arrUID.includes(uid)) {
       const userUID = attendanceArrUID.includes(uid);
       if (rowNum === -1) {
@@ -150,12 +142,26 @@ export const updateAttendance = async (
           "# of Attendances": data.num_attendance + 1,
           Date: date,
         });
-        const updateMaster = await masterSheet.addRow({
-          Club: data.club_name,
-          Room: clubData.room,
-          Last: data.last_name,
-          First: data.first_name,
-        });
+        console.log(masterDoc.title);
+        if (masterDoc.title != date) {
+          await masterSheet.clearRows();
+          await masterSheet.updateProperties({
+            title: `${date}`,
+          });
+          const updateMaster = await masterSheet.addRow({
+            Club: data.club_name,
+            Room: clubData.room,
+            Last: data.last_name,
+            First: data.first_name,
+          });
+        } else {
+          const updateMaster = await masterSheet.addRow({
+            Club: data.club_name,
+            Room: clubData.room,
+            Last: data.last_name,
+            First: data.first_name,
+          });
+        }
 
         res.json("User attendance has been updated");
       } else if (attendanceRows[rowNum].get("Date") === date) {
@@ -173,11 +179,6 @@ export const updateAttendance = async (
     } else {
       res.json("use a valid uid");
     }
-
-    //
-    //
-    //
-    // master attendance
   }
 
   try {
