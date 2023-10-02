@@ -4,7 +4,6 @@ import { serviceAccountAuth, service } from "../../app";
 import { clubMeta } from "../../interface/interface";
 
 export async function getSelectedClub(year: string, clubName: string) {
-
   let result = await service.files
     .list({
       q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
@@ -15,11 +14,10 @@ export async function getSelectedClub(year: string, clubName: string) {
   let folder = result.data.files;
   const selectedYearFolder = folder?.filter((folder) => folder.name === year);
 
-
   const metaSheetData = await service.files.list({
     q: `name = 'Club MetaData' and '${selectedYearFolder![0].id}' in parents`,
     fields: "nextPageToken, files(id, name)",
-  })
+  });
 
   const metaSheetDoc = new GoogleSpreadsheet(
     metaSheetData.data.files![0].id as string,
@@ -29,9 +27,11 @@ export async function getSelectedClub(year: string, clubName: string) {
   const metaSheet = metaSheetDoc.sheetsByIndex[0];
   const rows = await metaSheet.getRows();
 
-  const selectedClub = rows.filter(club => club.get("Club Name") === clubName)[0]
+  const selectedClub = rows.filter(
+    (club) => club.get("Club Name") === clubName
+  )[0];
 
-  return selectedClub
+  return selectedClub;
 }
 
 export const getClubMeta = async (
@@ -39,12 +39,13 @@ export const getClubMeta = async (
   res: Response,
   next: NextFunction
 ) => {
-  const year: string = req.body.year;
-  const clubName = req.body.clubName;
+  /* const year: string = req.body.year;
+  const clubName = req.body.clubName; */
 
+  const year: string = req.params.year;
+  const clubName: string = req.params.clubName;
 
   try {
-
     let result = await service.files
       .list({
         q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
@@ -55,11 +56,10 @@ export const getClubMeta = async (
     let folder = result.data.files;
     const selectedYearFolder = folder?.filter((folder) => folder.name === year);
 
-
     const metaSheetData = await service.files.list({
       q: `name = 'Club MetaData' and '${selectedYearFolder![0].id}' in parents`,
       fields: "nextPageToken, files(id, name)",
-    })
+    });
 
     const metaSheetDoc = new GoogleSpreadsheet(
       metaSheetData.data.files![0].id as string,
@@ -69,9 +69,9 @@ export const getClubMeta = async (
     const metaSheet = metaSheetDoc.sheetsByIndex[0];
     const rows = await metaSheet.getRows();
 
-    const allClubMeta: clubMeta[] = []
+    const allClubMeta: clubMeta[] = [];
 
-    rows.forEach(row => {
+    rows.forEach((row) => {
       const clubMeta: clubMeta = {
         clubName: row.get("Club Name"),
         advisorEmail: row.get("Advisor Email"),
@@ -81,11 +81,10 @@ export const getClubMeta = async (
         clubFolderId: row.get("Club Folder ID"),
         clubSpreadsheet: row.get("Club Spreadsheet"),
         clubPhotoFolderId: row.get("Club Photo Folder ID"),
-        clubCode: row.get("Club Code")
-      }
-      allClubMeta.push(clubMeta)
-
-    })
+        clubCode: row.get("Club Code"),
+      };
+      allClubMeta.push(clubMeta);
+    });
     // const selectedClub = await getSelectedClub(year, clubName)
     //   const clubMeta: clubMeta = {
     //     clubName: selectedClub?.get("Club Name"),
@@ -99,13 +98,11 @@ export const getClubMeta = async (
     //     clubCode: selectedClub?.get("Club Code")
     //   }
 
-
     res.json(allClubMeta);
   } catch (error) {
-    res.json(error)
+    res.json(error);
   }
 };
-
 
 //can change club meeting as well
 export const addClubMeeting = async (
@@ -113,21 +110,24 @@ export const addClubMeeting = async (
   res: Response,
   next: NextFunction
 ) => {
-
   try {
     const year: string = req.body.year;
     const clubName: string = req.body.clubName;
     const nextMeeting: string = req.body.nextMeeting;
 
-    const selectedClub = await getSelectedClub(year, clubName)
+    const selectedClub = await getSelectedClub(year, clubName);
 
     selectedClub.set("Next Meeting", nextMeeting);
 
-    await selectedClub.save()
+    await selectedClub.save();
 
-    res.json({ message: `Successfully added next meeting date as ${selectedClub.get("Next Meeting")}!` })
+    res.json({
+      message: `Successfully added next meeting date as ${selectedClub.get(
+        "Next Meeting"
+      )}!`,
+    });
   } catch (error) {
-    res.json(error)
+    res.json(error);
   }
 };
 
@@ -136,22 +136,19 @@ export const deleteClubMeeting = async (
   res: Response,
   next: NextFunction
 ) => {
-
   try {
     const year: string = req.body.year;
     const clubName: string = req.body.clubName;
     // const nextMeeting = req.body.nextMeeting;
 
-    const selectedClub = await getSelectedClub(year, clubName)
+    const selectedClub = await getSelectedClub(year, clubName);
 
     selectedClub.set("Next Meeting", "No Meeting Scheduled");
 
-    await selectedClub.save()
+    await selectedClub.save();
 
-    res.json({ message: `Successfully deleted next meeting date!` })
+    res.json({ message: `Successfully deleted next meeting date!` });
   } catch (error) {
-    res.json(error)
+    res.json(error);
   }
 };
-
-
