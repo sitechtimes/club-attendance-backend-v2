@@ -36,7 +36,7 @@ router.get("/oauth2", oauth2);
 router.get("/oauth2callback", oauth2callback);
 router.get("/getClubData/:clubName/:year", getClubData);
 router.get("/getClubMeta/:clubName/:year", getClubMeta);
-router.get("/getClubMembers/clubName/:year", getClubMembers);
+router.get("/getClubMembers/:clubName/:year", getClubMembers);
 router.get("/showAttendancePhotos", showAttendancePhotos);
 router.get("/getAllClubData", getAllClubData);
 router.get("/returnRedirectUrl", returnRedirecUrl);
