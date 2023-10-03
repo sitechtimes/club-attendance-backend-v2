@@ -45,6 +45,8 @@ export const getClubMeta = async (
   const year: string = req.params.year;
   const clubName: string = req.params.clubName;
 
+  clubName.replace(/-/g, " ");
+
   try {
     let result = await service.files
       .list({
