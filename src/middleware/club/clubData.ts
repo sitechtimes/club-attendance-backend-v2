@@ -193,8 +193,8 @@ export const getClubMembers = async (
   try {
     /* const year: string = req.body.year;
     const clubName: string = req.body.clubName; */
-    const year: string = req.params.year;
-    const clubName: string = req.params.clubName;
+    const year: string = req.query.year;
+    const clubName: string = req.query.clubName;
 
     clubName.replace(/-/g, " ");
 
