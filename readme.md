@@ -16,7 +16,7 @@ npm install typescript --save-dev
 
 Their are env files and keys that are required for the project to run properly
 
-## Attendance
+## [Attendance](src/middleware/club/attendance.ts)
 
 ### Route
 
@@ -25,6 +25,7 @@ PATCH /updateAttendance
 ```
 
 **Requests body**
+
 Format:
 
 ```
@@ -58,4 +59,4 @@ Sample Request:
 }
 ```
 
-**Make sure **UUID** is a valid UUID string from the User Attendance Sheet**
+**Make sure _UUID_ is a valid UUID string from the User Attendance Sheet**
