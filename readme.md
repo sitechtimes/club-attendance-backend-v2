@@ -10,6 +10,8 @@ Clone the Repository
 git clone https://github.com/sitechtimes/club-attendance-backend-v2.git
 ```
 
+Install Dependencies
+
 ```
 
 npm i
