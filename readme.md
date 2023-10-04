@@ -10,6 +10,8 @@ Clone the Repository
 git clone https://github.com/sitechtimes/club-attendance-backend-v2.git
 ```
 
+```
+
 npm i
 
 ```
@@ -74,4 +76,7 @@ Sample Request:
 ```
 
 **Make sure _UUID_ is a valid UUID string from the User Attendance Sheet**
+
+```
+
 ```
