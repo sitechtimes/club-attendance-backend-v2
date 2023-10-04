@@ -36,7 +36,6 @@ export const updateAttendance = async (
 
   async function findClassID(clubName: string) {
     const metaDoc = new GoogleSpreadsheet(metaDataSheetID, serviceAccountAuth);
-
     await metaDoc.loadInfo();
 
     const metaSheet = metaDoc.sheetsByIndex[0];
@@ -77,7 +76,7 @@ export const updateAttendance = async (
     let attendanceID: string = "";
 
     if (arrAttendanceID === undefined) {
-      return res.json("invalid class name");
+      return res.json("Invalid class name");
     } else {
       attendanceID = arrAttendanceID[0].club_spreadsheet_id;
     }
@@ -128,6 +127,10 @@ export const updateAttendance = async (
     }
     const rowNum: number = attendanceArrUID.indexOf(uid);
 
+    console.log(attendanceArrUID);
+    console.log(rowNum);
+    console.log(masterSheet.title);
+
     if (arrUID.includes(uid)) {
       const userUID = attendanceArrUID.includes(uid);
       if (rowNum === -1) {
@@ -142,18 +145,20 @@ export const updateAttendance = async (
           "# of Attendances": data.num_attendance + 1,
           Date: date,
         });
-        console.log(masterDoc.title);
-        if (masterDoc.title != date) {
-          await masterSheet.clearRows();
+
+        if (masterSheet.title != date) {
+          await masterSheet.clearRows({ start: 2 });
           await masterSheet.updateProperties({
             title: `${date}`,
           });
+
           const updateMaster = await masterSheet.addRow({
             Club: data.club_name,
             Room: clubData.room,
             Last: data.last_name,
             First: data.first_name,
           });
+          console.log("cleared rows and attendance updated (first signin)");
         } else {
           const updateMaster = await masterSheet.addRow({
             Club: data.club_name,
@@ -161,11 +166,12 @@ export const updateAttendance = async (
             Last: data.last_name,
             First: data.first_name,
           });
+          console.log("user attendance updated");
         }
 
-        res.json("User attendance has been updated");
+        res.json("Attendance has been updated.");
       } else if (attendanceRows[rowNum].get("Date") === date) {
-        res.json("You may only update attendance once a day");
+        res.json("Attendance may only be updated once a day.");
         console.log(attendanceRows[rowNum].get("Date"), date);
       } else {
         const attNum: string = attendanceRows[rowNum].get("# of Attendances");
@@ -174,10 +180,10 @@ export const updateAttendance = async (
         attendanceRows[rowNum].set("Date", date);
         await attendanceRows[rowNum].save();
         await masterRows[rowNum].save();
-        res.json(`updated attendance: ${attNum} `);
+        res.json(`Attendance updated: ${attNum} times`);
       }
     } else {
-      res.json("use a valid uid");
+      res.json("Please provide a valid UID.");
     }
   }
 
