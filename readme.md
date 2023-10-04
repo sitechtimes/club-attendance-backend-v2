@@ -1,10 +1,8 @@
 # Club Attendance API
 
-## Setup the Proeject
+## Contents
 
-### clone the application
-
-### Install dependencies
+## Setup the Project
 
 ```
 npm i
@@ -18,4 +16,46 @@ npm install typescript --save-dev
 
 Their are env files and keys that are required for the project to run properly
 
-## Routes
+## Attendance
+
+### Route
+
+```
+PATCH /updateAttendance
+```
+
+**Requests body**
+Format:
+
+```
+export interface attendanceData {
+  club_name: string;
+  uuid: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  position: string;
+  grade: number;
+  off_class: string;
+  num_attendance: number;
+  // date: Date;
+}
+```
+
+Sample Request:
+
+```
+{
+  "club_name": "3D Printing Club",
+  "uuid": "116007774216187700433",
+  "first_name": "First_name",
+  "last_name": "Last_name",
+  "email": "test123@gmail.com",
+  "position": "admin",
+  "grade": 12,
+  "off_class": "12g",
+  "num_attendance": 2
+}
+```
+
+**Make sure **UUID** is a valid UUID string from the User Attendance Sheet**
