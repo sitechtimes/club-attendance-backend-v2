@@ -49,6 +49,8 @@ router.post("/createClubTemplate", verifyAdmin, createClubTemplate);
 router.post("/uploadImage", upload.array("image"), uploadImage);
 router.post("/addClubMeeting", addClubMeeting);
 router.post("/addClub", verifyAdmin, addClubData);
+
+router.patch("/updateAttendance", updateAttendance);
 // router.patch("/changeMeta", changeMeta)
 
 router.delete("/deleteClubMeeting", deleteClubMeeting);
