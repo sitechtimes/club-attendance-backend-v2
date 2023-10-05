@@ -34,15 +34,15 @@ router.get("/", (req, res) => {
 
 router.get("/oauth2", oauth2);
 router.get("/oauth2callback", oauth2callback);
-router.get("/getClubData", getClubData);
-router.get("/getClubMeta", getClubMeta);
-router.get("/getClubMembers", getClubMembers);
+router.get("/getClubData/:clubName/:year", getClubData);
+router.get("/getClubMeta/:clubName/:year", getClubMeta);
+router.get("/getClubMembers/:clubName/:year", getClubMembers);
 router.get("/showAttendancePhotos", showAttendancePhotos);
 router.get("/getAllClubData", getAllClubData);
 router.get("/returnRedirectUrl", returnRedirecUrl);
 
 router.post("/createUserSheet", createUserSheet);
-router.patch("/updateAttendance", updateAttendance);
+router.patch("/updateAttendance", updateAttendance); // attendance
 router.patch("/updateQRCode", updateQRCode);
 router.post("/createClubTemplate", verifyAdmin, createClubTemplate);
 // router.post("/createClubMeta", createClubMeta)

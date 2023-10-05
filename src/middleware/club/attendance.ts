@@ -24,16 +24,30 @@ export const updateAttendance = async (
   const attendanceArrUID: string[] = [];
   const masterArr: string[] = [];
 
+  //ENVIRONMENT VARIABLES
   const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
   const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string;
   const masterSpreadSheetID = process.env.MASTER_SPREADSHEET_ID as string;
 
+  //GET USER INFORMATION
   const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
   const masterDoc = new GoogleSpreadsheet(
     masterSpreadSheetID,
     serviceAccountAuth
   );
 
+  let headerValues: string[] = [
+    "UID",
+    "First Name",
+    "Last Name",
+    "Email",
+    "Position",
+    "Grade",
+    "Official Class",
+    "# of Attendances",
+    "Date",
+  ];
+  //FROM META DATA SHEET GET CLUB SHEET ID AND NAME
   async function findClassID(clubName: string) {
     const metaDoc = new GoogleSpreadsheet(metaDataSheetID, serviceAccountAuth);
     await metaDoc.loadInfo();
@@ -81,29 +95,53 @@ export const updateAttendance = async (
       attendanceID = arrAttendanceID[0].club_spreadsheet_id;
     }
 
+    //GET CLUBS ATTENDANCE SHEET
     const attendanceDoc = new GoogleSpreadsheet(
       attendanceID,
       serviceAccountAuth
     );
 
+    //LOAD SHEETS
     await attendanceDoc.loadInfo();
     await userDoc.loadInfo();
-    await masterDoc.loadInfo();
 
-    const attendanceSheet = attendanceDoc.sheetsByIndex[0];
+    //CREATE SHEET FOR THE DAY THE CLUB MEMBERS SIGN IN
+    let newSheet: any = "";
+    if (!attendanceDoc.sheetsByTitle[date]) {
+      console.log("creating new worksheet");
+      newSheet = await attendanceDoc.addSheet({ title: date });
+
+      //CREATE HEADERS
+      await newSheet.loadCells("A1:K1");
+      console.log("adding header");
+      for (let i = 0; i < 9; i++) {
+        const cell = newSheet.getCell(0, i); // access cells using a zero-based index
+        // console.log(headerValues[i]);
+        cell.value = headerValues[i];
+        cell.textFormat = { bold: true };
+      }
+
+      await newSheet.saveUpdatedCells();
+    } else {
+      console.log("updating existing worksheet");
+      newSheet = attendanceDoc.sheetsByTitle[date];
+    }
+    //END OF CREATING SHEETS
+
+    /* const attendanceSheet = attendanceDoc.sheetsByIndex[0]; */
     const userSheet = userDoc.sheetsByIndex[0];
     const masterSheet = masterDoc.sheetsByIndex[0];
 
     const userSheetLen = userSheet.rowCount;
-    const attendanceSheetLen = attendanceSheet.rowCount;
+    const attendanceSheetLen = newSheet.rowCount;
     const masterSheetLen = masterSheet.rowCount;
 
     const userRows = await userSheet.getRows();
-    const attendanceRows = await attendanceSheet.getRows();
     const masterRows = await masterSheet.getRows();
+    const attendanceRows = await newSheet.getRows();
     // await attendance_sheet.loadCells("A1:K1");
     // const uid: number =
-
+    //gets all users
     for (let i = 0; i < userSheetLen; i++) {
       if (userRows[i] === undefined) {
         break;
@@ -131,10 +169,12 @@ export const updateAttendance = async (
     console.log(rowNum);
     console.log(masterSheet.title);
 
+    //MATCH USER INFO FROM USER SPREAD SHEET WITH THE UID
     if (arrUID.includes(uid)) {
       const userUID = attendanceArrUID.includes(uid);
+      //IF USER IS NOT IN THE ATTENDANCE SHEET
       if (rowNum === -1) {
-        const rowObject = await attendanceSheet.addRow({
+        const rowObject = await newSheet.addRow({
           UID: uid,
           "First Name": data.first_name,
           "Last Name": data.last_name,
