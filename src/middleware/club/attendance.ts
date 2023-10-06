@@ -82,7 +82,6 @@ export const updateAttendance = async (
   async function updateAttendance(
     uid: string,
     clubName: string,
-    room: string,
     firstName: string,
     lastName: string
   ) {
@@ -194,17 +193,17 @@ export const updateAttendance = async (
 
           const updateMaster = await masterSheet.addRow({
             Club: data.club_name,
-            Room: clubData.room,
-            Last: data.last_name,
             First: data.first_name,
+            Last: data.last_name,
+            UID: uid,
           });
           console.log("cleared rows and attendance updated (first signin)");
         } else {
           const updateMaster = await masterSheet.addRow({
             Club: data.club_name,
-            Room: clubData.room,
-            Last: data.last_name,
             First: data.first_name,
+            Last: data.last_name,
+            UID: uid,
           });
           console.log("user attendance updated");
         }
@@ -231,7 +230,6 @@ export const updateAttendance = async (
     await updateAttendance(
       data.uuid,
       data.club_name,
-      clubData.room,
       data.first_name,
       data.last_name
     );
