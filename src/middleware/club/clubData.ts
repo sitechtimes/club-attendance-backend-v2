@@ -10,8 +10,10 @@ export const getClubData = async (
   next: NextFunction
 ) => {
   try {
-    const clubName: string = req.body.clubName;
-    const year: string = req.body.year;
+    /* const clubName: string = req.body.clubName
+        const year: string = req.body.year */
+    const clubName: string = req.params.clubName;
+    const year: string = req.params.year;
     await clubNameDoc.loadInfo();
     const clubNameSheet = clubNameDoc.sheetsById[0];
     const rows = await clubNameSheet.getRows();
@@ -186,8 +188,10 @@ export const getClubMembers = async (
   next: NextFunction
 ) => {
   try {
-    const year: string = req.body.year;
-    const clubName: string = req.body.clubName;
+    /* const year: string = req.body.year;
+    const clubName: string = req.body.clubName; */
+    const year: string = req.params.year;
+    const clubName: string = req.params.clubName;
 
     const attendanceSheetFile = await getClubSheet(clubName, year);
 
