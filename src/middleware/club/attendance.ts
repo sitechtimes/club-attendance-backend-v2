@@ -124,9 +124,9 @@ export const updateAttendance = async (
 
     const userSheetLen = userSheet.rowCount;
     const attendanceSheetLen = newSheet.rowCount;
-    const masterSheetLen = masterSheet.rowCount;
+    /*     const masterSheetLen = masterSheet.rowCount;
 
-    const masterRows = await masterSheet.getRows();
+    const masterRows = await masterSheet.getRows(); */
     const userRows = await userSheet.getRows();
     const attendanceRows = await newSheet.getRows();
     // await attendance_sheet.loadCells("A1:K1");
@@ -155,10 +155,6 @@ export const updateAttendance = async (
     }
     const rowNum: number = attendanceArrUID.indexOf(uid);
 
-    console.log(attendanceArrUID);
-    console.log(rowNum);
-    console.log(masterSheet.title);
-
     //MATCH USER INFO FROM USER SPREAD SHEET WITH THE UID
     if (arrUID.includes(uid)) {
       const userUID = attendanceArrUID.includes(uid);
@@ -185,16 +181,16 @@ export const updateAttendance = async (
 
           const updateMaster = await masterSheet.addRow({
             Club: data.club_name,
-            First: data.first_name,
-            Last: data.last_name,
+            "First Name": data.first_name,
+            "Last Name": data.last_name,
             UID: uid,
           });
           console.log("cleared rows and attendance updated (first signin)");
         } else {
           const updateMaster = await masterSheet.addRow({
             Club: data.club_name,
-            First: data.first_name,
-            Last: data.last_name,
+            "First Name": data.first_name,
+            "Last Name": data.last_name,
             UID: uid,
           });
           console.log("user attendance updated");
