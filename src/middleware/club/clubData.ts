@@ -14,6 +14,7 @@ export const getClubData = async (
         const year: string = req.body.year */
     const clubName: string = req.params.clubName;
     const year: string = req.params.year;
+
     await clubNameDoc.loadInfo();
     const clubNameSheet = clubNameDoc.sheetsById[0];
     const rows = await clubNameSheet.getRows();
