@@ -19,6 +19,7 @@ export const updateAttendance = async (
   //ENVIRONMENT VARIABLES
   const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
   const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string;
+  const masterSpreadSheetID = process.env.MASTER_SPREADSHEET_ID as string;
 
   //GET USER INFORMATION
   const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
@@ -68,6 +69,7 @@ export const updateAttendance = async (
   // console.log(x)
 
   async function updateAttendance(uid: string, clubName: string) {
+    /* firstName: string, lastName:string */
     const arrAttendanceID = await findClassID(clubName);
     let attendanceID: string = "";
 
@@ -83,9 +85,15 @@ export const updateAttendance = async (
       serviceAccountAuth
     );
 
+    const masterDoc = new GoogleSpreadsheet(
+      masterSpreadSheetID,
+      serviceAccountAuth
+    );
+
     //LOAD SHEETS
     await attendanceDoc.loadInfo();
     await userDoc.loadInfo();
+    await masterDoc.loadInfo();
 
     //CREATE SHEET FOR THE DAY THE CLUB MEMBERS SIGN IN
     let newSheet: any = "";
@@ -112,8 +120,13 @@ export const updateAttendance = async (
 
     /* const attendanceSheet = attendanceDoc.sheetsByIndex[0]; */
     const userSheet = userDoc.sheetsByIndex[0];
+    const masterSheet = masterDoc.sheetsByIndex[0];
+
     const userSheetLen = userSheet.rowCount;
     const attendanceSheetLen = newSheet.rowCount;
+    /*     const masterSheetLen = masterSheet.rowCount;
+
+    const masterRows = await masterSheet.getRows(); */
     const userRows = await userSheet.getRows();
     const attendanceRows = await newSheet.getRows();
     // await attendance_sheet.loadCells("A1:K1");
@@ -159,7 +172,31 @@ export const updateAttendance = async (
           Date: date,
         });
 
-        res.json("added user to club attendance");
+        /* res.json("added user to club attendance"); */
+        if (masterSheet.title != date) {
+          await masterSheet.clearRows({ start: 2 });
+          await masterSheet.updateProperties({
+            title: `${date}`,
+          });
+
+          const updateMaster = await masterSheet.addRow({
+            Club: data.club_name,
+            "First Name": data.first_name,
+            "Last Name": data.last_name,
+            UID: uid,
+          });
+          console.log("cleared rows and attendance updated (first signin)");
+        } else {
+          const updateMaster = await masterSheet.addRow({
+            Club: data.club_name,
+            "First Name": data.first_name,
+            "Last Name": data.last_name,
+            UID: uid,
+          });
+          console.log("user attendance updated");
+        }
+
+        res.json("Attendance has been updated.");
       } else if (attendanceRows[rowNum].get("Date") === date) {
         res.json("You may only update attendance once a day");
         console.log(attendanceRows[rowNum].get("Date"), date);
@@ -178,6 +215,12 @@ export const updateAttendance = async (
 
   try {
     await updateAttendance(data.uuid, data.club_name);
+    /*  await updateAttendance(
+      data.uuid,
+      data.club_name,
+      data.first_name,
+      data.last_name
+    ); */
   } catch (error) {
     res.json(error);
   }
