@@ -15,6 +15,7 @@ export const updateAttendance = async (
   const dateArr: dateData[] = [];
   const metaArr: metaData[] = [];
   const attendanceArrUID: string[] = [];
+  const masterArrUID: string[] = [];
 
   //ENVIRONMENT VARIABLES
   const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
@@ -53,23 +54,14 @@ export const updateAttendance = async (
           club_name: metaRows[i].get("Club Name"),
           club_spreadsheet_id: metaRows[i].get("Club Spreadsheet"),
         };
-
         metaArr.push(data);
-
-        // console.log(user_rows[i].get("UID"))
       }
     }
-
     const ID = metaArr.filter((el) => el.club_name === clubName);
-
     return ID;
   }
 
-  // const x = user_rows[0].get('UID')
-  // console.log(x)
-
   async function updateAttendance(uid: string, clubName: string) {
-    /* firstName: string, lastName:string */
     const arrAttendanceID = await findClassID(clubName);
     let attendanceID: string = "";
 
@@ -106,7 +98,6 @@ export const updateAttendance = async (
       console.log("adding header");
       for (let i = 0; i < 9; i++) {
         const cell = newSheet.getCell(0, i); // access cells using a zero-based index
-        // console.log(headerValues[i]);
         cell.value = headerValues[i];
         cell.textFormat = { bold: true };
       }
@@ -124,20 +115,17 @@ export const updateAttendance = async (
 
     const userSheetLen = userSheet.rowCount;
     const attendanceSheetLen = newSheet.rowCount;
-    /*     const masterSheetLen = masterSheet.rowCount;
+    const masterSheetLen = masterSheet.rowCount;
 
-    const masterRows = await masterSheet.getRows(); */
+    const masterRows = await masterSheet.getRows();
     const userRows = await userSheet.getRows();
     const attendanceRows = await newSheet.getRows();
-    // await attendance_sheet.loadCells("A1:K1");
-    // const uid: number =
-    //gets all users
+
     for (let i = 0; i < userSheetLen; i++) {
       if (userRows[i] === undefined) {
         break;
       } else {
         arrUID.push(userRows[i].get("UID"));
-
         // console.log(user_rows[i].get("UID"))
       }
     }
@@ -146,14 +134,18 @@ export const updateAttendance = async (
       if (attendanceRows[i] === undefined) {
         break;
       } else {
-        const x = attendanceRows[i].get("UID");
-
-        attendanceArrUID.push(x);
-        // console.log(attendanceArrUID)
-        // console.log(user_rows[i].get("UID"))
+        attendanceArrUID.push(attendanceRows[i].get("UID"));
       }
     }
     const rowNum: number = attendanceArrUID.indexOf(uid);
+
+    for (let i = 0; i < masterSheetLen; i++) {
+      if (masterRows[i] === undefined) {
+        break;
+      } else {
+        masterArrUID.push(masterRows[i].get("UID"));
+      }
+    }
 
     //MATCH USER INFO FROM USER SPREAD SHEET WITH THE UID
     if (arrUID.includes(uid)) {
@@ -172,7 +164,6 @@ export const updateAttendance = async (
           Date: date,
         });
 
-        /* res.json("added user to club attendance"); */
         if (masterSheet.title != date) {
           await masterSheet.clearRows({ start: 2 });
           await masterSheet.updateProperties({
@@ -187,15 +178,17 @@ export const updateAttendance = async (
           });
           console.log("cleared rows and attendance updated (first signin)");
         } else {
-          const updateMaster = await masterSheet.addRow({
-            Club: data.club_name,
-            "First Name": data.first_name,
-            "Last Name": data.last_name,
-            UID: uid,
-          });
+          if (masterArrUID.includes(uid)) {
+          } else {
+            const updateMaster = await masterSheet.addRow({
+              Club: data.club_name,
+              "First Name": data.first_name,
+              "Last Name": data.last_name,
+              UID: uid,
+            });
+          }
           console.log("user attendance updated");
         }
-
         res.json("Attendance has been updated.");
       } else if (attendanceRows[rowNum].get("Date") === date) {
         res.json("You may only update attendance once a day");
@@ -215,12 +208,6 @@ export const updateAttendance = async (
 
   try {
     await updateAttendance(data.uuid, data.club_name);
-    /*  await updateAttendance(
-      data.uuid,
-      data.club_name,
-      data.first_name,
-      data.last_name
-    ); */
   } catch (error) {
     res.json(error);
   }
