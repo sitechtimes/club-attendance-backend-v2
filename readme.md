@@ -13,38 +13,29 @@ git clone https://github.com/sitechtimes/club-attendance-backend-v2.git
 Install Dependencies
 
 ```
-
 npm i
-
 ```
 
 Make sure you have typescript installed
 
 ```
-
 npm install typescript --save-dev
-
 ```
 
-Their are env files and keys that are required for the project to run properly
+There are env files and keys that are required for the project to run properly
 
 ## [Attendance](src/middleware/club/attendance.ts)
 
 ### Route
 
 ```
-
 PATCH /updateAttendance
-
 ```
 
-**Requests body**
-
-Format:
+**Requests Body Format**
 
 ```
-
-export interface attendanceData {
+{
 club_name: string;
 uuid: string;
 first_name: string;
@@ -54,15 +45,12 @@ position: string;
 grade: number;
 off_class: string;
 num_attendance: number;
-// date: Date;
 }
-
 ```
 
-Sample Request:
+**Sample Request**
 
 ```
-
 {
 "club_name": "3D Printing Club",
 "uuid": "116007774216187700433",
@@ -74,11 +62,86 @@ Sample Request:
 "off_class": "12g",
 "num_attendance": 2
 }
-
 ```
 
-**Make sure _UUID_ is a valid UUID string from the User Attendance Sheet**
+**Make sure the _UUID_ is a valid UID string from the User Attendance Sheet**
+
+## [Club Data](src/middleware/club/clubData.ts)
+
+### Route
 
 ```
+GET /getClubData
+```
 
+**Requests Body Format**
+
+```
+{
+  clubName: string;
+  clubAdivsor: string;
+  clubPresident: string;
+  frequency: string;
+  day: string;
+  room: string;
+  advisorEmail: string;
+  presidentEmail: string;
+  nextMeeting: string;
+}
+```
+
+**Sample Request**
+
+```
+{
+"clubName": "3D Printing Club",
+"clubAdvisor": "Mr. Whalen",
+"clubPresident": "Edwin Zhou",
+"frequency": "Every Week",
+"day": "Friday",
+"room": "259",
+"advisorEmail": "advisoremail@gmail.com",
+"presidentEmail": "presidentemail@gmail.com",
+"nextMeeting": "10/12/2023"
+}
+```
+
+## [Meta Club Data](src/middleware/club/clubMeta.ts)
+
+### Route
+
+```
+GET /getClubMeta
+```
+
+**Requests Body Format**
+
+```
+{
+  clubName: string;
+  advisorEmail: string;
+  presidentEmail: string;
+  nextMeeting: string;
+  qrCode: string;
+  clubFolderId: string;
+  clubSpreadsheet: string;
+  clubPhotoFolderId: string;
+  clubCode: string;
+}
+```
+
+**Sample Request**
+
+```
+{
+  "clubName": "3D Printing Club";
+  "advisorEmail": "advisoremail@gmail.com";
+  "presidentEmail": "presidentemail@gmail.com";
+  "nextMeeting": "11/12/2023";
+  "qrCode": "string";
+  "clubFolderId": "string";
+  "clubSpreadsheet": "string";
+  "clubPhotoFolderId": "string";
+  "clubCode": "string";
+}
 ```
