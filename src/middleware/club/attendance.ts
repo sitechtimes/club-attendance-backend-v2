@@ -95,7 +95,6 @@ export const updateAttendance = async (
 
       //CREATE HEADERS
       await newSheet.loadCells("A1:K1");
-      console.log("adding header");
       for (let i = 0; i < 9; i++) {
         const cell = newSheet.getCell(0, i); // access cells using a zero-based index
         cell.value = headerValues[i];
@@ -109,7 +108,6 @@ export const updateAttendance = async (
     }
     //END OF CREATING SHEETS
 
-    /* const attendanceSheet = attendanceDoc.sheetsByIndex[0]; */
     const userSheet = userDoc.sheetsByIndex[0];
     const masterSheet = masterDoc.sheetsByIndex[0];
 
@@ -126,7 +124,6 @@ export const updateAttendance = async (
         break;
       } else {
         arrUID.push(userRows[i].get("UID"));
-        // console.log(user_rows[i].get("UID"))
       }
     }
 
@@ -189,10 +186,13 @@ export const updateAttendance = async (
           }
           console.log("user attendance updated");
         }
-        res.json("Attendance has been updated.");
+        res.json("Attendance has been updated");
       } else if (attendanceRows[rowNum].get("Date") === date) {
-        res.json("You may only update attendance once a day");
-        console.log(attendanceRows[rowNum].get("Date"), date);
+        res.json("Attendance can only be updated once a day");
+        console.log(
+          attendanceRows[rowNum].get("Date"),
+          "cant update attendance again"
+        );
       } else {
         const attNum: string = attendanceRows[rowNum].get("# of Attendances");
         const turnNum = Number(attNum);
@@ -221,7 +221,6 @@ export const showAttendancePhotos = async (
   try {
     const clubName = req.body.clubName;
     const year = req.body.year;
-
     const attendanceData = await getClubSheet(clubName, year);
 
     console.log(attendanceData.data.files);

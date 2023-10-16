@@ -26,6 +26,8 @@ There are env files and keys that are required for the project to run properly
 
 ## [Attendance](src/middleware/club/attendance.ts)
 
+This route is used to collect data about the user to update their club attendance for the day.
+
 ### Route
 
 ```
@@ -68,6 +70,8 @@ num_attendance: number;
 
 ## [Club Data](src/middleware/club/clubData.ts)
 
+This route is used to search for generic information about a specific club.
+
 ### Route
 
 ```
@@ -108,6 +112,8 @@ GET /getClubData
 
 ## [Meta Club Data](src/middleware/club/clubMeta.ts)
 
+This route is used to find the SpreadSheet data for all the clubs.
+
 ### Route
 
 ```
@@ -145,3 +151,5 @@ GET /getClubMeta
   "clubCode": "string";
 }
 ```
+
+## [User Data] (src/middleware/user/userData.ts)
