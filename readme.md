@@ -82,15 +82,15 @@ GET /getClubData
 
 ```
 {
-  clubName: string;
-  clubAdivsor: string;
-  clubPresident: string;
-  frequency: string;
-  day: string;
-  room: string;
-  advisorEmail: string;
-  presidentEmail: string;
-  nextMeeting: string;
+clubName: string;
+clubAdivsor: string;
+clubPresident: string;
+frequency: string;
+day: string;
+room: string;
+advisorEmail: string;
+presidentEmail: string;
+nextMeeting: string;
 }
 ```
 
@@ -98,15 +98,15 @@ GET /getClubData
 
 ```
 {
-  "clubName": "3D Printing Club",
-  "clubAdvisor": "Mr. Whalen",
-  "clubPresident": "Edwin Zhou",
-  "frequency": "Every Week",
-  "day": "Friday",
-  "room": "259",
-  "advisorEmail": "advisoremail@gmail.com",
-  "presidentEmail": "presidentemail@gmail.com",
-  "nextMeeting": "10/12/2023"
+"clubName": "3D Printing Club",
+"clubAdvisor": "Mr. Whalen",
+"clubPresident": "Edwin Zhou",
+"frequency": "Every Week",
+"day": "Friday",
+"room": "259",
+"advisorEmail": "advisoremail@gmail.com",
+"presidentEmail": "presidentemail@gmail.com",
+"nextMeeting": "10/12/2023"
 }
 ```
 
@@ -140,14 +140,78 @@ GET /getClubMeta
 
 ```
 {
-  "clubName": "3D Printing Club";
-  "advisorEmail": "advisoremail@gmail.com";
-  "presidentEmail": "presidentemail@gmail.com";
-  "nextMeeting": "11/12/2023";
-  "qrCode": "";
-  "clubFolderId": "";
-  "clubSpreadsheet": "";
-  "clubPhotoFolderId": "";
-  "clubCode": "";
+"clubName": "3D Printing Club";
+"advisorEmail": "advisoremail@gmail.com";
+"presidentEmail": "presidentemail@gmail.com";
+"nextMeeting": "11/12/2023";
+"qrCode": "";
+"clubFolderId": "";
+"clubSpreadsheet": "";
+"clubPhotoFolderId": "";
+"clubCode": "";
 }
 ```
+
+## [Making User Data Sheet](src/middleware/user/userData.ts)
+
+This code runs one time to initialize the new worksheet where all the user data will be stored
+
+**Header**
+
+These header values will be automatically set on the worksheet when it's created
+
+```ts
+[
+  "UID",
+  "First Name",
+  "Last Name",
+  "Email",
+  "Client Authority",
+  "Osis",
+  "Grade",
+  "Official Class",
+  "Email Domain",
+  "Club Data",
+  "Present Location",
+];
+```
+
+This just styles the headers so it stands out
+
+```ts
+for (let i = 0; i < 12; i++) {
+  const cell = sheet.getCell(0, i);
+  cell.textFormat = { bold: true };
+}
+```
+
+The last part saves the changes to sheet
+
+```ts
+await sheet.saveUpdatedCells();
+```
+
+## [Verifying Admin](src/middleware/user/verifyAdmin.ts)
+
+Used to verify that the user is an Admin
+
+```ts
+const admin = userRows.filter(
+  (user) =>
+    user.get("Client Authority") === "admin" &&
+    user.get("Email") === req.body.email
+);
+```
+
+If the user is an admin, it will return a value of 1.
+If not, it will send a message that they're not an admin.
+
+```ts
+if (admin.length === 0) {
+  res.json({ message: "You are not an admin!" });
+} else {
+  return next();
+}
+```
+
+## [Image Upload](src/middleware/user/uploadImage.ts)
