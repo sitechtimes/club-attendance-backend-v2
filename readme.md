@@ -98,15 +98,15 @@ GET /getClubData
 
 ```
 {
-"clubName": "3D Printing Club",
-"clubAdvisor": "Mr. Whalen",
-"clubPresident": "Edwin Zhou",
-"frequency": "Every Week",
-"day": "Friday",
-"room": "259",
-"advisorEmail": "advisoremail@gmail.com",
-"presidentEmail": "presidentemail@gmail.com",
-"nextMeeting": "10/12/2023"
+  "clubName": "3D Printing Club",
+  "clubAdvisor": "Mr. Whalen",
+  "clubPresident": "Edwin Zhou",
+  "frequency": "Every Week",
+  "day": "Friday",
+  "room": "259",
+  "advisorEmail": "advisoremail@gmail.com",
+  "presidentEmail": "presidentemail@gmail.com",
+  "nextMeeting": "10/12/2023"
 }
 ```
 
