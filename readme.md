@@ -144,12 +144,10 @@ GET /getClubMeta
   "advisorEmail": "advisoremail@gmail.com";
   "presidentEmail": "presidentemail@gmail.com";
   "nextMeeting": "11/12/2023";
-  "qrCode": "string";
-  "clubFolderId": "string";
-  "clubSpreadsheet": "string";
-  "clubPhotoFolderId": "string";
-  "clubCode": "string";
+  "qrCode": "";
+  "clubFolderId": "";
+  "clubSpreadsheet": "";
+  "clubPhotoFolderId": "";
+  "clubCode": "";
 }
 ```
-
-## [User Data] (src/middleware/user/userData.ts)
