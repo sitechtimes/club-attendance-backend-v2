@@ -32,6 +32,8 @@ Their are env files and keys that are required for the project to run properly
 
 ### Route
 
+#### Update Attendance
+
 ```
 
 PATCH /updateAttendance
@@ -79,6 +81,18 @@ Sample Request:
 
 **Make sure _UUID_ is a valid UUID string from the User Attendance Sheet**
 
-```
+#### Update QR Code
 
 ```
+PATCH /updateQRCode
+```
+
+**Requests Body**
+
+```
+{
+    "club_name" = String
+}
+```
+
+**Make sure the Club name matches an existing Club**
