@@ -2,19 +2,19 @@
 
 ## Setup the Project
 
-Clone the Repository
+Clone the Repository.
 
 ```
 git clone https://github.com/sitechtimes/club-attendance-backend-v2.git
 ```
 
-Install Dependencies
+Install Dependencies.
 
 ```
 npm i
 ```
 
-Make sure you have typescript installed
+Make sure you have typescript installed.
 
 ```
 npm install typescript --save-dev
