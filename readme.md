@@ -22,11 +22,11 @@ Make sure you have typescript installed
 npm install typescript --save-dev
 ```
 
-There are env files and keys that are required for the project to run properly
+There are env files and keys that are required for the project to run properly.
 
 ## [Attendance](src/middleware/club/attendance.ts)
 
-Collects data about the user to update their club attendance for the day
+Collects data about the user to update their club attendance for the day.
 
 ### Route
 
@@ -70,7 +70,7 @@ num_attendance: number;
 
 ## [Club Data](src/middleware/club/clubData.ts)
 
-Returns information about a specific club
+Returns information about a specific club.
 
 ### Route
 
@@ -112,7 +112,7 @@ nextMeeting: string;
 
 ## [Meta Club Data](src/middleware/club/clubMeta.ts)
 
-Search for SpreadSheet data for a specific club
+Search for SpreadSheet data for a specific club.
 
 ### Route
 
@@ -154,11 +154,11 @@ GET /getClubMeta
 
 ## [Making User Data Sheet](src/middleware/user/userData.ts)
 
-This code runs one time to initialize the new worksheet where all the user data will be stored
+This code runs one time to initialize the new worksheet where all the user data will be stored.
 
 **Header**
 
-These header values will be automatically set on the worksheet when it's created
+These header values will be automatically set on the worksheet when it's created.
 
 ```ts
 [
@@ -176,7 +176,7 @@ These header values will be automatically set on the worksheet when it's created
 ];
 ```
 
-This just styles the headers so it stands out
+This just styles the headers so it stands out.
 
 ```ts
 for (let i = 0; i < 12; i++) {
@@ -185,7 +185,7 @@ for (let i = 0; i < 12; i++) {
 }
 ```
 
-The last part saves the changes to sheet
+The last part saves the changes to sheet.
 
 ```ts
 await sheet.saveUpdatedCells();
@@ -193,7 +193,7 @@ await sheet.saveUpdatedCells();
 
 ## [Verifying Admin](src/middleware/user/verifyAdmin.ts)
 
-Used to verify that the user is an Admin
+Used to verify that the user is an Admin.
 
 ```ts
 const admin = userRows.filter(
@@ -203,8 +203,8 @@ const admin = userRows.filter(
 );
 ```
 
-If the user is an admin, it will return a value of 1
-If not, it will send a message that they're not an admin
+If the user is an admin, it will return a value of 1.
+If not, it will send a message that they're not an admin.
 
 ```ts
 if (admin.length === 0) {
@@ -216,7 +216,7 @@ if (admin.length === 0) {
 
 ## [Image Upload](src/middleware/user/uploadImage.ts)
 
-Allows the club advisor or president to upload an image of the club and saves it on the drive
+Allows the club advisor or president to upload an image of the club and saves it on the drive.
 
 ```ts
 const metaSheet = await service.files.list({
