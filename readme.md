@@ -70,7 +70,7 @@ num_attendance: number;
 
 ## [Club Data](src/middleware/club/clubData.ts)
 
-This route is used to search for generic information about a specific club.
+Returns information about a specific club
 
 ### Route
 
@@ -112,7 +112,7 @@ nextMeeting: string;
 
 ## [Meta Club Data](src/middleware/club/clubMeta.ts)
 
-This route is used to find the SpreadSheet data for all the clubs.
+Search for SpreadSheet data for a specific club
 
 ### Route
 
@@ -203,8 +203,8 @@ const admin = userRows.filter(
 );
 ```
 
-If the user is an admin, it will return a value of 1.
-If not, it will send a message that they're not an admin.
+If the user is an admin, it will return a value of 1
+If not, it will send a message that they're not an admin
 
 ```ts
 if (admin.length === 0) {
@@ -215,3 +215,12 @@ if (admin.length === 0) {
 ```
 
 ## [Image Upload](src/middleware/user/uploadImage.ts)
+
+Allows the club advisor or president to upload an image of the club and saves it on the drive
+
+```ts
+const metaSheet = await service.files.list({
+  q: `name = 'Club MetaData' and '${folderId}' in parents`,
+  fields: "nextPageToken, files(id, name)",
+});
+```
