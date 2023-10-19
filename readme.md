@@ -26,7 +26,7 @@ There are env files and keys that are required for the project to run properly
 
 ## [Attendance](src/middleware/club/attendance.ts)
 
-This route is used to collect data about the user to update their club attendance for the day.
+Collects data about the user to update their club attendance for the day
 
 ### Route
 
