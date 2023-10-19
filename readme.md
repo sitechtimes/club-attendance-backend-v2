@@ -32,35 +32,35 @@ Collects data about the user to update their club attendance for the day.
 PATCH /updateAttendance
 ```
 
-**Requests Body Format**
+**Request Body Format**
 
-```
-{
-club_name: string;
-uuid: string;
-first_name: string;
-last_name: string;
-email: string;
-position: string;
-grade: number;
-off_class: string;
-num_attendance: number;
+```ts
+interface attendanceData {
+  club_name: string;
+  uuid: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  position: string;
+  grade: number;
+  off_class: string;
+  num_attendance: number;
 }
 ```
 
 **Sample Request**
 
-```
+```json
 {
-"club_name": "3D Printing Club",
-"uuid": "116007774216187700433",
-"first_name": "First_name",
-"last_name": "Last_name",
-"email": "test123@gmail.com",
-"position": "admin",
-"grade": 12,
-"off_class": "12g",
-"num_attendance": 2
+  "club_name": "3D Printing Club",
+  "uuid": "116007774216187700433",
+  "first_name": "First_name",
+  "last_name": "Last_name",
+  "email": "test123@gmail.com",
+  "position": "admin",
+  "grade": 12,
+  "off_class": "12g",
+  "num_attendance": 2
 }
 ```
 
@@ -76,35 +76,35 @@ Returns information about a specific club.
 GET /getClubData
 ```
 
-**Requests Body Format**
+**Request Body Format**
 
-```
-{
-clubName: string;
-clubAdivsor: string;
-clubPresident: string;
-frequency: string;
-day: string;
-room: string;
-advisorEmail: string;
-presidentEmail: string;
-nextMeeting: string;
+```ts
+interface clubData {
+  clubName: string;
+  clubAdivsor: string;
+  clubPresident: string;
+  frequency: string;
+  day: string;
+  room: string;
+  advisorEmail: string;
+  presidentEmail: string;
+  nextMeeting: string;
 }
 ```
 
 **Sample Request**
 
-```
+```json
 {
-"clubName": "3D Printing Club",
-"clubAdvisor": "Mr. Whalen",
-"clubPresident": "Edwin Zhou",
-"frequency": "Every Week",
-"day": "Friday",
-"room": "259",
-"advisorEmail": "advisoremail@gmail.com",
-"presidentEmail": "presidentemail@gmail.com",
-"nextMeeting": "10/12/2023"
+  "clubName": "3D Printing Club",
+  "clubAdvisor": "Mr. Whalen",
+  "clubPresident": "Edwin Zhou",
+  "frequency": "Every Week",
+  "day": "Friday",
+  "room": "259",
+  "advisorEmail": "advisoremail@gmail.com",
+  "presidentEmail": "presidentemail@gmail.com",
+  "nextMeeting": "10/12/2023"
 }
 ```
 
@@ -118,10 +118,10 @@ Search for SpreadSheet data for a specific club.
 GET /getClubMeta
 ```
 
-**Requests Body Format**
+**Request Body Format**
 
-```
-{
+```ts
+interface clubMeta {
   clubName: string;
   advisorEmail: string;
   presidentEmail: string;
@@ -136,17 +136,17 @@ GET /getClubMeta
 
 **Sample Request**
 
-```
+```json
 {
-"clubName": "3D Printing Club";
-"advisorEmail": "advisoremail@gmail.com";
-"presidentEmail": "presidentemail@gmail.com";
-"nextMeeting": "11/12/2023";
-"qrCode": "";
-"clubFolderId": "";
-"clubSpreadsheet": "";
-"clubPhotoFolderId": "";
-"clubCode": "";
+  "clubName": "3D Printing Club",
+  "advisorEmail": "advisoremail@gmail.com",
+  "presidentEmail": "presidentemail@gmail.com",
+  "nextMeeting": "11/12/2023",
+  "qrCode": "",
+  "clubFolderId": "",
+  "clubSpreadsheet": "",
+  "clubPhotoFolderId": "",
+  "clubCode": ""
 }
 ```
 
