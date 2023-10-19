@@ -1,7 +1,5 @@
 # Club Attendance API
 
-## Contents
-
 ## Setup the Project
 
 Clone the Repository
