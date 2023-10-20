@@ -207,6 +207,12 @@ export const updateAttendance = async (
         );
         console.log(MainRowNum);
 
+        ClubMainSheetRows[MainRowNum].set(
+          "# of Attendances",
+          data.num_attendance + 1
+        );
+        console.log(MainRowNum);
+
         /* res.json("added user to club attendance"); */
         if (masterSheet.title != date) {
           await masterSheet.clearRows({ start: 2 });
