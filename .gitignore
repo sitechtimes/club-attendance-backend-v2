@@ -1,5 +1,7 @@
 node_modules
 .env
 build
-keys.json
+keys.jsonS
+oldkeys.json
 imgs
+other env stuff.json
