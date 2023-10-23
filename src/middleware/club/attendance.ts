@@ -245,14 +245,15 @@ export const updateAttendance = async (
 
         res.json("Attendance has been updated.");
         await ClubMainSheetRows[MainRowNum].save();
-      } else if (attendanceRows[rowNum].get("Date") === date) {
+      } else if (ClubMainSheetRows[rowNum].get("Date") === date) {
         res.json("You may only update attendance once a day");
-        console.log(attendanceRows[rowNum].get("Date"), date);
+        console.log(ClubMainSheetRows[rowNum].get("Date"), date);
       } else {
-        const attNum: string = attendanceRows[rowNum].get("# of Attendances");
+        const attNum: string =
+          ClubMainSheetRows[rowNum].get("# of Attendances");
         const turnNum = Number(attNum);
-        attendanceRows[rowNum].set("# of Attendances", turnNum + 1);
-        attendanceRows[rowNum].set("Date", date);
+        ClubMainSheetRows[rowNum].set("# of Attendances", turnNum + 1);
+        ClubMainSheetRows[rowNum].set("Date", date);
         await attendanceRows[rowNum].save();
 
         res.json(`updated attendance: ${attNum} `);
