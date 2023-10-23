@@ -150,7 +150,22 @@ interface clubMeta {
 }
 ```
 
-## [Making User Data Sheet](src/middleware/user/userData.ts)
+## [File upload](src/middleware/user/multer.ts)
+
+Sets the requirements for any uploads that are going to be uploaded.
+
+Requires the image to be jpg, jpeg, or png
+
+```ts
+fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new Error("Please upload a jpg, jpeg or png only"));
+    }
+    cb(null, true);
+  },
+```
+
+## [User Data Sheet](src/middleware/user/userData.ts)
 
 This code runs one time to initialize the new worksheet where all the user data will be stored.
 
@@ -189,7 +204,7 @@ The last part saves the changes to sheet.
 await sheet.saveUpdatedCells();
 ```
 
-## [Verifying Admin](src/middleware/user/verifyAdmin.ts)
+## [Admin Verification](src/middleware/user/verifyAdmin.ts)
 
 Used to verify that the user is an Admin.
 
