@@ -112,7 +112,7 @@ interface clubData {
 
 Search for SpreadSheet data for a specific club.
 
-### Route
+**Route**
 
 ```
 GET /getClubMeta
@@ -227,13 +227,43 @@ if (admin.length === 0) {
 }
 ```
 
-## [Image Upload](src/middleware/user/uploadImage.ts)
+## [Uploading Image](src/middleware/user/uploadImage.ts)
 
-Allows the club advisor or president to upload an image of the club and saves it on the drive.
+Gets the folder ID for the club
 
 ```ts
-const metaSheet = await service.files.list({
-  q: `name = 'Club MetaData' and '${folderId}' in parents`,
-  fields: "nextPageToken, files(id, name)",
+let result = await service.files
+  .list({
+    q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
+    fields: "nextPageToken, files(id, name)",
+    spaces: "drive",
+  })
+  .catch((error) => console.log(error));
+```
+
+Uploads the image as a new file in the selected folder for the club
+
+```ts
+const img = await service.files.create({
+  requestBody: {
+    name: file.originalname,
+    parents: [`${photoFolderId}`],
+  },
+  media: {
+    mimeType: file.mimetype,
+    body: Readable.from([file.buffer]),
+  },
 });
 ```
+
+<!-- ## [User Authentication](src/middleware/auth.ts)
+
+Authenticates the request and gets the user data as requested
+
+```ts
+const authorizationCode = req.query.code;
+const { tokens } = await oauth2Client.getToken(authorizationCode as string);
+oauth2Client.setCredentials(tokens);
+const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
+const userInfo = await oauth2.userinfo.get();
+``` -->
