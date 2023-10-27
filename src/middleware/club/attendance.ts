@@ -192,30 +192,11 @@ export const updateAttendance = async (
           data.num_attendance + 1
         );
 
-        ClubMainSheetRows[MainRowNum].set(
-          "# of Attendances",
-          data.num_attendance + 1
-        );
-        console.log(MainRowNum);
-
-        ClubMainSheetRows[MainRowNum].set(
-          "# of Attendances",
-          data.num_attendance + 1
-        );
-        console.log(MainRowNum);
-
-        ClubMainSheetRows[MainRowNum].set(
-          "# of Attendances",
-          data.num_attendance + 1
-        );
-        console.log(MainRowNum);
-
         if (masterSheet.title != date) {
           await masterSheet.clearRows({ start: 2 });
           await masterSheet.updateProperties({
             title: `${date}`,
           });
-
           const updateMaster = await masterSheet.addRow({
             Club: data.club_name,
             "First Name": data.first_name,
@@ -236,11 +217,11 @@ export const updateAttendance = async (
           console.log("user attendance updated");
         }
 
-        res.json("Attendance has been updated.");
         await ClubMainSheetRows[MainRowNum].save();
+        res.json("Attendance has been updated.");
       } else if (ClubMainSheetRows[rowNum].get("Date") === date) {
-        res.json("You may only update attendance once a day");
         console.log(ClubMainSheetRows[rowNum].get("Date"), date);
+        res.json("You may only update attendance once a day");
       } else {
         const attNum: string =
           ClubMainSheetRows[rowNum].get("# of Attendances");
