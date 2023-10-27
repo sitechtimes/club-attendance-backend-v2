@@ -16,6 +16,7 @@ export const updateAttendance = async (
   const metaArr: metaData[] = [];
   const attendanceArrUID: string[] = [];
   const masterArrUID: string[] = [];
+  const MainSheetUID: string[] = [];
 
   //ENVIRONMENT VARIABLES
   const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
@@ -33,8 +34,6 @@ export const updateAttendance = async (
     "Position",
     "Grade",
     "Official Class",
-    "# of Attendances",
-    "Date",
   ];
   //FROM META DATA SHEET GET CLUB SHEET ID AND NAME
   async function findClassID(clubName: string) {
@@ -110,15 +109,20 @@ export const updateAttendance = async (
 
     const userSheet = userDoc.sheetsByIndex[0];
     const masterSheet = masterDoc.sheetsByIndex[0];
+    const ClubMainSheet = attendanceDoc.sheetsByIndex[0];
 
     const userSheetLen = userSheet.rowCount;
     const attendanceSheetLen = newSheet.rowCount;
+    const ClubMainSheetLen = ClubMainSheet.rowCount;
     const masterSheetLen = masterSheet.rowCount;
 
     const masterRows = await masterSheet.getRows();
     const userRows = await userSheet.getRows();
     const attendanceRows = await newSheet.getRows();
-
+    const ClubMainSheetRows = await ClubMainSheet.getRows();
+    // await attendance_sheet.loadCells("A1:K1");
+    // const uid: number =
+    //gets all users
     for (let i = 0; i < userSheetLen; i++) {
       if (userRows[i] === undefined) {
         break;
@@ -134,7 +138,17 @@ export const updateAttendance = async (
         attendanceArrUID.push(attendanceRows[i].get("UID"));
       }
     }
+
+    for (let i = 0; i < ClubMainSheetLen; i++) {
+      if (ClubMainSheetRows[i] === undefined) {
+        break;
+      }
+      const x = ClubMainSheetRows[i].get("UID");
+
+      MainSheetUID.push(x);
+    }
     const rowNum: number = attendanceArrUID.indexOf(uid);
+    const MainRowNum: number = MainSheetUID.indexOf(uid);
 
     for (let i = 0; i < masterSheetLen; i++) {
       if (masterRows[i] === undefined) {
@@ -147,9 +161,9 @@ export const updateAttendance = async (
     //MATCH USER INFO FROM USER SPREAD SHEET WITH THE UID
     if (arrUID.includes(uid)) {
       const userUID = attendanceArrUID.includes(uid);
-      //IF USER IS NOT IN THE ATTENDANCE SHEET
-      if (rowNum === -1) {
-        const rowObject = await newSheet.addRow({
+
+      if (MainRowNum === -1) {
+        const rowObject = await ClubMainSheet.addRow({
           UID: uid,
           "First Name": data.first_name,
           "Last Name": data.last_name,
@@ -157,9 +171,44 @@ export const updateAttendance = async (
           Position: data.position,
           Grade: data.grade,
           "Official Class": data.off_class,
-          "# of Attendances": data.num_attendance + 1,
+          "# of Attendances": 1,
           Date: date,
         });
+      }
+      //IF USER IS NOT IN THE ATTENDANCE SHEET
+      if (rowNum === -1) {
+        const updateNewSheet = await newSheet.addRow({
+          UID: uid,
+          "First Name": data.first_name,
+          "Last Name": data.last_name,
+          Email: data.email,
+          Position: data.position,
+          Grade: data.grade,
+          "Official Class": data.off_class,
+        });
+
+        ClubMainSheetRows[MainRowNum].set(
+          "# of Attendances",
+          data.num_attendance + 1
+        );
+
+        ClubMainSheetRows[MainRowNum].set(
+          "# of Attendances",
+          data.num_attendance + 1
+        );
+        console.log(MainRowNum);
+
+        ClubMainSheetRows[MainRowNum].set(
+          "# of Attendances",
+          data.num_attendance + 1
+        );
+        console.log(MainRowNum);
+
+        ClubMainSheetRows[MainRowNum].set(
+          "# of Attendances",
+          data.num_attendance + 1
+        );
+        console.log(MainRowNum);
 
         if (masterSheet.title != date) {
           await masterSheet.clearRows({ start: 2 });
@@ -186,19 +235,20 @@ export const updateAttendance = async (
           }
           console.log("user attendance updated");
         }
-        res.json("Attendance has been updated");
-      } else if (attendanceRows[rowNum].get("Date") === date) {
-        res.json("Attendance can only be updated once a day");
-        console.log(
-          attendanceRows[rowNum].get("Date"),
-          "cant update attendance again"
-        );
+
+        res.json("Attendance has been updated.");
+        await ClubMainSheetRows[MainRowNum].save();
+      } else if (ClubMainSheetRows[rowNum].get("Date") === date) {
+        res.json("You may only update attendance once a day");
+        console.log(ClubMainSheetRows[rowNum].get("Date"), date);
       } else {
-        const attNum: string = attendanceRows[rowNum].get("# of Attendances");
+        const attNum: string =
+          ClubMainSheetRows[rowNum].get("# of Attendances");
         const turnNum = Number(attNum);
-        attendanceRows[rowNum].set("# of Attendances", turnNum + 1);
-        attendanceRows[rowNum].set("Date", date);
+        ClubMainSheetRows[rowNum].set("# of Attendances", turnNum + 1);
+        ClubMainSheetRows[rowNum].set("Date", date);
         await attendanceRows[rowNum].save();
+
         res.json(`updated attendance: ${attNum} `);
       }
     } else {

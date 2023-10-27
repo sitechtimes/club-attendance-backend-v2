@@ -107,7 +107,7 @@ export const createClubTemplate = async (
       const clubNames = await getClubNames();
       console.log(clubNames);
       for (let i = 0; i < clubNames.length; i++) {
-        // await timeout(3000);
+        await timeout(3000);
         const folderName: any = clubNames[i];
         console.log("line 70");
         await createClubFolder(folderId, folderName);

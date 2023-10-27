@@ -28,6 +28,8 @@ Collects data about the user to update their club attendance for the day.
 
 ### Route
 
+#### Update Attendance
+
 ```
 PATCH /updateAttendance
 ```
@@ -267,3 +269,19 @@ oauth2Client.setCredentials(tokens);
 const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
 const userInfo = await oauth2.userinfo.get();
 ``` -->
+
+#### Update QR Code
+
+```
+PATCH /updateQRCode
+```
+
+**Requests Body**
+
+```
+{
+    "club_name" = String
+}
+```
+
+**Make sure the Club name matches an existing Club**
