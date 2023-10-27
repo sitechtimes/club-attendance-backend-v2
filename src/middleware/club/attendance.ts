@@ -188,11 +188,11 @@ export const updateAttendance = async (
         }
         res.json("Attendance has been updated");
       } else if (attendanceRows[rowNum].get("Date") === date) {
-        res.json("Attendance can only be updated once a day");
         console.log(
           attendanceRows[rowNum].get("Date"),
           "cant update attendance again"
         );
+        res.json("Attendance can only be updated once a day");
       } else {
         const attNum: string = attendanceRows[rowNum].get("# of Attendances");
         const turnNum = Number(attNum);
