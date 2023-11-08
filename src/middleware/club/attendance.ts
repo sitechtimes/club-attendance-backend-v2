@@ -9,21 +9,31 @@ export const updateAttendance = async (
   res: Response,
   next: NextFunction
 ) => {
+  interface folderMeta {
+    Folder_Name: string;
+    Folder_Meta_ID: string;
+  }
+
   const date = new Date().toLocaleDateString();
   const data = req.body as attendanceData;
+  const year = req.body.year;
   const arrUID: string[] = [];
   const dateArr: dateData[] = [];
   const metaArr: metaData[] = [];
+  const folderMetaArr: folderMeta[] = [];
   const attendanceArrUID: string[] = [];
   const MainSheetUID: string[] = [];
 
   //ENVIRONMENT VARIABLES
+  const FolderMetaID = process.env.FOLDER_META_DATA_SPREADSHEET_ID as string;
   const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
-  const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string;
+  /* const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string; */
+  let metaDataSheetID: string = "";
   const masterSpreadSheetID = process.env.MASTER_SPREADSHEET_ID as string;
 
   //GET USER INFORMATION
   const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
+  const FolderMeta = new GoogleSpreadsheet(FolderMetaID, serviceAccountAuth);
 
   let headerValues: string[] = [
     "UID",
@@ -34,9 +44,39 @@ export const updateAttendance = async (
     "Grade",
     "Official Class",
   ];
+
+  // FROM FOLDER META SHEET GET THIS YEAR META SHEET ID
+  async function findMetaSheet() {
+    const FolderMeta = new GoogleSpreadsheet(FolderMetaID, serviceAccountAuth);
+
+    await FolderMeta.loadInfo();
+
+    const FolderMetaSheet = FolderMeta.sheetsByIndex[0];
+    const FolderMetaRows = await FolderMetaSheet.getRows();
+    const FolderMetaLen: number = FolderMetaSheet.rowCount;
+
+    for (let i = 0; i < FolderMetaLen; i++) {
+      if (FolderMetaRows[i] === undefined) {
+        break;
+      } else {
+        const data: folderMeta = {
+          Folder_Name: FolderMetaRows[i].get("Folder Name"),
+          Folder_Meta_ID: FolderMetaRows[i].get("Folder Meta Sheet ID"),
+        };
+        console.log(data);
+        folderMetaArr.push(data);
+      }
+    }
+    const CurrentYear = folderMetaArr.filter((el) => el.Folder_Name === year);
+
+    const metaDataSheetID = CurrentYear[0].Folder_Meta_ID;
+
+    return metaDataSheetID.toString();
+  }
   //FROM META DATA SHEET GET CLUB SHEET ID AND NAME
   async function findClassID(clubName: string) {
-    const metaDoc = new GoogleSpreadsheet(metaDataSheetID, serviceAccountAuth);
+    const MetaSheetID = await findMetaSheet();
+    const metaDoc = new GoogleSpreadsheet(MetaSheetID, serviceAccountAuth);
 
     await metaDoc.loadInfo();
 
