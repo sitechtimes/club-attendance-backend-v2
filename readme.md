@@ -74,6 +74,22 @@ Returns information about a specific club.
 
 ### Route
 
+#### Update QR Code
+
+```
+PATCH /updateQRCode
+```
+
+**Requests Body**
+
+```
+{
+    "club_name" = String
+}
+```
+
+**Make sure the Club name matches an existing Club**
+
 ```
 GET /getClubData
 ```
@@ -269,19 +285,3 @@ oauth2Client.setCredentials(tokens);
 const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
 const userInfo = await oauth2.userinfo.get();
 ``` -->
-
-#### Update QR Code
-
-```
-PATCH /updateQRCode
-```
-
-**Requests Body**
-
-```
-{
-    "club_name" = String
-}
-```
-
-**Make sure the Club name matches an existing Club**

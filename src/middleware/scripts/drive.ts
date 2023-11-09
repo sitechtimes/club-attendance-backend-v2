@@ -103,7 +103,7 @@ export const createClubTemplate = async (
       function timeout(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
       }
-      createClubMeta(folderId, email);
+      createClubMeta(folderId, email, year);
       const clubNames = await getClubNames();
       console.log(clubNames);
       for (let i = 0; i < clubNames.length; i++) {
@@ -258,15 +258,25 @@ export const createClubTemplate = async (
   });
 };
 
-const createClubMeta = async (parentID: string, email: string) => {
+const createClubMeta = async (
+  parentID: string,
+  email: string,
+  year: number
+) => {
   //using user email for now
   const userEmail = email;
   const userSpreadsheet = new GoogleSpreadsheet(
     process.env.USER_DATA_SPREADSHEET_ID as string,
     serviceAccountAuth
   );
+  const YearMeta = new GoogleSpreadsheet(
+    process.env.FOLDER_META_DATA_SPREADSHEET_ID as string,
+    serviceAccountAuth
+  );
   await userSpreadsheet.loadInfo();
+  await YearMeta.loadInfo();
   const userSheet = userSpreadsheet.sheetsByIndex[0];
+  const YearMetaSheet = YearMeta.sheetsByIndex[0];
   const users = await userSheet.getRows();
 
   //check if the user is an admin before performing
@@ -288,6 +298,11 @@ const createClubMeta = async (parentID: string, email: string) => {
       fields: "id",
     });
     const spreadsheetId = spreadsheet.data.id as string;
+    const addMetaData = await YearMetaSheet.addRow({
+      "Folder Name": `${year.toString()}-${(year + 1).toString()}`,
+      "Folder Meta Sheet ID": spreadsheetId,
+    });
+    console.log(`added { Year: ${year}, ID: ${spreadsheetId}`);
     console.log(spreadsheetId, "278");
     const doc = new GoogleSpreadsheet(spreadsheetId, serviceAccountAuth);
     await doc.loadInfo();
