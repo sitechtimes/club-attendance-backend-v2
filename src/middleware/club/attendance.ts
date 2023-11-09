@@ -23,6 +23,7 @@ export const updateAttendance = async (
   const folderMetaArr: folderMeta[] = [];
   const attendanceArrUID: string[] = [];
   const MainSheetUID: string[] = [];
+  const masterArrUID: string[] = [];
 
   //ENVIRONMENT VARIABLES
   const FolderMetaID = process.env.FOLDER_META_DATA_SPREADSHEET_ID as string;
@@ -92,23 +93,14 @@ export const updateAttendance = async (
           club_name: metaRows[i].get("Club Name"),
           club_spreadsheet_id: metaRows[i].get("Club Spreadsheet"),
         };
-
         metaArr.push(data);
-
-        // console.log(user_rows[i].get("UID"))
       }
     }
-
     const ID = metaArr.filter((el) => el.club_name === clubName);
-
     return ID;
   }
 
-  // const x = user_rows[0].get('UID')
-  // console.log(x)
-
   async function updateAttendance(uid: string, clubName: string) {
-    /* firstName: string, lastName:string */
     const arrAttendanceID = await findClassID(clubName);
     let attendanceID: string = "";
 
@@ -142,10 +134,8 @@ export const updateAttendance = async (
 
       //CREATE HEADERS
       await newSheet.loadCells("A1:K1");
-      console.log("adding header");
       for (let i = 0; i < 9; i++) {
         const cell = newSheet.getCell(0, i); // access cells using a zero-based index
-        // console.log(headerValues[i]);
         cell.value = headerValues[i];
         cell.textFormat = { bold: true };
       }
@@ -157,7 +147,6 @@ export const updateAttendance = async (
     }
     //END OF CREATING SHEETS
 
-    /* const attendanceSheet = attendanceDoc.sheetsByIndex[0]; */
     const userSheet = userDoc.sheetsByIndex[0];
     const masterSheet = masterDoc.sheetsByIndex[0];
     const ClubMainSheet = attendanceDoc.sheetsByIndex[0];
@@ -165,9 +154,9 @@ export const updateAttendance = async (
     const userSheetLen = userSheet.rowCount;
     const attendanceSheetLen = newSheet.rowCount;
     const ClubMainSheetLen = ClubMainSheet.rowCount;
-    /*     const masterSheetLen = masterSheet.rowCount;
+    const masterSheetLen = masterSheet.rowCount;
 
-    const masterRows = await masterSheet.getRows(); */
+    const masterRows = await masterSheet.getRows();
     const userRows = await userSheet.getRows();
     const attendanceRows = await newSheet.getRows();
     const ClubMainSheetRows = await ClubMainSheet.getRows();
@@ -179,8 +168,6 @@ export const updateAttendance = async (
         break;
       } else {
         arrUID.push(userRows[i].get("UID"));
-
-        // console.log(user_rows[i].get("UID"))
       }
     }
 
@@ -188,11 +175,7 @@ export const updateAttendance = async (
       if (attendanceRows[i] === undefined) {
         break;
       } else {
-        const x = attendanceRows[i].get("UID");
-
-        attendanceArrUID.push(x);
-        // console.log(attendanceArrUID)
-        // console.log(user_rows[i].get("UID"))
+        attendanceArrUID.push(attendanceRows[i].get("UID"));
       }
     }
 
@@ -206,6 +189,14 @@ export const updateAttendance = async (
     }
     const rowNum: number = attendanceArrUID.indexOf(uid);
     const MainRowNum: number = MainSheetUID.indexOf(uid);
+
+    for (let i = 0; i < masterSheetLen; i++) {
+      if (masterRows[i] === undefined) {
+        break;
+      } else {
+        masterArrUID.push(masterRows[i].get("UID"));
+      }
+    }
 
     //MATCH USER INFO FROM USER SPREAD SHEET WITH THE UID
     if (arrUID.includes(uid)) {
@@ -259,7 +250,6 @@ export const updateAttendance = async (
         );
         console.log(MainRowNum);
 
-        /* res.json("added user to club attendance"); */
         if (masterSheet.title != date) {
           await masterSheet.clearRows({ start: 2 });
           await masterSheet.updateProperties({
@@ -274,20 +264,24 @@ export const updateAttendance = async (
           });
           console.log("cleared rows and attendance updated (first signin)");
         } else {
-          const updateMaster = await masterSheet.addRow({
-            Club: data.club_name,
-            "First Name": data.first_name,
-            "Last Name": data.last_name,
-            UID: uid,
-          });
+          if (masterArrUID.includes(uid)) {
+          } else {
+            const updateMaster = await masterSheet.addRow({
+              Club: data.club_name,
+              "First Name": data.first_name,
+              "Last Name": data.last_name,
+              UID: uid,
+            });
+          }
           console.log("user attendance updated");
         }
-
-        res.json("Attendance has been updated.");
-        await ClubMainSheetRows[MainRowNum].save();
-      } else if (ClubMainSheetRows[rowNum].get("Date") === date) {
-        res.json("You may only update attendance once a day");
-        console.log(ClubMainSheetRows[rowNum].get("Date"), date);
+        res.json("Attendance has been updated");
+      } else if (attendanceRows[rowNum].get("Date") === date) {
+        console.log(
+          attendanceRows[rowNum].get("Date"),
+          "cant update attendance again"
+        );
+        res.json("Attendance can only be updated once a day");
       } else {
         const attNum: string =
           ClubMainSheetRows[rowNum].get("# of Attendances");
@@ -305,12 +299,6 @@ export const updateAttendance = async (
 
   try {
     await updateAttendance(data.uuid, data.club_name);
-    /*  await updateAttendance(
-      data.uuid,
-      data.club_name,
-      data.first_name,
-      data.last_name
-    ); */
   } catch (error) {
     res.json(error);
   }
@@ -324,7 +312,6 @@ export const showAttendancePhotos = async (
   try {
     const clubName = req.body.clubName;
     const year = req.body.year;
-
     const attendanceData = await getClubSheet(clubName, year);
 
     console.log(attendanceData.data.files);
