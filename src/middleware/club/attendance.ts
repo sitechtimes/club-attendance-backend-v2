@@ -215,7 +215,7 @@ export const updateAttendance = async (
           Date: date,
         });
       }
-      //IF USER IS NOT IN THE ATTENDANCE SHEET
+      //IF USER IS NOT IN THE MAIN ATTENDANCE SHEET
       if (rowNum === -1) {
         const updateNewSheet = await newSheet.addRow({
           UID: uid,
@@ -231,24 +231,6 @@ export const updateAttendance = async (
           "# of Attendances",
           data.num_attendance + 1
         );
-
-        ClubMainSheetRows[MainRowNum].set(
-          "# of Attendances",
-          data.num_attendance + 1
-        );
-        console.log(MainRowNum);
-
-        ClubMainSheetRows[MainRowNum].set(
-          "# of Attendances",
-          data.num_attendance + 1
-        );
-        console.log(MainRowNum);
-
-        ClubMainSheetRows[MainRowNum].set(
-          "# of Attendances",
-          data.num_attendance + 1
-        );
-        console.log(MainRowNum);
 
         if (masterSheet.title != date) {
           await masterSheet.clearRows({ start: 2 });
