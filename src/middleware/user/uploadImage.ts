@@ -4,6 +4,27 @@ import { Readable } from "stream";
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from "google-spreadsheet";
 
 // const service = google.drive({ version: 'v3', auth: serviceAccountAuth});
+const verifyAuthority = async (uuid: string) => {
+  const userSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
+  const user = new GoogleSpreadsheet(userSheetID, serviceAccountAuth);
+
+  await user.loadInfo();
+
+  const userSheet = user.sheetsByIndex[0];
+  const userRow = await userSheet.getRows();
+  const userRowLen: number = userSheet.rowCount;
+
+  for (let i = 0; i < userRowLen; i++) {
+    if (
+      userRow[i].get("UID") === uuid &&
+      userRow[i].get("Client Authority") === "Club President"
+    ) {
+      return userRow[i];
+    }
+  }
+
+  return null;
+};
 
 export const uploadImage = async (
   req: Request,
@@ -13,7 +34,13 @@ export const uploadImage = async (
   console.log("11", req.body.year);
   const year: string = req.body.year;
   const clubName: string = req.body.clubName;
+  const uid: string = req.body.uid;
 
+  const Authority = verifyAuthority(uid);
+
+  if (Authority === null) {
+    res.json("User's does not have the authority to upload image");
+  }
   let result = await service.files
     .list({
       q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,

@@ -29,12 +29,10 @@ export const updateAttendance = async (
   const FolderMetaID = process.env.FOLDER_META_DATA_SPREADSHEET_ID as string;
   const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
   /* const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string; */
-  let metaDataSheetID: string = "";
   const masterSpreadSheetID = process.env.MASTER_SPREADSHEET_ID as string;
 
   //GET USER INFORMATION
   const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
-  const FolderMeta = new GoogleSpreadsheet(FolderMetaID, serviceAccountAuth);
 
   let headerValues: string[] = [
     "UID",
