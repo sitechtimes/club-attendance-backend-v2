@@ -14,16 +14,19 @@ const verifyAuthority = async (uuid: string) => {
   const userRow = await userSheet.getRows();
   const userRowLen: number = userSheet.rowCount;
 
+  console.log("finding user");
   for (let i = 0; i < userRowLen; i++) {
-    if (
-      userRow[i].get("UID") === uuid &&
-      userRow[i].get("Client Authority") === "Club President"
-    ) {
-      return userRow[i];
+    if (userRow[i] === undefined) {
+      break;
+    }
+    if (userRow[i].get("UID") === uuid) {
+      if (userRow[i].get("Client Authority") === "Club President") {
+        return userRow[i];
+      } else {
+        return false;
+      }
     }
   }
-
-  return null;
 };
 
 export const uploadImage = async (
@@ -36,11 +39,8 @@ export const uploadImage = async (
   const clubName: string = req.body.clubName;
   const uid: string = req.body.uid;
 
-  const Authority = verifyAuthority(uid);
+  const Authority = await verifyAuthority(uid);
 
-  if (Authority === null) {
-    res.json("User's does not have the authority to upload image");
-  }
   let result = await service.files
     .list({
       q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
@@ -90,24 +90,29 @@ export const uploadImage = async (
   // const attendanceFolderId = attendanceFolder[0].id
 
   try {
-    console.log(req.files, "line 75");
-    req.files?.forEach(async (file: any) => {
-      console.log(req.file);
+    console.log(Authority);
+    if (Authority === false) {
+      res.json("User's does not have the authority to upload image");
+    } else {
+      req.files?.forEach(async (file: any) => {
+        console.log(req.file);
 
-      const img = await service.files.create({
-        requestBody: {
-          name: file.originalname,
-          parents: [`${photoFolderId}`],
-        },
-        media: {
-          mimeType: file.mimetype,
-          body: Readable.from([file.buffer]),
-        },
+        const img = await service.files.create({
+          requestBody: {
+            name: file.originalname,
+            parents: [`${photoFolderId}`],
+          },
+          media: {
+            mimeType: file.mimetype,
+            body: Readable.from([file.buffer]),
+          },
+        });
+        console.log("File Id:", img.data.id);
       });
-      console.log("File Id:", img.data.id);
-    });
+      res.json({ message: "File uploaded successfully!" });
+    }
+
     // return file.data.id;
-    res.json({ message: "File uploaded successfully!" });
   } catch (err) {
     res.json(err);
   }
