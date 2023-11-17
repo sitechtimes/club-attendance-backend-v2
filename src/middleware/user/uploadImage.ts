@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth, service } from "../../app";
 import { Readable } from "stream";
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from "google-spreadsheet";
+import { iam } from "googleapis/build/src/apis/iam";
 
 // const service = google.drive({ version: 'v3', auth: serviceAccountAuth});
 const verifyAuthority = async (uuid: string) => {
@@ -21,7 +22,8 @@ const verifyAuthority = async (uuid: string) => {
     }
     if (userRow[i].get("UID") === uuid) {
       if (userRow[i].get("Client Authority") === "Club President") {
-        return userRow[i];
+        console.log(userRow[i].get("Client Authority"));
+        return true;
       } else {
         return false;
       }
@@ -34,14 +36,12 @@ export const uploadImage = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("11", req.body.year);
   const year: string = req.body.year;
   const clubName: string = req.body.clubName;
-  const uid: string = req.body.uid;
+  const uuid: string = req.body.uuid;
 
-  const Authority = await verifyAuthority(uid);
-
-  let result = await service.files
+  const Authority = await verifyAuthority(uuid);
+  /* let result = await service.files
     .list({
       q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
       fields: "nextPageToken, files(id, name)",
@@ -74,7 +74,9 @@ export const uploadImage = async (
 
   console.log(selectedClub, "rows");
 
-  const photoFolderId = selectedClub?.get("Club Photo Folder ID");
+  const photoFolderId = selectedClub?.get("Club Photo Folder ID"); */
+
+  const photoFolderId = process.env.CLUB_IMAGE_FOLDER_ID as string;
 
   // const selectedClubId = clubResult.data.files[0].id;
   // const selectedClubName = clubResult.data.files[0].name;
@@ -90,23 +92,27 @@ export const uploadImage = async (
   // const attendanceFolderId = attendanceFolder[0].id
 
   try {
-    console.log(Authority);
-    if (Authority === false) {
+    if (Authority !== true) {
       res.json("User's does not have the authority to upload image");
-    } else {
+    }
+    if (Authority === true) {
+      console.log(req.files);
+      console.log(photoFolderId);
       req.files?.forEach(async (file: any) => {
         console.log(req.file);
 
         const img = await service.files.create({
           requestBody: {
-            name: file.originalname,
-            parents: [`${photoFolderId}`],
+            name: req.body.clubName,
+            parents: [photoFolderId],
           },
           media: {
             mimeType: file.mimetype,
             body: Readable.from([file.buffer]),
           },
+          fields: "id",
         });
+
         console.log("File Id:", img.data.id);
       });
       res.json({ message: "File uploaded successfully!" });
@@ -115,5 +121,89 @@ export const uploadImage = async (
     // return file.data.id;
   } catch (err) {
     res.json(err);
+  }
+};
+
+export const approveImage = async (req: Request, res: Response) => {
+  const uuid = req.body.uuid;
+  const year = req.body.year;
+  const clubName = req.body.clubName;
+
+  const yearSheet = new GoogleSpreadsheet(
+    process.env.FOLDER_META_DATA_SPREADSHEET_ID as string,
+    serviceAccountAuth
+  );
+
+  await yearSheet.loadInfo();
+  const yearMeta = yearSheet.sheetsByIndex[0];
+  const yearRows = await yearMeta.getRows();
+  const yearRowLen = yearMeta.rowCount;
+
+  const getClubMeta = () => {
+    for (let i = 0; i < yearRowLen; i++) {
+      if (yearRows[i] === undefined) {
+        break;
+      } else if (yearRows[i].get("Folder Name") === year) {
+        return yearRows[i].get("Folder Meta Sheet ID");
+      }
+    }
+  };
+
+  const clubMetaSheet = new GoogleSpreadsheet(
+    getClubMeta.toString(),
+    serviceAccountAuth
+  );
+
+  await clubMetaSheet.loadInfo();
+
+  const clubMeta = clubMetaSheet.sheetsByIndex[0];
+  const clubRows = await clubMeta.getRows();
+  const clubRowLen = clubMeta.rowCount;
+
+  const getClub = () => {
+    for (let i = 0; i < clubRowLen; i++) {
+      if (clubRows[i] === undefined) {
+        break;
+      } else if (clubRows[i].get("Club Name") === clubName) {
+        return clubRows[i].get("Club Photo Folder ID");
+      }
+    }
+  };
+
+  try {
+    res.json("working");
+    const imgId = await service.files.list({
+      q: `name = '${clubName}'`,
+      fields: " files(id, name)",
+      spaces: "drive",
+    });
+
+    res.json(imgId.data.files);
+
+    const deleteImg = await service.files.delete({
+      fileId: `${imgId.data.files[0].id}`,
+    });
+
+    console.log(deleteImg);
+
+    req.files?.forEach(async (file: any) => {
+      const image = await service.files.create({
+        requestBody: {
+          name: req.body.clubName,
+          parents: [getClub.toString()],
+        },
+        media: {
+          mimeType: file.mimetype,
+          body: Readable.from([file.buffer]),
+        },
+        fields: "id",
+      });
+
+      console.log(image.data.id);
+    });
+
+    res.json("Image has been approved");
+  } catch (error) {
+    res.json(error);
   }
 };
