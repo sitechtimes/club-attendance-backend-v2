@@ -129,17 +129,18 @@ export const approveImage = async (req: Request, res: Response) => {
   const year = req.body.year;
   const clubName = req.body.clubName;
 
-  const yearSheet = new GoogleSpreadsheet(
-    process.env.FOLDER_META_DATA_SPREADSHEET_ID as string,
-    serviceAccountAuth
-  );
+  const getClubMeta = async () => {
+    const yearSheet = new GoogleSpreadsheet(
+      process.env.FOLDER_META_DATA_SPREADSHEET_ID as string,
+      serviceAccountAuth
+    );
 
-  await yearSheet.loadInfo();
-  const yearMeta = yearSheet.sheetsByIndex[0];
-  const yearRows = await yearMeta.getRows();
-  const yearRowLen = yearMeta.rowCount;
+    await yearSheet.loadInfo();
 
-  const getClubMeta = () => {
+    const yearMeta = yearSheet.sheetsByIndex[0];
+    const yearRows = await yearMeta.getRows();
+    const yearRowLen: number = yearMeta.rowCount;
+
     for (let i = 0; i < yearRowLen; i++) {
       if (yearRows[i] === undefined) {
         break;
@@ -148,19 +149,19 @@ export const approveImage = async (req: Request, res: Response) => {
       }
     }
   };
+  console.log(await getClubMeta());
 
-  const clubMetaSheet = new GoogleSpreadsheet(
-    getClubMeta.toString(),
-    serviceAccountAuth
-  );
+  const getClub = async () => {
+    const clubMetaSheet = new GoogleSpreadsheet(
+      await getClubMeta(),
+      serviceAccountAuth
+    );
 
-  await clubMetaSheet.loadInfo();
+    await clubMetaSheet.loadInfo();
 
-  const clubMeta = clubMetaSheet.sheetsByIndex[0];
-  const clubRows = await clubMeta.getRows();
-  const clubRowLen = clubMeta.rowCount;
-
-  const getClub = () => {
+    const clubMeta = clubMetaSheet.sheetsByIndex[0];
+    const clubRows = await clubMeta.getRows();
+    const clubRowLen = clubMeta.rowCount;
     for (let i = 0; i < clubRowLen; i++) {
       if (clubRows[i] === undefined) {
         break;
@@ -169,28 +170,31 @@ export const approveImage = async (req: Request, res: Response) => {
       }
     }
   };
+  console.log(await getClub());
 
   try {
-    res.json("working");
-    const imgId = await service.files.list({
-      q: `name = '${clubName}'`,
+    const listImgs = await service.files.list({
+      q: `name = '${clubName}' and '${process.env.CLUB_IMAGE_FOLDER_ID}' in parents`,
       fields: " files(id, name)",
       spaces: "drive",
     });
 
-    res.json(imgId.data.files);
-
-    const deleteImg = await service.files.delete({
-      fileId: `${imgId.data.files[0].id}`,
+    const imgId = listImgs.data.files?.filter((img) => {
+      console.log(img);
+      if (img.name === clubName) {
+        return img;
+      }
     });
-
-    console.log(deleteImg);
-
+    /* console.log(imgId![0].id); */
+    const deleteImg = await service.files.delete({
+      fileId: `${imgId[0].id}`,
+    });
+    const clubFolderId = await getClub();
     req.files?.forEach(async (file: any) => {
       const image = await service.files.create({
         requestBody: {
           name: req.body.clubName,
-          parents: [getClub.toString()],
+          parents: [clubFolderId],
         },
         media: {
           mimeType: file.mimetype,
@@ -201,9 +205,9 @@ export const approveImage = async (req: Request, res: Response) => {
 
       console.log(image.data.id);
     });
-
+    console.log("uploading image to club folder");
     res.json("Image has been approved");
   } catch (error) {
-    res.json(error);
+    console.log(error);
   }
 };
