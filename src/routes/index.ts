@@ -10,7 +10,11 @@ import {
   getAllClubData,
 } from "../middleware/club/clubData";
 import { createClubTemplate } from "../middleware/scripts/drive";
-import { approveImage, uploadImage } from "../middleware/user/uploadImage";
+import {
+  approveImage,
+  getImage,
+  uploadImage,
+} from "../middleware/user/uploadImage";
 import { upload } from "../middleware/user/multer";
 
 import { updateQRCode } from "../middleware/club/updateQRCode";
@@ -18,7 +22,7 @@ import {
   updateAttendance,
   showAttendancePhotos,
 } from "../middleware/club/attendance";
-import { verifyAdmin } from "../middleware/user/verifyAdmin";
+import { verifyAdmin } from "../middleware/user/verification";
 import {
   getClubMeta,
   addClubMeeting,
@@ -42,6 +46,7 @@ router.get("/getClubMembers/:clubName/:year", getClubMembers);
 router.get("/showAttendancePhotos", showAttendancePhotos);
 router.get("/getAllClubData", getAllClubData);
 router.get("/returnRedirectUrl", returnRedirecUrl);
+router.get("/getUnapprovedImages", getImage);
 
 router.post("/createUserSheet", createUserSheet);
 router.patch("/updateAttendance", updateAttendance); // attendance

@@ -28,3 +28,23 @@ export const verifyAdmin = async (
     return next();
   }
 };
+
+export const verifyAuthority = async (uuid: string) => {
+  const userSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
+  const user = new GoogleSpreadsheet(userSheetID, serviceAccountAuth);
+
+  await user.loadInfo();
+
+  const userSheet = user.sheetsByIndex[0];
+  const userRow = await userSheet.getRows();
+  const userRowLen: number = userSheet.rowCount;
+
+  for (let i = 0; i < userRowLen; i++) {
+    if (userRow[i] === undefined) {
+      break;
+    }
+    if (userRow[i].get("UID") === uuid) {
+      return userRow[i].get("Client Authority");
+    }
+  }
+};
