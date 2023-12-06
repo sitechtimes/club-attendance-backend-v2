@@ -45,13 +45,7 @@ export const oauth2callback = async (
       "Email Domain": `${null}`,
       "Club Data": JSON.stringify({ PresidentOf: [], MemberOf: [] }),
       "Present Location": `${null}`,
-    }); /* [
-      uid as string,
-      firstName as string,
-      lastName as string,
-      email as string,
-      "user",
-    ] */
+    });
     // res.send({ message: 'User added!' });
   }
 
@@ -67,7 +61,7 @@ export const oauth2callback = async (
       osis: userRow?.get("OSIS"),
       grade: userRow?.get("Grade"),
       isAuthenicated: true,
-      ClubData: userRow?.get("Club Data"),
+      ClubData: JSON.parse(userRow?.get("Club Data")),
     },
     { maxAge: 900000 }
   );
