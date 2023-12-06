@@ -67,6 +67,7 @@ export const oauth2callback = async (
       osis: userRow?.get("OSIS"),
       grade: userRow?.get("Grade"),
       isAuthenicated: true,
+      ClubData: userRow?.get("Club Data"),
     },
     { maxAge: 900000 }
   );
