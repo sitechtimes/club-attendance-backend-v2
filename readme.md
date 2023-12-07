@@ -1,6 +1,6 @@
 # Club Attendance API
 
-\*[Getting Started](#getting-started)
+- [Getting Started](#getting-started)
 
 ## Getting Started
 
