@@ -10,7 +10,11 @@ import {
   getAllClubData,
 } from "../middleware/club/clubData";
 import { createClubTemplate } from "../middleware/scripts/drive";
-import { uploadImage } from "../middleware/user/uploadImage";
+import {
+  approveImage,
+  getImage,
+  uploadImage,
+} from "../middleware/user/uploadImage";
 import { upload } from "../middleware/user/multer";
 
 import { updateQRCode } from "../middleware/club/updateQRCode";
@@ -18,13 +22,15 @@ import {
   updateAttendance,
   showAttendancePhotos,
 } from "../middleware/club/attendance";
-import { verifyAdmin } from "../middleware/user/verifyAdmin";
+import { verifyAdmin } from "../middleware/user/verification";
 import {
   getClubMeta,
   addClubMeeting,
   deleteClubMeeting,
 } from "../middleware/club/clubMeta";
 // import { redirectUri } from '../app';
+
+import { listFile, deleteFile } from "../middleware/scripts/delete";
 
 const router = express.Router();
 
@@ -40,6 +46,7 @@ router.get("/getClubMembers/:clubName/:year", getClubMembers);
 router.get("/showAttendancePhotos", showAttendancePhotos);
 router.get("/getAllClubData", getAllClubData);
 router.get("/returnRedirectUrl", returnRedirecUrl);
+router.get("/getUnapprovedImages", getImage);
 
 router.post("/createUserSheet", createUserSheet);
 router.patch("/updateAttendance", updateAttendance); // attendance
@@ -47,6 +54,7 @@ router.patch("/updateQRCode", updateQRCode);
 router.post("/createClubTemplate", verifyAdmin, createClubTemplate);
 // router.post("/createClubMeta", createClubMeta)
 router.post("/uploadImage", upload.array("image"), uploadImage);
+router.post("/approveImage", upload.array("image"), approveImage);
 router.post("/addClubMeeting", addClubMeeting);
 router.post("/addClub", verifyAdmin, addClubData);
 
@@ -55,5 +63,8 @@ router.post("/addClub", verifyAdmin, addClubData);
 router.delete("/deleteClubMeeting", deleteClubMeeting);
 router.delete("/deleteClub", deleteClubData);
 router.delete("/removeStudentFromClub", removeStudentFromClub);
+
+router.get("/listfiles", listFile);
+router.delete("/deleteFile", deleteFile);
 
 export { router };

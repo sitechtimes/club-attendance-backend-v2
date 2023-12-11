@@ -1,6 +1,8 @@
 # Club Attendance API
 
-## Setup the Project
+- [Getting Started](#getting-started)
+
+## Getting Started
 
 Clone the Repository.
 
@@ -25,8 +27,6 @@ There are env files and keys that are required for the project to run properly.
 ## [Attendance](src/middleware/club/attendance.ts)
 
 Collects data about the user to update their club attendance for the day.
-
-### Route
 
 #### Update Attendance
 

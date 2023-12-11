@@ -18,6 +18,8 @@ export const updateAttendance = async (
   const data = req.body as attendanceData;
   const year = req.body.year;
   const arrUID: string[] = [];
+  const uuid = req.body.uuid;
+  const clubName = req.body.club_name;
   const dateArr: dateData[] = [];
   const metaArr: metaData[] = [];
   const folderMetaArr: folderMeta[] = [];
@@ -71,6 +73,41 @@ export const updateAttendance = async (
     const metaDataSheetID = CurrentYear[0].Folder_Meta_ID;
 
     return metaDataSheetID.toString();
+  }
+
+  async function addClubToUserData(uuid: string, clubName: string) {
+    const userSheet = new GoogleSpreadsheet(
+      process.env.USER_DATA_SPREADSHEET_ID as string,
+      serviceAccountAuth
+    );
+
+    await userSheet.loadInfo();
+
+    const getUserSheet = userSheet.sheetsByIndex[0];
+    const UserRows = await getUserSheet.getRows();
+    const userSheetRowCount = getUserSheet.rowCount;
+
+    /*   console.log(uuid);
+    console.log(clubName);
+    console.log(UserRows[3].get("UID"));
+    console.log(UserRows[3].get("Clubs")); */
+    for (let i = 0; i < userSheetRowCount; i++) {
+      if (UserRows[i] === undefined) {
+        break;
+      } else if (UserRows[i].get("UID") === uuid) {
+        const newClubs = async (nameOfClub: string) => {
+          let clubs = await JSON.parse(UserRows[i].get("Club Data"));
+          const changedClubs = clubs.MemberOf.push(nameOfClub);
+
+          return clubs;
+        };
+
+        UserRows[i].set("Club Data", JSON.stringify(await newClubs(clubName)));
+        await UserRows[i].save();
+
+        return true;
+      }
+    }
   }
   //FROM META DATA SHEET GET CLUB SHEET ID AND NAME
   async function findClassID(clubName: string) {
@@ -212,6 +249,9 @@ export const updateAttendance = async (
           "# of Attendances": 1,
           Date: date,
         });
+
+        await addClubToUserData(uid, clubName);
+        /* console.log("added new clubs"); */
       }
       //IF USER IS NOT IN THE MAIN ATTENDANCE SHEET
       if (rowNum === -1) {

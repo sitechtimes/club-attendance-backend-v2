@@ -33,13 +33,19 @@ export const oauth2callback = async (
 
   if (!userRow) {
     // res.json({ message: 'User already exists!' });
-    await userDataSheet.addRow([
-      uid as string,
-      firstName as string,
-      lastName as string,
-      email as string,
-      "user",
-    ]);
+    await userDataSheet.addRow({
+      UID: `${uid}`,
+      "First Name": `${firstName}`,
+      "Last Name": `${lastName}`,
+      Email: `${email}`,
+      "Client Authority": "User", // FIGURE OUT CLIENT AUTHORITY HIERACHY
+      Osis: `${null}`, // NEED TO REPLACE WITH OSIS
+      Grade: `${null}`, // NEED TO REPLACE WITH GRADE
+      "Official Class": `${null}`, // NEED TO REPLACE WITH OFFICIAL CLASS
+      "Email Domain": `${null}`,
+      "Club Data": JSON.stringify({ PresidentOf: [], MemberOf: [] }),
+      "Present Location": `${null}`,
+    });
     // res.send({ message: 'User added!' });
   }
 
@@ -55,6 +61,7 @@ export const oauth2callback = async (
       osis: userRow?.get("OSIS"),
       grade: userRow?.get("Grade"),
       isAuthenicated: true,
+      ClubData: JSON.parse(userRow?.get("Club Data")),
     },
     { maxAge: 900000 }
   );
