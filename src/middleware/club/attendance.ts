@@ -76,6 +76,8 @@ export const updateAttendance = async (
   }
 
   async function addClubToUserData(uuid: string, clubName: string) {
+    const MetaSheetID = await findMetaSheet();
+
     const userSheet = new GoogleSpreadsheet(
       process.env.USER_DATA_SPREADSHEET_ID as string,
       serviceAccountAuth
@@ -87,6 +89,24 @@ export const updateAttendance = async (
     const UserRows = await getUserSheet.getRows();
     const userSheetRowCount = getUserSheet.rowCount;
 
+    /*  const metaDoc = new GoogleSpreadsheet(MetaSheetID, serviceAccountAuth);
+
+    await metaDoc.loadInfo();
+
+    const getMeta = metaDoc.sheetsByIndex[0];
+    const MetaRows = await getMeta.getRows();
+    const MetaRowCount = getMeta.rowCount;
+
+    const getClubNextMeeting = async (nameOfClub: string) => {
+      for (let i = 0; i < MetaRowCount; i++) {
+        if (MetaRows[i] === undefined) {
+          break;
+        } else if (MetaRows[i].get("Club Name") === nameOfClub) {
+          return MetaRows[i].get("Next Meeting");
+        }
+      }
+    }; */
+
     /*   console.log(uuid);
     console.log(clubName);
     console.log(UserRows[3].get("UID"));
@@ -95,14 +115,25 @@ export const updateAttendance = async (
       if (UserRows[i] === undefined) {
         break;
       } else if (UserRows[i].get("UID") === uuid) {
-        const newClubs = async (nameOfClub: string) => {
+        const newClubs = async (
+          nameOfClub: string /* nextMeeting: string */
+        ) => {
           let clubs = await JSON.parse(UserRows[i].get("Club Data"));
-          const changedClubs = clubs.MemberOf.push(nameOfClub);
+          //need to put next meeting
+          const changedClubs = clubs.MemberOf.push({
+            nameOfClub: nameOfClub,
+            //nextMeeting: nextMeeting,
+          });
 
           return clubs;
         };
 
-        UserRows[i].set("Club Data", JSON.stringify(await newClubs(clubName)));
+        UserRows[i].set(
+          "Club Data",
+          JSON.stringify(
+            await newClubs(clubName /*  await getClubNextMeeting(clubName) */) // may not need next club meeting, may cause 'Too many requests' error
+          )
+        );
         await UserRows[i].save();
 
         return true;

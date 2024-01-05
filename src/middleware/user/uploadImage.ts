@@ -13,8 +13,6 @@ export const uploadImage = async (
   const year: string = req.body.year;
   const clubName: string = req.body.clubName;
   const uuid: string = req.body.uuid;
-
-  const Authority = await verifyAuthority(uuid);
   /* let result = await service.files
     .list({
       q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
@@ -66,31 +64,26 @@ export const uploadImage = async (
   // const attendanceFolderId = attendanceFolder[0].id
 
   try {
-    if (Authority !== "Club President") {
-      res.json("User's does not have the authority to upload image");
-    }
-    if (Authority === "Club President") {
-      console.log(req.files);
-      console.log(photoFolderId);
-      req.files?.forEach(async (file: any) => {
-        console.log(req.file);
+    console.log(req.files);
+    console.log(photoFolderId);
+    req.files?.forEach(async (file: any) => {
+      console.log(req.file);
 
-        const img = await service.files.create({
-          requestBody: {
-            name: req.body.clubName,
-            parents: [photoFolderId],
-          },
-          media: {
-            mimeType: file.mimetype,
-            body: Readable.from([file.buffer]),
-          },
-          fields: "id",
-        });
-
-        console.log("File Id:", img.data.id);
+      const img = await service.files.create({
+        requestBody: {
+          name: req.body.clubName,
+          parents: [photoFolderId],
+        },
+        media: {
+          mimeType: file.mimetype,
+          body: Readable.from([file.buffer]),
+        },
+        fields: "id",
       });
-      res.json({ message: "File uploaded successfully!" });
-    }
+
+      console.log("File Id:", img.data.id);
+    });
+    res.json({ message: "File uploaded successfully!" });
 
     // return file.data.id;
   } catch (err) {
@@ -196,20 +189,14 @@ export const getImage = async (req: Request, res: Response) => {
   const uuid = req.body.uuid;
   const year = req.body.year;
 
-  const Authority = await verifyAuthority(uuid);
-
   try {
-    if (Authority === "Admin") {
-      const images = await service.files.list({
-        q: `'${process.env.CLUB_IMAGE_FOLDER_ID}' in parents`,
-        fields: " files(id, name, webViewLink)",
-        spaces: "drive",
-      });
+    const images = await service.files.list({
+      q: `'${process.env.CLUB_IMAGE_FOLDER_ID}' in parents`,
+      fields: " files(id, name, webViewLink)",
+      spaces: "drive",
+    });
 
-      res.json(images.data.files);
-    } else {
-      res.json("User doesn't have required authority");
-    }
+    res.json(images.data.files);
   } catch (error) {
     res.json(error);
   }
