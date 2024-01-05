@@ -22,7 +22,7 @@ import {
   updateAttendance,
   showAttendancePhotos,
 } from "../middleware/club/attendance";
-import { verifyAdmin } from "../middleware/user/verification";
+import { verifyAdmin, verifyAuthority } from "../middleware/user/verification";
 import {
   getClubMeta,
   addClubMeeting,
@@ -31,6 +31,7 @@ import {
 // import { redirectUri } from '../app';
 
 import { listFile, deleteFile } from "../middleware/scripts/delete";
+import { authority } from "../enums/authority";
 
 const router = express.Router();
 
@@ -41,28 +42,75 @@ router.get("/", (req, res) => {
 router.get("/oauth2", oauth2);
 router.get("/oauth2callback", oauth2callback);
 router.get("/getClubData/:clubName/:year", getClubData);
-router.get("/getClubMeta/:clubName/:year", getClubMeta);
-router.get("/getClubMembers/:clubName/:year", getClubMembers);
+router.get(
+  "/getClubMeta/:clubName/:year/:uuid",
+  verifyAuthority([authority.admin]),
+  getClubMeta
+); //admin
+router.get(
+  "/getClubMembers/:clubName/:year/:uuid",
+  verifyAuthority([authority.admin, authority.club_president]),
+  getClubMembers
+); //admin and president (need to test for multiple valid authorities)
 router.get("/showAttendancePhotos", showAttendancePhotos);
-router.get("/getAllClubData", getAllClubData);
+router.get(
+  "/getAllClubData/:uuid",
+  verifyAuthority([authority.admin]),
+  getAllClubData
+); //admin?s
 router.get("/returnRedirectUrl", returnRedirecUrl);
-router.get("/getUnapprovedImages", getImage);
+router.get(
+  "/getUnapprovedImages/:uuid",
+  verifyAuthority([authority.admin]),
+  getImage
+); //admin
 
-router.post("/createUserSheet", createUserSheet);
+router.post(
+  "/createUserSheet",
+  verifyAuthority([authority.admin]),
+  createUserSheet
+); //admin
 router.patch("/updateAttendance", updateAttendance); // attendance
-router.patch("/updateQRCode", updateQRCode);
+router.patch("/updateQRCode", updateQRCode); //????
 router.post("/createClubTemplate", verifyAdmin, createClubTemplate);
 // router.post("/createClubMeta", createClubMeta)
-router.post("/uploadImage", upload.array("image"), uploadImage);
-router.post("/approveImage", upload.array("image"), approveImage);
-router.post("/addClubMeeting", addClubMeeting);
-router.post("/addClub", verifyAdmin, addClubData);
+router.post(
+  "/uploadImage",
+  upload.array("image"),
+  verifyAuthority([authority.club_president]),
+  uploadImage
+); // upload.array("image") needs to be before verifyAuthority or it doens't work for some reason
+router.post(
+  "/approveImage",
+
+  upload.array("image"),
+  verifyAuthority([authority.admin]),
+  approveImage
+); // admin (probably works if the one above works)
+router.post(
+  "/addClubMeeting",
+  verifyAuthority([authority.club_president]),
+  addClubMeeting
+); // president
+router.post("/addClub", verifyAuthority([authority.admin]), addClubData); //admin
 
 // router.patch("/changeMeta", changeMeta)
 
-router.delete("/deleteClubMeeting", deleteClubMeeting);
-router.delete("/deleteClub", deleteClubData);
-router.delete("/removeStudentFromClub", removeStudentFromClub);
+router.delete(
+  "/deleteClubMeeting",
+  verifyAuthority([authority.club_president]),
+  deleteClubMeeting
+); // president
+router.delete(
+  "/deleteClub",
+  verifyAuthority([authority.admin]),
+  deleteClubData
+); //admin
+router.delete(
+  "/removeStudentFromClub",
+  verifyAuthority([authority.admin, authority.club_president]),
+  removeStudentFromClub
+); //president and admin
 
 router.get("/listfiles", listFile);
 router.delete("/deleteFile", deleteFile);
