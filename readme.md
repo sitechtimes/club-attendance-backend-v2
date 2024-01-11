@@ -24,6 +24,8 @@ npm install typescript --save-dev
 
 There are env files and keys that are required for the project to run properly.
 
+## Routes
+
 ## [Attendance](src/middleware/club/attendance.ts)
 
 Collects data about the user to update their club attendance for the day.
