@@ -30,7 +30,12 @@ import {
 } from "../middleware/club/clubMeta";
 // import { redirectUri } from '../app';
 
-import { listFile, deleteFile } from "../middleware/scripts/delete";
+import {
+  listFile,
+  deleteFile,
+  listFileAndRemove,
+  listObject,
+} from "../middleware/scripts/utility";
 import { authority } from "../enums/authority";
 
 const router = express.Router();
@@ -72,7 +77,11 @@ router.post(
 ); //admin
 router.patch("/updateAttendance", updateAttendance); // attendance
 router.patch("/updateQRCode", updateQRCode); //????
-router.post("/createClubTemplate", verifyAdmin, createClubTemplate);
+router.post(
+  "/createClubTemplate",
+  verifyAuthority([authority.admin]),
+  createClubTemplate
+);
 // router.post("/createClubMeta", createClubMeta)
 router.post(
   "/uploadImage",
@@ -82,7 +91,6 @@ router.post(
 ); // upload.array("image") needs to be before verifyAuthority or it doens't work for some reason
 router.post(
   "/approveImage",
-
   upload.array("image"),
   verifyAuthority([authority.admin]),
   approveImage
@@ -113,6 +121,8 @@ router.delete(
 ); //president and admin
 
 router.get("/listfiles", listFile);
+router.delete("/listFilesAndRemove", listFileAndRemove);
 router.delete("/deleteFile", deleteFile);
+router.get("/listObject", listObject);
 
 export { router };

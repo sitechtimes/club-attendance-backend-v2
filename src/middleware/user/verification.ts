@@ -65,8 +65,6 @@ export const verifyAuthority = (authority: string[]) => {
     const userRowLen: number = userSheet.rowCount;
 
     try {
-      console.log("running");
-      console.log(req.body); //need to get stuff but hmmmm
       const setId = () => {
         if (req.method === "GET") {
           return getId;
@@ -85,10 +83,11 @@ export const verifyAuthority = (authority: string[]) => {
           console.log("found user");
           for (let j = 0; j < authority.length; j++) {
             if (userRow[i].get("Client Authority") === authority[j]) {
-              console.log("going to next");
               next();
             } else {
-              res.json("user doesn't have permission to access this page");
+              res
+                .status(403)
+                .json("user doesn't have permission to access this page");
             }
           }
         }
