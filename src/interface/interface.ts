@@ -1,11 +1,13 @@
 export interface clubData {
-  "Club Name": string;
-  "Advisor Email": string;
-  "Club Advisor": string;
-  "President Email": string;
-  "Club President": string;
-  "Next Meeting": string;
-  Room: string;
+  clubName: string;
+  clubAdivsor: string;
+  clubPresident: string;
+  frequency: string;
+  day: string;
+  room: string;
+  advisorEmail: string;
+  presidentEmail: string;
+  nextMeeting: string;
 }
 
 export interface attendanceData {
