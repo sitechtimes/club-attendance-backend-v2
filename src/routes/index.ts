@@ -96,7 +96,7 @@ router.post("/addClub", verifyAuthority([authority.admin]), addClubData); //admi
 
 // router.patch("/changeMeta", changeMeta)
 
-router.delete(
+router.post(
   "/deleteClubMeeting",
   verifyAuthority([authority.club_president]),
   deleteClubMeeting

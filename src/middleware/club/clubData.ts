@@ -19,28 +19,33 @@ export const getClubData = async (
     const clubNameSheet = clubNameDoc.sheetsById[0];
     const rows = await clubNameSheet.getRows();
 
-    const club = await getSelectedClub(year, clubName);
+    const club: clubData | false = (await getSelectedClub(
+      year,
+      clubName,
+      "object"
+    )) as clubData;
 
-    console.log(club, "17");
-
-    // const selectedClub = rows.find(row => row._rawData[0] === clubName)
-    const selectedClub = rows.filter(
-      (row) => row.get("Club Name") === clubName
-    )[0];
-    console.log(selectedClub?.get("Club Name"));
-    const clubData: clubData = {
-      clubName: selectedClub?.get("Club Name"),
-      clubAdivsor: selectedClub?.get("Club Advisor"),
-      clubPresident: selectedClub?.get("Club President(s)"),
-      frequency: selectedClub?.get("Frequency"),
-      day: selectedClub?.get("Day"),
-      room: selectedClub?.get("Room"),
+    console.log(club, "line 24");
+    if (!club) {
+      res.status(404).json("Club not found!");
+    } else {
+      const clubData = {
+        clubName: club["Club Name"],
+        clubAdivsor: club["Club Advisor"],
+        clubAdvisorEmail: club["Advisor Email"],
+        clubPresident: club["Club President"],
+        clubPresidentEmail: club["President Email"],
+        nextMeeting: club["Next Meeting"],
+        room: club["Room"],
+      };
+      /*
       advisorEmail: club?.get("Advisor Email"),
       presidentEmail: club?.get("President Email"),
-      nextMeeting: club?.get("Next Meeting"),
-    };
-
-    res.json(clubData);
+      frequency: selectedClub?.get("Frequency"),
+      day: selectedClub?.get("Day"), 
+      */
+      res.json(clubData);
+    }
   } catch (error) {
     res.json(error);
   }

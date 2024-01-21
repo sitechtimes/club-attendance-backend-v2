@@ -3,35 +3,67 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
 import { serviceAccountAuth, service } from "../../app";
 import { clubMeta } from "../../interface/interface";
 
-export async function getSelectedClub(year: string, clubName: string) {
-  let result = await service.files
-    .list({
-      q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
-      fields: "nextPageToken, files(id, name)",
-      spaces: "drive",
-    })
-    .catch((error) => console.log(error));
-  let folder = result.data.files;
-  const selectedYearFolder = folder?.filter((folder) => folder.name === year);
-
-  const metaSheetData = await service.files.list({
-    q: `name = 'Club MetaData' and '${selectedYearFolder![0].id}' in parents`,
-    fields: "nextPageToken, files(id, name)",
-  });
-
-  const metaSheetDoc = new GoogleSpreadsheet(
-    metaSheetData.data.files![0].id as string,
+export async function getSelectedClub(
+  year: string,
+  clubName: string,
+  dataType: string
+  // data type should either be object or just the raw data
+) {
+  // get folder meta
+  const allMeta = new GoogleSpreadsheet(
+    process.env.FOLDER_META_DATA_SPREADSHEET_ID as string,
     serviceAccountAuth
   );
-  await metaSheetDoc.loadInfo();
-  const metaSheet = metaSheetDoc.sheetsByIndex[0];
-  const rows = await metaSheet.getRows();
 
-  const selectedClub = rows.filter(
-    (club) => club.get("Club Name") === clubName
-  )[0];
+  await allMeta.loadInfo();
 
-  return selectedClub;
+  const allMetaSheet = allMeta.sheetsByIndex[0];
+  const allMetaRows = await allMetaSheet.getRows();
+
+  const getYearMeta = () => {
+    for (const row of allMetaRows) {
+      if (row.get("Folder Name") === year) {
+        return row.get("Folder Meta Sheet ID");
+      }
+    }
+    return false;
+  };
+
+  if (!getYearMeta()) {
+    return false;
+  } else {
+    const thisYearMeta = new GoogleSpreadsheet(
+      getYearMeta() as string,
+      serviceAccountAuth
+    );
+
+    await thisYearMeta.loadInfo();
+
+    const thisYearMetaSheet = thisYearMeta.sheetsByIndex[0];
+    const thisYearMetaRows = await thisYearMetaSheet.getRows();
+
+    /**
+     * Retrieves information about a specific club from a Google Spreadsheet based on the provided club name and data type.
+     * @param clubName - The name of the club to retrieve information for.
+     * @param dataType - The type of data to retrieve. It can be either "object" or "raw data".
+     * @returns If the dataType is "object", the function returns an object containing the information of the selected club.
+     * If the dataType is not "object", the function returns the row of the selected club.
+     * If no matching club is found, the function returns false.
+     */
+    const selectedClub = () => {
+      const selectedRow = thisYearMetaRows.find(
+        (row) => row.get("Club Name") === clubName
+      );
+
+      if (dataType === "object") {
+        return selectedRow?.toObject() || false;
+      } else if (dataType === "raw data") {
+        return selectedRow || false;
+      }
+    };
+
+    return selectedClub();
+  }
 }
 
 export const getClubMeta = async (
@@ -105,24 +137,28 @@ export const getClubMeta = async (
 };
 
 //can change club meeting as well
+/**
+ * Adds the next meeting date for a specific club.
+ * @param req - The Express request object containing the request body.
+ * @param res - The Express response object used to send the response.
+ * @param next - The Express next function used to pass control to the next middleware.
+ */
 export const addClubMeeting = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const year: string = req.body.year;
-    const clubName: string = req.body.clubName;
-    const nextMeeting: string = req.body.nextMeeting;
+    const { year, clubName, nextMeeting } = req.body;
 
-    const selectedClub = await getSelectedClub(year, clubName);
+    const selectedClub = await getSelectedClub(year, clubName, "raw data");
 
-    selectedClub.set("Next Meeting", nextMeeting);
+    selectedClub?.set("Next Meeting", nextMeeting);
 
-    await selectedClub.save();
+    await selectedClub?.save();
 
     res.json({
-      message: `Successfully added next meeting date as ${selectedClub.get(
+      message: `Successfully added next meeting date as ${selectedClub?.get(
         "Next Meeting"
       )}!`,
     });
@@ -137,15 +173,14 @@ export const deleteClubMeeting = async (
   next: NextFunction
 ) => {
   try {
-    const year: string = req.body.year;
-    const clubName: string = req.body.clubName;
+    const { year, clubName } = req.body;
     // const nextMeeting = req.body.nextMeeting;
 
-    const selectedClub = await getSelectedClub(year, clubName);
+    const selectedClub = await getSelectedClub(year, clubName, "raw data");
 
-    selectedClub.set("Next Meeting", "No Meeting Scheduled");
+    selectedClub?.set("Next Meeting", "No Meeting Scheduled");
 
-    await selectedClub.save();
+    await selectedClub?.save();
 
     res.json({ message: `Successfully deleted next meeting date!` });
   } catch (error) {
