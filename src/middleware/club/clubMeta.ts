@@ -3,69 +3,69 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
 import { serviceAccountAuth, service } from "../../app";
 import { clubMeta } from "../../interface/interface";
 
+/**
+ * Retrieves information about a specific club for a given year from a Google Spreadsheet.
+ * @param year - The year for which the club information is requested.
+ * @param clubName - The name of the club for which the information is requested.
+ * @param dataType - The type of data to be returned. It can be either "object" or "raw data".
+ * @returns The selected club's information in the specified data type.
+ */
 export async function getSelectedClub(
   year: string,
   clubName: string,
   dataType: string
-  // data type should either be object or just the raw data
 ) {
-  // get folder meta
+  // Load the Google Spreadsheet containing the folder metadata
   const allMeta = new GoogleSpreadsheet(
     process.env.FOLDER_META_DATA_SPREADSHEET_ID as string,
     serviceAccountAuth
   );
-
   await allMeta.loadInfo();
 
+  // Find the row in the metadata sheet that corresponds to the requested year
   const allMetaSheet = allMeta.sheetsByIndex[0];
   const allMetaRows = await allMetaSheet.getRows();
 
-  const getYearMeta = () => {
-    for (const row of allMetaRows) {
-      if (row.get("Folder Name") === year) {
-        return row.get("Folder Meta Sheet ID");
-      }
-    }
+  // Get the metadata sheet ID for the requested year
+  const yearMetaId = allMetaRows
+    .find((row) => row.get("Folder Name") === year)
+    ?.get("Folder Meta Sheet ID");
+
+  // If the requested year metadata is not found, return false
+  if (!yearMetaId) {
     return false;
-  };
+  }
 
-  if (!getYearMeta()) {
+  // Load the Google Spreadsheet containing the club metadata for the requested year
+  const thisYearMeta = new GoogleSpreadsheet(
+    yearMetaId as string,
+    serviceAccountAuth
+  );
+  await thisYearMeta.loadInfo();
+
+  // Find the row in the club metadata sheet that corresponds to the requested club name
+  const thisYearMetaSheet = thisYearMeta.sheetsByIndex[0];
+  const thisYearMetaRows = await thisYearMetaSheet.getRows();
+
+  // Get the selected club's information
+  const selectedRow = thisYearMetaRows.find(
+    (row) => row.get("Club Name") === clubName
+  );
+
+  // If the requested club metadata is not found, return false
+  if (!selectedRow) {
     return false;
-  } else {
-    const thisYearMeta = new GoogleSpreadsheet(
-      getYearMeta() as string,
-      serviceAccountAuth
-    );
+  }
 
-    await thisYearMeta.loadInfo();
-
-    const thisYearMetaSheet = thisYearMeta.sheetsByIndex[0];
-    const thisYearMetaRows = await thisYearMetaSheet.getRows();
-
-    /**
-     * Retrieves information about a specific club from a Google Spreadsheet based on the provided club name and data type.
-     * @param clubName - The name of the club to retrieve information for.
-     * @param dataType - The type of data to retrieve. It can be either "object" or "raw data".
-     * @returns If the dataType is "object", the function returns an object containing the information of the selected club.
-     * If the dataType is not "object", the function returns the row of the selected club.
-     * If no matching club is found, the function returns false.
-     */
-    const selectedClub = () => {
-      const selectedRow = thisYearMetaRows.find(
-        (row) => row.get("Club Name") === clubName
-      );
-
-      if (dataType === "object") {
-        return selectedRow?.toObject() || false;
-      } else if (dataType === "raw data") {
-        return selectedRow || false;
-      }
-    };
-
-    return selectedClub();
+  // Return the selected club's information in the specified data type
+  if (dataType === "object") {
+    return selectedRow.toObject();
+  } else if (dataType === "raw data") {
+    return selectedRow;
   }
 }
 
+//probably don't need
 export const getClubMeta = async (
   req: Request,
   res: Response,
@@ -136,7 +136,6 @@ export const getClubMeta = async (
   }
 };
 
-//can change club meeting as well
 /**
  * Adds the next meeting date for a specific club.
  * @param req - The Express request object containing the request body.
@@ -157,16 +156,23 @@ export const addClubMeeting = async (
 
     await selectedClub?.save();
 
+    const updatedNextMeeting = selectedClub?.get("Next Meeting");
+
     res.json({
-      message: `Successfully added next meeting date as ${selectedClub?.get(
-        "Next Meeting"
-      )}!`,
+      message: `Successfully added next meeting date as ${updatedNextMeeting}!`,
     });
   } catch (error) {
     res.json(error);
   }
 };
 
+/**
+ * Deletes the next meeting date of a club.
+ * @param req - The request object containing the year and clubName properties in the body.
+ * @param res - The response object used to send the JSON response.
+ * @param next - The next function to be called in the middleware chain.
+ * @returns A JSON object containing a success message indicating that the next meeting date has been deleted.
+ */
 export const deleteClubMeeting = async (
   req: Request,
   res: Response,
@@ -174,7 +180,6 @@ export const deleteClubMeeting = async (
 ) => {
   try {
     const { year, clubName } = req.body;
-    // const nextMeeting = req.body.nextMeeting;
 
     const selectedClub = await getSelectedClub(year, clubName, "raw data");
 
