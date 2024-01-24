@@ -1,8 +1,20 @@
 import { Request, Response, NextFunction } from "express";
-import { clubNameDoc, service, serviceAccountAuth } from "../../app";
+import {
+  AllMetaIdSheet,
+  clubNameDoc,
+  service,
+  serviceAccountAuth,
+} from "../../app";
 import { clubData, memberData } from "../../interface/interface";
 import { getSelectedClub } from "./clubMeta";
 import { GoogleSpreadsheet } from "google-spreadsheet";
+import {
+  findMeta_ParentFolder,
+  getMetaSheet,
+} from "../Folder_Meta_Utils/FindMeta_ParentFolder";
+import { createClubFolders } from "../Folder_Meta_Utils/CreateClub";
+import { v4 as uuidv4 } from "uuid";
+import { create } from "qrcode";
 
 export const getClubData = async (
   req: Request,
@@ -100,35 +112,62 @@ export const getAllClubData = async (
   }
 };
 
-//add club
+/**
+ * Adds club data to a Google Spreadsheet.
+ * @param req - The request object containing the club data in the request body.
+ * @param res - The response object used to send the response back to the client.
+ * @param next - The next function to be called in the middleware chain.
+ * @returns A JSON response indicating the success or error that occurred.
+ */
 export const addClubData = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const clubName: string = req.body.clubName;
-    const clubAdvisor: string = req.body.clubAdvisor;
-    const clubPresident: string = req.body.clubPresident;
-    const frequency: string = req.body.frequency;
-    const day: string = req.body.day;
-    const room: string = req.body.room;
-    const activtyType: string = req.body.activityType;
-    const status = req.body.status;
-    const email: string = req.body.email;
+    const {
+      year,
+      clubName,
+      clubAdvisor,
+      advisorEmail,
+      clubPresident,
+      presidentEmail,
+      room,
+    } = req.body;
 
-    await clubNameDoc.loadInfo();
-    const clubNameSheet = clubNameDoc.sheetsById[0];
-    await clubNameSheet.addRow({
+    const metaSheetParentId = await findMetaParentFolder(year);
+
+    if (!metaSheetParentId) {
+      return res.status(404).json("Folder not found!");
+    }
+
+    const metaSheet = await getMetaSheet(
+      metaSheetParentId["Meta Sheet ID"],
+      null
+    );
+
+    if (!metaSheet) {
+      return res.json(false);
+    }
+
+    const createClub = await createClubFolders(
+      metaSheetParentId["Folder Id"],
+      clubName
+    );
+
+    await metaSheet.addRow({
       "Club Name": clubName,
+      "Advisor Email": advisorEmail,
       "Club Advisor": clubAdvisor,
+      "President Email": presidentEmail,
       "Club President(s)": clubPresident,
-      Frequency: frequency,
-      Day: day,
+      "Next Meeting": "No Meeting Scheduled",
       Room: room,
-      "Activity Type": activtyType,
-      Status: "APPROVED",
-      Email: email,
+      "QR Code": createClub.qrCodeId,
+      "Club Folder ID": createClub.clubFolderId,
+      "Club Spreadsheet": createClub.clubSheetId,
+      "Club Photo Folder ID": createClub.clubPhotoFolderId,
+      "Club Code": uuidv4(),
     });
 
     res.json(`${clubName} has been added!`);
@@ -137,29 +176,53 @@ export const addClubData = async (
   }
 };
 
-//delete club
+/**
+ * Deletes a club's data from a Google Spreadsheet.
+ * @param req - The request object containing the year and club name in the request body.
+ * @param res - The response object.
+ * @param next - The next function.
+ * @returns The deleted club folder object, or a 404 response if the folder is not found, or false if the club is not found in the metadata sheet.
+ */
 export const deleteClubData = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const clubName: string = req.body.clubName;
+    const year = req.body.year;
+    const club = req.body.clubName;
 
-    await clubNameDoc.loadInfo();
-    const clubNameSheet = clubNameDoc.sheetsById[0];
-    const rows = await clubNameSheet.getRows();
+    // Retrieve the metadata sheet ID for the given year
+    const metaSheetId = await findMeta_ParentFolder(year);
 
-    const selectedClub = rows.filter(
-      (row) => row.get("Club Name") === clubName
-    )[0];
-    await selectedClub.delete();
-    res.json(`${clubName} has been deleted!`);
+    if (!metaSheetId) {
+      return res.status(404).json("Folder not found!");
+    }
+
+    // Retrieve the metadata sheet for the specified club
+    const metaSheet = await getMetaSheet(metaSheetId["Meta Sheet ID"], club);
+
+    if (!metaSheet) {
+      return res.json(false);
+    }
+
+    const metaObject = metaSheet.toObject();
+    console.log(metaObject);
+    console.log("184");
+    // Delete the club's folder from Google Drive
+    const deleteClubFolder = await service.files.delete({
+      fileId: metaObject["Club Folder ID"],
+    });
+    console.log("189");
+    // Delete the corresponding row from the metadata sheet
+    await metaSheet.delete();
+
+    res.json(deleteClubFolder);
   } catch (error) {
     res.json(error);
   }
 };
-
+//do we need to get the attendacne data for adfmin?
 export const getClubSheet = async (clubName: string, year: string) => {
   let result = await service.files
     .list({

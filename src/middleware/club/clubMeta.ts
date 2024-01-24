@@ -1,7 +1,14 @@
 import { Request, Response, NextFunction } from "express";
-import { GoogleSpreadsheet } from "google-spreadsheet";
+import {
+  GoogleSpreadsheet,
+  GoogleSpreadsheetWorksheet,
+} from "google-spreadsheet";
 import { serviceAccountAuth, service } from "../../app";
 import { clubMeta } from "../../interface/interface";
+import {
+  findMeta_ParentFolder,
+  getMetaSheet,
+} from "../Folder_Meta_Utils/FindMeta_ParentFolder";
 
 /**
  * Retrieves information about a specific club for a given year from a Google Spreadsheet.
@@ -15,53 +22,23 @@ export async function getSelectedClub(
   clubName: string,
   dataType: string
 ) {
-  // Load the Google Spreadsheet containing the folder metadata
-  const allMeta = new GoogleSpreadsheet(
-    process.env.FOLDER_META_DATA_SPREADSHEET_ID as string,
-    serviceAccountAuth
-  );
-  await allMeta.loadInfo();
+  const MetaSheetId = await findMeta_ParentFolder(year);
 
-  // Find the row in the metadata sheet that corresponds to the requested year
-  const allMetaSheet = allMeta.sheetsByIndex[0];
-  const allMetaRows = await allMetaSheet.getRows();
-
-  // Get the metadata sheet ID for the requested year
-  const yearMetaId = allMetaRows
-    .find((row) => row.get("Folder Name") === year)
-    ?.get("Folder Meta Sheet ID");
-
-  // If the requested year metadata is not found, return false
-  if (!yearMetaId) {
+  if (!MetaSheetId) {
     return false;
   }
 
-  // Load the Google Spreadsheet containing the club metadata for the requested year
-  const thisYearMeta = new GoogleSpreadsheet(
-    yearMetaId as string,
-    serviceAccountAuth
-  );
-  await thisYearMeta.loadInfo();
+  const findClub = await getMetaSheet(MetaSheetId["Meta Sheet ID"], clubName);
 
-  // Find the row in the club metadata sheet that corresponds to the requested club name
-  const thisYearMetaSheet = thisYearMeta.sheetsByIndex[0];
-  const thisYearMetaRows = await thisYearMetaSheet.getRows();
-
-  // Get the selected club's information
-  const selectedRow = thisYearMetaRows.find(
-    (row) => row.get("Club Name") === clubName
-  );
-
-  // If the requested club metadata is not found, return false
-  if (!selectedRow) {
+  if (!findClub) {
     return false;
   }
 
   // Return the selected club's information in the specified data type
   if (dataType === "object") {
-    return selectedRow.toObject();
+    return findClub.toObject();
   } else if (dataType === "raw data") {
-    return selectedRow;
+    return findClub;
   }
 }
 

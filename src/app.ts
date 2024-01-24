@@ -69,7 +69,6 @@ const clubNameDoc = new GoogleSpreadsheet(
   process.env.CLUB_DATA_SPREADSHEET_ID as string,
   serviceAccountAuth
 );
-
 // const clubMetaData = new GoogleSpreadsheet(process.env.CLUB_METADATA_SPREADSHEET_ID, serviceAccountAuth);
 
 // await doc.loadInfo();
@@ -98,4 +97,5 @@ export {
   service,
   userDataSpreadSheet,
   clubNameDoc,
+  AllMetaIdSheet,
 };

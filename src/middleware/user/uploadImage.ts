@@ -114,7 +114,7 @@ export const approveImage = async (req: Request, res: Response) => {
       if (yearRows[i] === undefined) {
         break;
       } else if (yearRows[i].get("Folder Name") === year) {
-        return yearRows[i].get("Folder Meta Sheet ID");
+        return yearRows[i].get("Meta Sheet ID");
       }
     }
   };

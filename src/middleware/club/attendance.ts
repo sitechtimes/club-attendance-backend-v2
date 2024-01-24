@@ -62,7 +62,7 @@ export const updateAttendance = async (
       } else {
         const data: folderMeta = {
           Folder_Name: FolderMetaRows[i].get("Folder Name"),
-          Folder_Meta_ID: FolderMetaRows[i].get("Folder Meta Sheet ID"),
+          Folder_Meta_ID: FolderMetaRows[i].get("Meta Sheet ID"),
         };
         console.log(data);
         folderMetaArr.push(data);

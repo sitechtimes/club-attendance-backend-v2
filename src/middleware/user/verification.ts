@@ -53,7 +53,7 @@ export const verifyAdmin = async (
 export const verifyAuthority = (authority: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const getId = req.params.uuid;
-    const postId = req.body.uuid;
+    const otherId = req.body.uuid;
 
     const userSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
     const user = new GoogleSpreadsheet(userSheetID, serviceAccountAuth);
@@ -68,8 +68,8 @@ export const verifyAuthority = (authority: string[]) => {
       const setId = () => {
         if (req.method === "GET") {
           return getId;
-        } else if (req.method === "POST") {
-          return postId;
+        } else {
+          return otherId;
         }
       };
 
