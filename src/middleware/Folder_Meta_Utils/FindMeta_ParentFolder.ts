@@ -1,5 +1,5 @@
 import { GoogleSpreadsheet } from "google-spreadsheet";
-import { serviceAccountAuth } from "../../app";
+import { allMeta, serviceAccountAuth } from "../../app";
 
 /**
  * Searches for a row in a Google Spreadsheet containing folder metadata based on a given year.
@@ -8,13 +8,6 @@ import { serviceAccountAuth } from "../../app";
  */
 export const findMeta_ParentFolder = async (year: string) => {
   try {
-    // Load the Google Spreadsheet containing the folder metadata
-    const allMeta = new GoogleSpreadsheet(
-      process.env.FOLDER_META_DATA_SPREADSHEET_ID as string,
-      serviceAccountAuth
-    );
-    await allMeta.loadInfo();
-
     // Find the row in the metadata sheet that corresponds to the requested year
     const allMetaSheet = allMeta.sheetsByIndex[0];
     const allMetaRows = await allMetaSheet.getRows();

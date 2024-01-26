@@ -69,6 +69,16 @@ const clubNameDoc = new GoogleSpreadsheet(
   process.env.CLUB_DATA_SPREADSHEET_ID as string,
   serviceAccountAuth
 );
+// Master Attendance
+
+// All Meta Sheet
+const allMeta = new GoogleSpreadsheet(
+  process.env.FOLDER_META_DATA_SPREADSHEET_ID as string,
+  serviceAccountAuth
+);
+
+allMeta.loadInfo();
+
 // const clubMetaData = new GoogleSpreadsheet(process.env.CLUB_METADATA_SPREADSHEET_ID, serviceAccountAuth);
 
 // await doc.loadInfo();
@@ -97,5 +107,5 @@ export {
   service,
   userDataSpreadSheet,
   clubNameDoc,
-  AllMetaIdSheet,
+  allMeta,
 };

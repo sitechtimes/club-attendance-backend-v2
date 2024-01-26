@@ -37,6 +37,7 @@ import {
   listObject,
 } from "../middleware/scripts/utility";
 import { authority } from "../enums/authority";
+import { createYearAttendanceFolder } from "../middleware/Folder_Meta_Utils/CreateClub";
 
 const router = express.Router();
 
@@ -80,8 +81,8 @@ router.patch("/updateQRCode", updateQRCode); //????
 router.post(
   "/createClubTemplate",
   verifyAuthority([authority.admin]),
-  createClubTemplate
-);
+  createYearAttendanceFolder
+); /* createClubTemplate */
 // router.post("/createClubMeta", createClubMeta)
 router.post(
   "/uploadImage",
