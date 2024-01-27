@@ -19,7 +19,7 @@ export const createYearAttendanceFolder = async (
 ) => {
   try {
     const currentYear = new Date().getFullYear();
-    const folderName = `${currentYear + 1}-${currentYear + 2}`;
+    const folderName = `${currentYear}-${currentYear + 1}`;
     /* let metaData: any[] = []; */
 
     // Create this year's attendance folder
@@ -183,7 +183,9 @@ export const createClubFolders = async (parentId: string, clubName: string) => {
       "Email",
       "Position",
       "Official Class",
+      "# of Attedance",
     ]);
+    // formate the header to bold
 
     // Create the photo folder inside the main club folder
     const clubPhotoFolder = await service.files.create({
