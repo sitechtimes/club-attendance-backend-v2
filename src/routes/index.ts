@@ -71,9 +71,6 @@ router.post(
   deleteClubMeeting
 );
 
-// ???????
-router.get("/returnRedirectUrl", returnRedirecUrl);
-
 // Club Image Routes
 router.get("/showAttendancePhotos", showAttendancePhotos);
 router.post(
@@ -82,6 +79,7 @@ router.post(
   verifyAuthority([authority.club_president]),
   uploadImage
 ); // upload.array("image") needs to be before verifyAuthority or it doens't work for some reason
+// doesn't seem to work
 
 // Admin Routes --------------------------------------------------------------------------------------------------------------
 // approve/unapprove image routes
@@ -90,12 +88,13 @@ router.post(
   upload.array("image"),
   verifyAuthority([authority.admin]),
   approveImage
-);
+); // doesn't seem to work
 router.get(
   "/getUnapprovedImages/:uuid",
   verifyAuthority([authority.admin]),
   getImage
-);
+); // doesn't seem to work
+
 // add/delete club
 router.post("/addClub", verifyAuthority([authority.admin]), addClubData);
 router.delete(
@@ -129,5 +128,8 @@ router.get("/listfiles", listFile);
 router.delete("/listFilesAndRemove", listFileAndRemove);
 router.delete("/deleteFile", deleteFile);
 router.get("/listObject", listObject);
+
+// ???????
+router.get("/returnRedirectUrl", returnRedirecUrl);
 
 export { router };
