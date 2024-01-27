@@ -60,7 +60,7 @@ router.get(
 ); //admin and president (need to test for multiple valid authorities)
 router.get("/showAttendancePhotos", showAttendancePhotos);
 router.get(
-  "/getAllClubData/:uuid",
+  "/getAllClubData/:uuid/:year",
   verifyAuthority([authority.admin]),
   getAllClubData
 ); //admin?s

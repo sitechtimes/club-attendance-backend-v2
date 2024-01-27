@@ -121,7 +121,6 @@ export const createYearAttendanceFolder = async (
     };
 
     await addClubs(0, clubSheetRows.length);
-
     // didn't test this part yet but probably works
     // Specify the path to the folder containing the files you want to delete
     const folderPath = "src/imgs";
