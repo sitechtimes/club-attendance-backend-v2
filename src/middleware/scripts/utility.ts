@@ -41,7 +41,7 @@ export const listFileAndRemove = async (req: Request, res: Response) => {
 
 export const listFile = async (req: Request, res: Response) => {
   const response = await service.files.list({
-    q: "",
+    q: "'14nV9_xnx3Xq-fnAjcF1Ai7nq8uY6s6y1' in parents",
     fields: "nextPageToken, files(id, name)",
     spaces: "drive",
   });

@@ -50,43 +50,6 @@ export const getClubData = async (req: Request, res: Response) => {
 };
 
 /**
- * Retrieves club data from a metadata sheet for a specified year.
- * @param req - The request object from Express.js.
- * @param res - The response object from Express.js.
- * @returns The club data as a JSON response.
- */
-export const getAllClubData = async (req: Request, res: Response) => {
-  try {
-    const { year } = req.params;
-
-    // Find the parent folder ID of the metadata sheet for the specified year
-    const metaSheetParentId = await findMeta_ParentFolder(year);
-
-    if (!metaSheetParentId) {
-      return res.status(404).json("Folder not found!");
-    }
-
-    // Retrieve the metadata sheet using the parent folder ID
-    const metaSheet = await getMetaSheet(
-      metaSheetParentId["Meta Sheet ID"],
-      null
-    );
-
-    if (!metaSheet) {
-      return res.json(false);
-    }
-
-    const metaSheetRows = await metaSheet.getRows();
-
-    const allClubData = metaSheetRows.map((row: any) => row.toObject());
-
-    res.json(allClubData);
-  } catch (error) {
-    res.json(error);
-  }
-};
-
-/**
  * Adds club data to a Google Spreadsheet.
  * @param req - The request object containing the club data in the request body.
  * @param res - The response object used to send the response back to the client.

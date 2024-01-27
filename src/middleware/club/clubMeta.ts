@@ -1,8 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import {
-  GoogleSpreadsheet,
-  GoogleSpreadsheetWorksheet,
-} from "google-spreadsheet";
+import { GoogleSpreadsheet } from "google-spreadsheet";
 import { serviceAccountAuth, service } from "../../app";
 import { clubMeta } from "../../interface/interface";
 import {
@@ -42,72 +39,38 @@ export async function getSelectedClub(
   }
 }
 
-//probably don't need
-export const getClubMeta = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  /* const year: string = req.body.year;
-  const clubName = req.body.clubName; */
-
-  const year: string = req.params.year;
-  const clubName: string = req.params.clubName;
-
+/**
+ * Retrieves club data from a metadata sheet for a specified year.
+ * @param req - The request object from Express.js.
+ * @param res - The response object from Express.js.
+ * @returns The club data as a JSON response.
+ */
+export const getAllClubMeta = async (req: Request, res: Response) => {
   try {
-    let result = await service.files
-      .list({
-        q: `'${process.env.CLUB_ATTENDANCE_FOLDER_ID}' in parents`,
-        fields: "nextPageToken, files(id, name)",
-        spaces: "drive",
-      })
-      .catch((error) => console.log(error));
-    let folder = result.data.files;
-    const selectedYearFolder = folder?.filter((folder) => folder.name === year);
+    const { year } = req.params;
 
-    const metaSheetData = await service.files.list({
-      q: `name = 'Club MetaData' and '${selectedYearFolder![0].id}' in parents`,
-      fields: "nextPageToken, files(id, name)",
-    });
+    // Find the parent folder ID of the metadata sheet for the specified year
+    const metaSheetParentId = await findMeta_ParentFolder(year);
 
-    const metaSheetDoc = new GoogleSpreadsheet(
-      metaSheetData.data.files![0].id as string,
-      serviceAccountAuth
+    if (!metaSheetParentId) {
+      return res.status(404).json("Folder not found!");
+    }
+
+    // Retrieve the metadata sheet using the parent folder ID
+    const metaSheet = await getMetaSheet(
+      metaSheetParentId["Meta Sheet ID"],
+      null
     );
-    await metaSheetDoc.loadInfo();
-    const metaSheet = metaSheetDoc.sheetsByIndex[0];
-    const rows = await metaSheet.getRows();
 
-    const allClubMeta: clubMeta[] = [];
+    if (!metaSheet) {
+      return res.json(false);
+    }
 
-    rows.forEach((row) => {
-      const clubMeta: clubMeta = {
-        clubName: row.get("Club Name"),
-        advisorEmail: row.get("Advisor Email"),
-        presidentEmail: row.get("President Email"),
-        nextMeeting: row.get("Next Meeting"),
-        qrCode: row.get("QR Code"),
-        clubFolderId: row.get("Club Folder ID"),
-        clubSpreadsheet: row.get("Club Spreadsheet"),
-        clubPhotoFolderId: row.get("Club Photo Folder ID"),
-        clubCode: row.get("Club Code"),
-      };
-      allClubMeta.push(clubMeta);
-    });
-    // const selectedClub = await getSelectedClub(year, clubName)
-    //   const clubMeta: clubMeta = {
-    //     clubName: selectedClub?.get("Club Name"),
-    //     advisorEmail: selectedClub?.get("Advisor Email"),
-    //     presidentEmail: selectedClub?.get("President Email"),
-    //     nextMeeting: selectedClub?.get("Next Meeting"),
-    //     qrCode: selectedClub?.get("QR Code"),
-    //     clubFolderId: selectedClub?.get("Club Folder ID"),
-    //     clubSpreadsheet: selectedClub?.get("Club Spreadsheet"),
-    //     clubPhotoFolderId: selectedClub?.get("Club Photo Folder ID"),
-    //     clubCode: selectedClub?.get("Club Code")
-    //   }
+    const metaSheetRows = await metaSheet.getRows();
 
-    res.json(allClubMeta);
+    const allClubData = metaSheetRows.map((row: any) => row.toObject());
+
+    res.json(allClubData);
   } catch (error) {
     res.json(error);
   }
