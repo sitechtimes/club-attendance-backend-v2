@@ -11,7 +11,7 @@ import {
 
 import {
   approveImage,
-  getImage,
+  getUnapprovedImage,
   uploadImage,
 } from "../middleware/user/uploadImage";
 import { upload } from "../middleware/user/multer";
@@ -83,7 +83,7 @@ router.post(
 
 // Admin Routes --------------------------------------------------------------------------------------------------------------
 // approve/unapprove image routes
-router.post(
+router.patch(
   "/approveImage",
   upload.array("image"),
   verifyAuthority([authority.admin]),
@@ -92,7 +92,7 @@ router.post(
 router.get(
   "/getUnapprovedImages/:uuid",
   verifyAuthority([authority.admin]),
-  getImage
+  getUnapprovedImage
 ); // doesn't seem to work
 
 // add/delete club
