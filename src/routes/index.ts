@@ -13,7 +13,7 @@ import {
   approveImage,
   getUnapprovedImage,
   uploadImage,
-} from "../middleware/user/uploadImage";
+} from "../middleware/user/Image";
 import { upload } from "../middleware/user/multer";
 
 import { updateQRCode } from "../middleware/club/updateQRCode";
