@@ -77,8 +77,6 @@ const allMeta = new GoogleSpreadsheet(
   serviceAccountAuth
 );
 
-allMeta.loadInfo();
-
 // const clubMetaData = new GoogleSpreadsheet(process.env.CLUB_METADATA_SPREADSHEET_ID, serviceAccountAuth);
 
 // await doc.loadInfo();

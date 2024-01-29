@@ -8,6 +8,8 @@ import { allMeta, serviceAccountAuth } from "../../app";
  */
 export const findMeta_ParentFolder = async (year: string) => {
   try {
+    await allMeta.loadInfo();
+
     // Find the row in the metadata sheet that corresponds to the requested year
     const allMetaSheet = allMeta.sheetsByIndex[0];
     const allMetaRows = await allMetaSheet.getRows();
