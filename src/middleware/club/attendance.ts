@@ -98,7 +98,7 @@ export const updateAttendance = async (req: Request, res: Response) => {
       console.log("adding user to main");
 
       const newUser = await clubAttendanceMainSheet.addRow(rowData);
-      newUser.assign({ "# of Attendances": 1, Date: date });
+      newUser.assign({ "# of Attendances": 1, "Date Joined": date });
     } else {
       // Recurring member of club
       console.log("updating attendance");

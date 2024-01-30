@@ -46,10 +46,6 @@ export const oauth2callback = async (req: Request, res: Response) => {
         "Last Name": `${lastName}`,
         Email: `${email}`,
         "Client Authority": "User", // FIGURE OUT CLIENT AUTHORITY HIERACHY
-        Osis: `${null}`, // NEED TO REPLACE WITH OSIS
-        Grade: `${null}`, // NEED TO REPLACE WITH GRADE
-        "Official Class": `${null}`, // NEED TO REPLACE WITH OFFICIAL CLASS
-        "Email Domain": `${null}`,
         "Club Data": JSON.stringify({ PresidentOf: [], MemberOf: [] }),
         "Present Location": `${null}`,
       });
