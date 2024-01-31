@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth } from "../../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
+import { Authority } from "../../enums/authority";
+import { json } from "body-parser";
 
 /**
  * Middleware function to verify user authority.
@@ -11,6 +13,7 @@ export const verifyAuthority = (authority: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const uuid = req.params.uuid || req.body.uuid;
+      const clubName = req.params.clubName || req.body.clubName;
       const userSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
       const user = new GoogleSpreadsheet(userSheetID, serviceAccountAuth);
 
@@ -23,14 +26,28 @@ export const verifyAuthority = (authority: string[]) => {
 
       if (userRow) {
         const userAuthority = userRow.get("Client Authority");
-        if (authority.includes(userAuthority)) {
+        if (
+          authority.includes(Authority.admin) &&
+          userAuthority === Authority.admin
+        ) {
           console.log("User Authority: " + userAuthority);
           next();
+        } else if (authority.includes(Authority.club_president)) {
+          const clubDataObject = JSON.parse(await userRow.get("Club Data"));
+          const isPresident = clubDataObject.PresidentOf.includes(clubName);
+          console.log("isPresident: " + clubDataObject.PresidentOf);
+          if (isPresident) {
+            next();
+          }
         } else {
           res
             .status(403)
             .json("User doesn't have permission to access this page");
         }
+        /* if (authority.includes(userAuthority)) {
+          
+          
+        }  */
       } else {
         res.status(403).json("User not found");
       }
