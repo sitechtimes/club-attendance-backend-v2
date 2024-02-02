@@ -93,6 +93,22 @@ const allMeta = new GoogleSpreadsheet(
 
 app.use("/", router);
 
+const updateAbsence = async () => {
+  try {
+    const Absence = new GoogleSpreadsheet(
+      process.env.CLUBS_IN_ATTENDANCE as string,
+      serviceAccountAuth
+    );
+
+    await Absence.loadInfo();
+
+    const AbsenceSheet = Absence.sheetsByIndex[0];
+    const AbsenceSheetRows = await AbsenceSheet.getRows();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}!`);
 });

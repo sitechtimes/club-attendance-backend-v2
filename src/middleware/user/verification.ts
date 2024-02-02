@@ -38,6 +38,11 @@ export const verifyAuthority = (authority: string[]) => {
           console.log("isPresident: " + clubDataObject.PresidentOf);
           if (isPresident) {
             next();
+          } else {
+            res
+            .status(403)
+            .json("User doesn't have permission to access this page");
+        }
           }
         } else {
           res
