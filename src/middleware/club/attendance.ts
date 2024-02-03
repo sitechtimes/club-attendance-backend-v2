@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { serviceAccountAuth, service } from "../../app";
+import { serviceAccountAuth, service, ClubsInAttendance } from "../../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import {
   findMeta_ParentFolder,
@@ -50,9 +50,26 @@ export const updateAttendance = async (req: Request, res: Response) => {
       return res.json(false);
     }
 
+    const clubspreadsheet = metaSheet.get("Club Spreadsheet");
+
+    await ClubsInAttendance.loadInfo();
+
+    const ClubsInAttendanceSheet = ClubsInAttendance.sheetsByIndex[0];
+    const ClubsInAttendanceRows = await ClubsInAttendanceSheet.getRows();
+
+    const club_logged = ClubsInAttendanceRows.find(
+      (row) => row.get("Club Name") === clubName
+    );
+    // Adds club to Clubs in Attendance if not already present
+    if (!club_logged) {
+      await ClubsInAttendanceSheet.addRow({
+        "Club Name": clubName,
+        "Club Attendance Sheet": clubspreadsheet,
+      });
+    }
     // Load club attendance spreadsheet
     const clubAttendance = new GoogleSpreadsheet(
-      metaSheet.get("Club Spreadsheet") as string,
+      clubspreadsheet as string,
       serviceAccountAuth
     );
     await clubAttendance.loadInfo();
@@ -98,15 +115,22 @@ export const updateAttendance = async (req: Request, res: Response) => {
       console.log("adding user to main");
 
       const newUser = await clubAttendanceMainSheet.addRow(rowData);
-      newUser.assign({ "# of Attendances": 1, "Date Joined": date });
+      newUser.assign({
+        "# of Attendances": 1,
+        "Date Joined": date,
+        "Last Signed In": date,
+        Absence: 0,
+      });
+
+      await newUser.save();
     } else {
       // Recurring member of club
       console.log("updating attendance");
 
-      existingUser.set(
-        "# of Attendances",
-        parseInt(existingUser.get("# of Attendances")) + 1
-      );
+      existingUser.assign({
+        "# of Attendances": parseInt(existingUser.get("# of Attendances")) + 1,
+        "Last Signed In": date,
+      });
 
       await existingUser.save();
     }
