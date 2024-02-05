@@ -8,6 +8,7 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
 import bodyParser from "body-parser";
 import { JWT, GoogleAuth } from "google-auth-library";
 import keys from "../keys.json";
+import { markAbsence, runAtSpecificTimeOfDay } from "./markAbsence/markAbsence";
 
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -77,6 +78,11 @@ const allMeta = new GoogleSpreadsheet(
   serviceAccountAuth
 );
 
+const ClubsInAttendance = new GoogleSpreadsheet(
+  process.env.CLUBS_IN_ATTENDANCE as string,
+  serviceAccountAuth
+);
+
 // const clubMetaData = new GoogleSpreadsheet(process.env.CLUB_METADATA_SPREADSHEET_ID, serviceAccountAuth);
 
 // await doc.loadInfo();
@@ -93,21 +99,9 @@ const allMeta = new GoogleSpreadsheet(
 
 app.use("/", router);
 
-const updateAbsence = async () => {
-  try {
-    const Absence = new GoogleSpreadsheet(
-      process.env.CLUBS_IN_ATTENDANCE as string,
-      serviceAccountAuth
-    );
-
-    await Absence.loadInfo();
-
-    const AbsenceSheet = Absence.sheetsByIndex[0];
-    const AbsenceSheetRows = await AbsenceSheet.getRows();
-  } catch (error) {
-    console.log(error);
-  }
-};
+// 24-hour time
+// Currently set to run at 18:00 EST / 6:00pm EST
+runAtSpecificTimeOfDay(18, 0, markAbsence);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}!`);
@@ -122,4 +116,5 @@ export {
   userDataSpreadSheet,
   clubNameDoc,
   allMeta,
+  ClubsInAttendance,
 };
