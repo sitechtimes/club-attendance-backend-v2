@@ -1,100 +1,63 @@
 import { Request, Response, NextFunction } from "express";
-import { serviceAccountAuth, service } from "../../app";
-import { GoogleSpreadsheet, GoogleSpreadsheetCell } from "google-spreadsheet";
-import { authority } from "../../enums/authority";
+import { serviceAccountAuth } from "../../app";
+import { GoogleSpreadsheet } from "google-spreadsheet";
+import { Authority } from "../../enums/authority";
+import { json } from "body-parser";
 
-export const verifyAdmin = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const userDoc = new GoogleSpreadsheet(
-    process.env.USER_DATA_SPREADSHEET_ID as string,
-    serviceAccountAuth
-  );
-  await userDoc.loadInfo();
-  const userSheet = userDoc.sheetsByIndex[0];
-  const userRows = await userSheet.getRows();
-
-  const admin = userRows.filter(
-    (user) =>
-      user.get("Client Authority") === "admin" &&
-      user.get("Email") === req.body.email
-  );
-  console.log(admin);
-
-  if (admin.length === 0) {
-    res.json({ message: "You are not an admin!" });
-  } else {
-    return next();
-  }
-};
-
-/* export const verifyAuthority = async (uuid: string) => {
-  const userSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
-  const user = new GoogleSpreadsheet(userSheetID, serviceAccountAuth);
-
-  await user.loadInfo();
-
-  const userSheet = user.sheetsByIndex[0];
-  const userRow = await userSheet.getRows();
-  const userRowLen: number = userSheet.rowCount;
-
-  for (let i = 0; i < userRowLen; i++) {
-    if (userRow[i] === undefined) {
-      break;
-    }
-    if (userRow[i].get("UID") === uuid) {
-      return userRow[i].get("Client Authority");
-    }
-  }
-};
+/**
+ * Middleware function to verify user authority.
+ * @param authority - An array of strings representing the required authorities to access the page.
+ * @returns Middleware function.
  */
 export const verifyAuthority = (authority: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const getId = req.params.uuid;
-    const postId = req.body.uuid;
-
-    const userSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
-    const user = new GoogleSpreadsheet(userSheetID, serviceAccountAuth);
-
-    await user.loadInfo();
-
-    const userSheet = user.sheetsByIndex[0];
-    const userRow = await userSheet.getRows();
-    const userRowLen: number = userSheet.rowCount;
-
     try {
-      console.log("running");
-      console.log(req.body); //need to get stuff but hmmmm
-      const setId = () => {
-        if (req.method === "GET") {
-          return getId;
-        } else if (req.method === "POST") {
-          return postId;
-        }
-      };
+      const uuid = req.params.uuid || req.body.uuid;
+      const clubName = req.params.clubName || req.body.clubName;
+      const userSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
+      const user = new GoogleSpreadsheet(userSheetID, serviceAccountAuth);
 
-      const id = setId();
+      await user.loadInfo();
 
-      for (let i = 0; i < userRowLen; i++) {
-        if (userRow[i] === undefined) {
-          break;
+      const userSheet = user.sheetsByIndex[0];
+      const userRows = await userSheet.getRows();
+
+      const userRow = userRows.find((row) => row.get("UID") === uuid);
+
+      if (userRow) {
+        const userAuthority = userRow.get("Client Authority");
+        if (
+          authority.includes(Authority.admin) &&
+          userAuthority === Authority.admin
+        ) {
+          console.log("User Authority: " + userAuthority);
+          next();
+        } else if (authority.includes(Authority.club_president)) {
+          const clubDataObject = JSON.parse(await userRow.get("Club Data"));
+          const isPresident = clubDataObject.PresidentOf.includes(clubName);
+          console.log("isPresident: " + clubDataObject.PresidentOf);
+          if (isPresident) {
+            next();
+          } else {
+            res
+            .status(403)
+            .json("User doesn't have permission to access this page");
         }
-        if (userRow[i].get("UID") === id) {
-          console.log("found user");
-          for (let j = 0; j < authority.length; j++) {
-            if (userRow[i].get("Client Authority") === authority[j]) {
-              console.log("going to next");
-              next();
-            } else {
-              res.json("user doesn't have permission to access this page");
-            }
           }
+        } else {
+          res
+            .status(403)
+            .json("User doesn't have permission to access this page");
         }
+        /* if (authority.includes(userAuthority)) {
+          
+          
+        }  */
+      } else {
+        res.status(403).json("User not found");
       }
     } catch (error) {
-      return error;
+      next(error);
     }
   };
 };

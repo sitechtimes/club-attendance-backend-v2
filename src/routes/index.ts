@@ -7,14 +7,13 @@ import {
   deleteClubData,
   getClubMembers,
   removeStudentFromClub,
-  getAllClubData,
 } from "../middleware/club/clubData";
-import { createClubTemplate } from "../middleware/scripts/drive";
+
 import {
   approveImage,
-  getImage,
+  getUnapprovedImage,
   uploadImage,
-} from "../middleware/user/uploadImage";
+} from "../middleware/user/Image";
 import { upload } from "../middleware/user/multer";
 
 import { updateQRCode } from "../middleware/club/updateQRCode";
@@ -22,97 +21,115 @@ import {
   updateAttendance,
   showAttendancePhotos,
 } from "../middleware/club/attendance";
-import { verifyAdmin, verifyAuthority } from "../middleware/user/verification";
+import { verifyAuthority } from "../middleware/user/verification";
 import {
-  getClubMeta,
+  getAllClubMeta,
   addClubMeeting,
   deleteClubMeeting,
 } from "../middleware/club/clubMeta";
-// import { redirectUri } from '../app';
 
-import { listFile, deleteFile } from "../middleware/scripts/delete";
-import { authority } from "../enums/authority";
+import {
+  listFile,
+  deleteFile,
+  listFileAndRemove,
+  listObject,
+} from "../middleware/scripts/utility";
+import { Authority } from "../enums/authority";
+import { createYearAttendanceFolder } from "../middleware/Folder_Meta_Utils/CreateClub";
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send("hello world");
-});
-
+// Auth Routes ---------------------------------------------------------------------------------------------------------------------
 router.get("/oauth2", oauth2);
 router.get("/oauth2callback", oauth2callback);
+
+// Club Data Routes ----------------------------------------------------------------------------------------------------------------
 router.get("/getClubData/:clubName/:year", getClubData);
 router.get(
-  "/getClubMeta/:clubName/:year/:uuid",
-  verifyAuthority([authority.admin]),
-  getClubMeta
-); //admin
-router.get(
   "/getClubMembers/:clubName/:year/:uuid",
-  verifyAuthority([authority.admin, authority.club_president]),
+  verifyAuthority([Authority.admin, Authority.club_president]),
   getClubMembers
-); //admin and president (need to test for multiple valid authorities)
-router.get("/showAttendancePhotos", showAttendancePhotos);
+);
 router.get(
-  "/getAllClubData/:uuid",
-  verifyAuthority([authority.admin]),
-  getAllClubData
-); //admin?s
-router.get("/returnRedirectUrl", returnRedirecUrl);
-router.get(
-  "/getUnapprovedImages/:uuid",
-  verifyAuthority([authority.admin]),
-  getImage
-); //admin
+  "/getAllClubMeta/:uuid/:year",
+  verifyAuthority([Authority.admin]),
+  getAllClubMeta
+);
 
+//update attendance
+router.patch("/updateAttendance", updateAttendance);
+
+// add/delete meeting
 router.post(
-  "/createUserSheet",
-  verifyAuthority([authority.admin]),
-  createUserSheet
-); //admin
-router.patch("/updateAttendance", updateAttendance); // attendance
-router.patch("/updateQRCode", updateQRCode); //????
-router.post("/createClubTemplate", verifyAdmin, createClubTemplate);
-// router.post("/createClubMeta", createClubMeta)
+  "/addClubMeeting",
+  verifyAuthority([Authority.club_president]),
+  addClubMeeting
+);
+router.post(
+  "/deleteClubMeeting",
+  verifyAuthority([Authority.club_president]),
+  deleteClubMeeting
+);
+
+// Club Image Routes
+router.get("/showAttendancePhotos", showAttendancePhotos);
 router.post(
   "/uploadImage",
   upload.array("image"),
-  verifyAuthority([authority.club_president]),
+  verifyAuthority([Authority.club_president]),
   uploadImage
 ); // upload.array("image") needs to be before verifyAuthority or it doens't work for some reason
-router.post(
+// doesn't seem to work
+
+// Admin Routes --------------------------------------------------------------------------------------------------------------
+// approve/unapprove image routes
+router.patch(
   "/approveImage",
-
   upload.array("image"),
-  verifyAuthority([authority.admin]),
+  verifyAuthority([Authority.admin]),
   approveImage
-); // admin (probably works if the one above works)
-router.post(
-  "/addClubMeeting",
-  verifyAuthority([authority.club_president]),
-  addClubMeeting
-); // president
-router.post("/addClub", verifyAuthority([authority.admin]), addClubData); //admin
+); // doesn't seem to work
+router.get(
+  "/getUnapprovedImages/:uuid",
+  verifyAuthority([Authority.admin]),
+  getUnapprovedImage
+); // doesn't seem to work
 
-// router.patch("/changeMeta", changeMeta)
-
-router.delete(
-  "/deleteClubMeeting",
-  verifyAuthority([authority.club_president]),
-  deleteClubMeeting
-); // president
+// add/delete club
+router.post("/addClub", verifyAuthority([Authority.admin]), addClubData);
 router.delete(
   "/deleteClub",
-  verifyAuthority([authority.admin]),
+  verifyAuthority([Authority.admin]),
   deleteClubData
-); //admin
+);
+// other Admin routes
+router.patch("/updateQRCode", updateQRCode);
+
+// both Admin and Club President routes ------------------------------------------------------------------------------------------
+//remove student from club
 router.delete(
   "/removeStudentFromClub",
-  verifyAuthority([authority.admin, authority.club_president]),
+  verifyAuthority([Authority.admin, Authority.club_president]),
   removeStudentFromClub
-); //president and admin
+);
 
+// Dev Route ---------------------------------------------------------------------------------------------------------------------
+router.post(
+  "/createUserSheet",
+  verifyAuthority([Authority.admin]),
+  createUserSheet
+);
+router.post(
+  "/createClubTemplate",
+  verifyAuthority([Authority.admin]),
+  createYearAttendanceFolder
+); // could be made into an Admin Route, need to allow for uploading of the google sheet with all the approved clubs tho
 router.get("/listfiles", listFile);
+router.delete("/listFilesAndRemove", listFileAndRemove);
 router.delete("/deleteFile", deleteFile);
+router.get("/listObject", listObject);
+
+// ???????
+router.get("/returnRedirectUrl", returnRedirecUrl);
 
 export { router };

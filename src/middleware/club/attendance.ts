@@ -1,358 +1,173 @@
 import { Request, Response, NextFunction } from "express";
-import { serviceAccountAuth, service } from "../../app";
+import { serviceAccountAuth, service, ClubsInAttendance } from "../../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
-import { getClubSheet } from "./clubData";
-import { attendanceData, dateData, metaData } from "../../interface/interface";
+import {
+  findMeta_ParentFolder,
+  getMetaSheet,
+} from "../Folder_Meta_Utils/FindMeta_ParentFolder";
 
-export const updateAttendance = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  interface folderMeta {
-    Folder_Name: string;
-    Folder_Meta_ID: string;
-  }
+/**
+ * Updates attendance records in a Google Spreadsheet.
+ * @param req - The request object containing the year, UUID, and club name.
+ * @param res - The response object used to send the JSON response.
+ */
+export const updateAttendance = async (req: Request, res: Response) => {
+  try {
+    const { year, uuid, clubName } = req.body;
+    const date = new Date().toLocaleDateString();
 
-  const date = new Date().toLocaleDateString();
-  const data = req.body as attendanceData;
-  const year = req.body.year;
-  const arrUID: string[] = [];
-  const uuid = req.body.uuid;
-  const clubName = req.body.club_name;
-  const dateArr: dateData[] = [];
-  const metaArr: metaData[] = [];
-  const folderMetaArr: folderMeta[] = [];
-  const attendanceArrUID: string[] = [];
-  const MainSheetUID: string[] = [];
-  const masterArrUID: string[] = [];
-
-  //ENVIRONMENT VARIABLES
-  const FolderMetaID = process.env.FOLDER_META_DATA_SPREADSHEET_ID as string;
-  const userSpreadSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
-  /* const metaDataSheetID = process.env.META_DATA_SPREADSHEET_ID as string; */
-  const masterSpreadSheetID = process.env.MASTER_SPREADSHEET_ID as string;
-
-  //GET USER INFORMATION
-  const userDoc = new GoogleSpreadsheet(userSpreadSheetID, serviceAccountAuth);
-
-  let headerValues: string[] = [
-    "UID",
-    "First Name",
-    "Last Name",
-    "Email",
-    "Position",
-    "Grade",
-    "Official Class",
-  ];
-
-  // FROM FOLDER META SHEET GET THIS YEAR META SHEET ID
-  async function findMetaSheet() {
-    const FolderMeta = new GoogleSpreadsheet(FolderMetaID, serviceAccountAuth);
-
-    await FolderMeta.loadInfo();
-
-    const FolderMetaSheet = FolderMeta.sheetsByIndex[0];
-    const FolderMetaRows = await FolderMetaSheet.getRows();
-    const FolderMetaLen: number = FolderMetaSheet.rowCount;
-
-    for (let i = 0; i < FolderMetaLen; i++) {
-      if (FolderMetaRows[i] === undefined) {
-        break;
-      } else {
-        const data: folderMeta = {
-          Folder_Name: FolderMetaRows[i].get("Folder Name"),
-          Folder_Meta_ID: FolderMetaRows[i].get("Folder Meta Sheet ID"),
-        };
-        console.log(data);
-        folderMetaArr.push(data);
-      }
-    }
-    const CurrentYear = folderMetaArr.filter((el) => el.Folder_Name === year);
-
-    const metaDataSheetID = CurrentYear[0].Folder_Meta_ID;
-
-    return metaDataSheetID.toString();
-  }
-
-  async function addClubToUserData(uuid: string, clubName: string) {
-    const MetaSheetID = await findMetaSheet();
-
-    const userSheet = new GoogleSpreadsheet(
+    // Load user data spreadsheet
+    const userDoc = new GoogleSpreadsheet(
       process.env.USER_DATA_SPREADSHEET_ID as string,
       serviceAccountAuth
     );
-
-    await userSheet.loadInfo();
-
-    const getUserSheet = userSheet.sheetsByIndex[0];
-    const UserRows = await getUserSheet.getRows();
-    const userSheetRowCount = getUserSheet.rowCount;
-
-    /*  const metaDoc = new GoogleSpreadsheet(MetaSheetID, serviceAccountAuth);
-
-    await metaDoc.loadInfo();
-
-    const getMeta = metaDoc.sheetsByIndex[0];
-    const MetaRows = await getMeta.getRows();
-    const MetaRowCount = getMeta.rowCount;
-
-    const getClubNextMeeting = async (nameOfClub: string) => {
-      for (let i = 0; i < MetaRowCount; i++) {
-        if (MetaRows[i] === undefined) {
-          break;
-        } else if (MetaRows[i].get("Club Name") === nameOfClub) {
-          return MetaRows[i].get("Next Meeting");
-        }
-      }
-    }; */
-
-    /*   console.log(uuid);
-    console.log(clubName);
-    console.log(UserRows[3].get("UID"));
-    console.log(UserRows[3].get("Clubs")); */
-    for (let i = 0; i < userSheetRowCount; i++) {
-      if (UserRows[i] === undefined) {
-        break;
-      } else if (UserRows[i].get("UID") === uuid) {
-        const newClubs = async (
-          nameOfClub: string /* nextMeeting: string */
-        ) => {
-          let clubs = await JSON.parse(UserRows[i].get("Club Data"));
-          //need to put next meeting
-          const changedClubs = clubs.MemberOf.push({
-            nameOfClub: nameOfClub,
-            //nextMeeting: nextMeeting,
-          });
-
-          return clubs;
-        };
-
-        UserRows[i].set(
-          "Club Data",
-          JSON.stringify(
-            await newClubs(clubName /*  await getClubNextMeeting(clubName) */) // may not need next club meeting, may cause 'Too many requests' error
-          )
-        );
-        await UserRows[i].save();
-
-        return true;
-      }
-    }
-  }
-  //FROM META DATA SHEET GET CLUB SHEET ID AND NAME
-  async function findClassID(clubName: string) {
-    const MetaSheetID = await findMetaSheet();
-    const metaDoc = new GoogleSpreadsheet(MetaSheetID, serviceAccountAuth);
-
-    await metaDoc.loadInfo();
-
-    const metaSheet = metaDoc.sheetsByIndex[0];
-    const metaRows = await metaSheet.getRows();
-    const metaSheetLen: number = metaSheet.rowCount;
-
-    for (let i = 0; i < metaSheetLen; i++) {
-      if (metaRows[i] === undefined) {
-        break;
-      } else {
-        const data: metaData = {
-          club_name: metaRows[i].get("Club Name"),
-          club_spreadsheet_id: metaRows[i].get("Club Spreadsheet"),
-        };
-        metaArr.push(data);
-      }
-    }
-    const ID = metaArr.filter((el) => el.club_name === clubName);
-    return ID;
-  }
-
-  async function updateAttendance(uid: string, clubName: string) {
-    const arrAttendanceID = await findClassID(clubName);
-    let attendanceID: string = "";
-
-    if (arrAttendanceID === undefined) {
-      return res.json("invalid class name");
-    } else {
-      attendanceID = arrAttendanceID[0].club_spreadsheet_id;
-    }
-
-    //GET CLUBS ATTENDANCE SHEET
-    const attendanceDoc = new GoogleSpreadsheet(
-      attendanceID,
-      serviceAccountAuth
-    );
-
-    const masterDoc = new GoogleSpreadsheet(
-      masterSpreadSheetID,
-      serviceAccountAuth
-    );
-
-    //LOAD SHEETS
-    await attendanceDoc.loadInfo();
     await userDoc.loadInfo();
-    await masterDoc.loadInfo();
 
-    //CREATE SHEET FOR THE DAY THE CLUB MEMBERS SIGN IN
-    let newSheet: any = "";
-    if (!attendanceDoc.sheetsByTitle[date]) {
-      console.log("creating new worksheet");
-      newSheet = await attendanceDoc.addSheet({ title: date });
-
-      //CREATE HEADERS
-      await newSheet.loadCells("A1:K1");
-      for (let i = 0; i < 9; i++) {
-        const cell = newSheet.getCell(0, i); // access cells using a zero-based index
-        cell.value = headerValues[i];
-        cell.textFormat = { bold: true };
-      }
-
-      await newSheet.saveUpdatedCells();
-    } else {
-      console.log("updating existing worksheet");
-      newSheet = attendanceDoc.sheetsByTitle[date];
-    }
-    //END OF CREATING SHEETS
-
+    // Get user sheet and rows
     const userSheet = userDoc.sheetsByIndex[0];
-    const masterSheet = masterDoc.sheetsByIndex[0];
-    const ClubMainSheet = attendanceDoc.sheetsByIndex[0];
+    const userSheetRows = await userSheet.getRows();
 
-    const userSheetLen = userSheet.rowCount;
-    const attendanceSheetLen = newSheet.rowCount;
-    const ClubMainSheetLen = ClubMainSheet.rowCount;
-    const masterSheetLen = masterSheet.rowCount;
-
-    const masterRows = await masterSheet.getRows();
-    const userRows = await userSheet.getRows();
-    const attendanceRows = await newSheet.getRows();
-    const ClubMainSheetRows = await ClubMainSheet.getRows();
-    // await attendance_sheet.loadCells("A1:K1");
-    // const uid: number =
-    //gets all users
-    for (let i = 0; i < userSheetLen; i++) {
-      if (userRows[i] === undefined) {
-        break;
-      } else {
-        arrUID.push(userRows[i].get("UID"));
-      }
+    // Find user by UUID
+    const user = userSheetRows.find((row) => row.get("UID") === uuid);
+    if (!user) {
+      return res.status(404).json("User not found!");
     }
 
-    for (let i = 0; i < attendanceSheetLen; i++) {
-      if (attendanceRows[i] === undefined) {
-        break;
-      } else {
-        attendanceArrUID.push(attendanceRows[i].get("UID"));
-      }
+    const userObject = user.toObject();
+
+    // Find the parent folder ID of the metadata sheet for the specified year
+    const metaSheetParentId = await findMeta_ParentFolder(year);
+    if (!metaSheetParentId) {
+      return res.status(404).json("Folder not found!");
     }
 
-    for (let i = 0; i < ClubMainSheetLen; i++) {
-      if (ClubMainSheetRows[i] === undefined) {
-        break;
-      }
-      const x = ClubMainSheetRows[i].get("UID");
-
-      MainSheetUID.push(x);
-    }
-    const rowNum: number = attendanceArrUID.indexOf(uid);
-    const MainRowNum: number = MainSheetUID.indexOf(uid);
-
-    for (let i = 0; i < masterSheetLen; i++) {
-      if (masterRows[i] === undefined) {
-        break;
-      } else {
-        masterArrUID.push(masterRows[i].get("UID"));
-      }
+    // Retrieve the metadata sheet using the parent folder ID
+    const metaSheet = await getMetaSheet(
+      metaSheetParentId["Meta Sheet ID"],
+      clubName
+    );
+    if (!metaSheet) {
+      return res.json(false);
     }
 
-    //MATCH USER INFO FROM USER SPREAD SHEET WITH THE UID
-    if (arrUID.includes(uid)) {
-      const userUID = attendanceArrUID.includes(uid);
+    const clubspreadsheet = metaSheet.get("Club Spreadsheet");
 
-      if (MainRowNum === -1) {
-        const rowObject = await ClubMainSheet.addRow({
-          UID: uid,
-          "First Name": data.first_name,
-          "Last Name": data.last_name,
-          Email: data.email,
-          Position: data.position,
-          Grade: data.grade,
-          "Official Class": data.off_class,
-          "# of Attendances": 1,
-          Date: date,
-        });
+    await ClubsInAttendance.loadInfo();
 
-        await addClubToUserData(uid, clubName);
-        /* console.log("added new clubs"); */
-      }
-      //IF USER IS NOT IN THE MAIN ATTENDANCE SHEET
-      if (rowNum === -1) {
-        const updateNewSheet = await newSheet.addRow({
-          UID: uid,
-          "First Name": data.first_name,
-          "Last Name": data.last_name,
-          Email: data.email,
-          Position: data.position,
-          Grade: data.grade,
-          "Official Class": data.off_class,
-        });
+    const ClubsInAttendanceSheet = ClubsInAttendance.sheetsByIndex[0];
+    const ClubsInAttendanceRows = await ClubsInAttendanceSheet.getRows();
 
-        ClubMainSheetRows[MainRowNum].set(
-          "# of Attendances",
-          data.num_attendance + 1
-        );
+    const club_logged = ClubsInAttendanceRows.find(
+      (row) => row.get("Club Name") === clubName
+    );
+    // Adds club to Clubs in Attendance if not already present
+    if (!club_logged) {
+      await ClubsInAttendanceSheet.addRow({
+        "Club Name": clubName,
+        "Club Attendance Sheet": clubspreadsheet,
+      });
+    }
+    // Load club attendance spreadsheet
+    const clubAttendance = new GoogleSpreadsheet(
+      clubspreadsheet as string,
+      serviceAccountAuth
+    );
+    await clubAttendance.loadInfo();
 
-        if (masterSheet.title != date) {
-          await masterSheet.clearRows({ start: 2 });
-          await masterSheet.updateProperties({
-            title: `${date}`,
-          });
-          const updateMaster = await masterSheet.addRow({
-            Club: data.club_name,
-            "First Name": data.first_name,
-            "Last Name": data.last_name,
-            UID: uid,
-          });
-          console.log("cleared rows and attendance updated (first signin)");
-        } else {
-          if (masterArrUID.includes(uid)) {
-          } else {
-            const updateMaster = await masterSheet.addRow({
-              Club: data.club_name,
-              "First Name": data.first_name,
-              "Last Name": data.last_name,
-              UID: uid,
-            });
-          }
-          console.log("user attendance updated");
-        }
-        res.json("Attendance has been updated");
-      } else if (attendanceRows[rowNum].get("Date") === date) {
-        console.log(
-          attendanceRows[rowNum].get("Date"),
-          "cant update attendance again"
-        );
-        res.json("Attendance can only be updated once a day");
-      } else {
-        const attNum: string =
-          ClubMainSheetRows[rowNum].get("# of Attendances");
-        const turnNum = Number(attNum);
-        ClubMainSheetRows[rowNum].set("# of Attendances", turnNum + 1);
-        ClubMainSheetRows[rowNum].set("Date", date);
-        await attendanceRows[rowNum].save();
+    // Create or get current attendance sheet
+    const currentAttendanceSheet = await createNewSheet(clubAttendance, date);
+    const currentAttendanceSheetRows = await currentAttendanceSheet.getRows();
 
-        res.json(`updated attendance: ${attNum} `);
-      }
+    // Get main sheet and rows of club attendance spreadsheet
+    const clubAttendanceMainSheet = clubAttendance.sheetsByIndex[0];
+    const clubAttendanceRows = await clubAttendanceMainSheet.getRows();
+
+    // Check if user is already present in the club attendance spreadsheet
+    const existingUser = clubAttendanceRows.find(
+      (row) => row.get("UID") === uuid
+    );
+    if (
+      existingUser &&
+      currentAttendanceSheetRows.some((row) => row.get("UID") === uuid)
+    ) {
+      return res.json("This user is already present!");
+    }
+
+    // Determine user's position (President or Member) based on the club data
+    const isPresident = () => {
+      const { PresidentOf } = JSON.parse(userObject["Club Data"]);
+      return PresidentOf.includes(clubName) ? "President" : "Member";
+    };
+
+    // Prepare row data for user
+    const rowData = {
+      UID: userObject["UID"],
+      "First Name": userObject["First Name"],
+      "Last Name": userObject["Last Name"],
+      Email: userObject["Email"],
+      Position: isPresident(),
+      Grade: user["Grade"],
+      "Official Class": userObject["Official Class"],
+    };
+
+    if (!existingUser) {
+      // First time attending the club
+      console.log("adding user to main");
+
+      const newUser = await clubAttendanceMainSheet.addRow(rowData);
+      newUser.assign({
+        "# of Attendances": 1,
+        "Date Joined": date,
+        "Last Signed In": date,
+        Absence: 0,
+      });
+
+      await newUser.save();
     } else {
-      res.json("use a valid uid");
-    }
-  }
+      // Recurring member of club
+      console.log("updating attendance");
 
-  try {
-    await updateAttendance(data.uuid, data.club_name);
+      existingUser.assign({
+        "# of Attendances": parseInt(existingUser.get("# of Attendances")) + 1,
+        "Last Signed In": date,
+      });
+
+      await existingUser.save();
+    }
+
+    // Add user to current attendance sheet
+    await currentAttendanceSheet.addRow(rowData);
+
+    res.json(`Added ${uuid} to ${clubName}!`);
   } catch (error) {
     res.json(error);
   }
 };
+
+/**
+ * Creates a new sheet in a Google Spreadsheet if a sheet with the given date does not already exist.
+ * @param sheet - The Google Spreadsheet object.
+ * @param date - The date for the new sheet in the format "YYYY-MM-DD".
+ * @returns The newly created sheet with the given date as the title.
+ */
+async function createNewSheet(sheet: GoogleSpreadsheet, date: string) {
+  const existingSheet = sheet.sheetsByTitle[date];
+  if (!existingSheet) {
+    const newSheet = await sheet.addSheet({ title: date });
+    const headerRow = [
+      "UID",
+      "First Name",
+      "Last Name",
+      "Email",
+      "Position",
+      "Grade",
+      "Official Class",
+    ];
+    await newSheet.setHeaderRow(headerRow);
+    return newSheet;
+  }
+  return existingSheet;
+}
 
 export const showAttendancePhotos = async (
   req: Request,

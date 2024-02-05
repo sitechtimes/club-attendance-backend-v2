@@ -88,6 +88,18 @@ export const createClubTemplate = async (
     return clubNames;
   }
 
+  //Gets Data of Specific Rows
+  async function getClubData(index: number) {
+    await clubNameDoc.loadInfo();
+    await clubNameDoc.loadInfo();
+    const clubNameSheet = clubNameDoc.sheetsByIndex[0];
+    const rows = await clubNameSheet.getRows();
+
+    const indexData = rows[index].toObject();
+
+    return indexData;
+  }
+
   async function createYearFolder() {
     const folder = await service.files.create({
       requestBody: {
@@ -103,19 +115,19 @@ export const createClubTemplate = async (
       function timeout(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
       }
-      createClubMeta(folderId, email, year);
+      await createClubMeta(folderId, year);
       const clubNames = await getClubNames();
       console.log(clubNames);
       for (let i = 0; i < clubNames.length; i++) {
         await timeout(3000);
         const folderName: any = clubNames[i];
         console.log("line 70");
-        await createClubFolder(folderId, folderName);
+        await createClubFolder(folderId, folderName, i);
         console.log("line96");
       }
 
-      console.log("year folder created");
       console.log(email, "118");
+      res.status(200).json("year folder created");
     } catch (error) {
       console.error(error);
     }
@@ -126,7 +138,13 @@ export const createClubTemplate = async (
     photoSheetId: string,
     attendanceSheetId: string,
     qrCodeId: any,
-    parentID: string
+    parentID: string,
+    advisor_Email: string,
+    club_Advisor: string,
+    president_Email: string,
+    club_President: string,
+    next_Meeting: string,
+    Room: string
   ) {
     //search for the metadata spreadsheet in the year folder
     const metaName = "Club MetaData";
@@ -152,9 +170,12 @@ export const createClubTemplate = async (
     await metaDataSheet.loadCells(`A1:A${metaDataSheetLen}`);
     await metaDataSheet.addRow([
       folderName,
-      "advisor email",
-      "president email",
-      "next meeting date",
+      advisor_Email,
+      club_Advisor,
+      president_Email,
+      club_President,
+      next_Meeting,
+      Room,
       qrCodeId,
       clubFolderId,
       attendanceSheetId,
@@ -211,7 +232,11 @@ export const createClubTemplate = async (
     }
   }
 
-  async function createClubFolder(parentID: string, folderName: string) {
+  async function createClubFolder(
+    parentID: string,
+    folderName: string,
+    index: number
+  ) {
     const clubFolder = await service.files.create({
       requestBody: {
         name: folderName,
@@ -235,15 +260,22 @@ export const createClubTemplate = async (
       )) as string;
       const qrCodeId = await createQRCode(folderId, folderName);
 
+      const clubData: Partial<Record<string, any>> = await getClubData(index);
       //add club to metadata spreadsheet given club name, and ids of the spreadsheets
 
-      const metaSheet = addToMeta(
+      const metaSheet = await addToMeta(
         folderName,
         folderId,
         photoSheetId,
         attendanceSheetId,
         qrCodeId,
-        parentID
+        parentID,
+        "Advisor Email",
+        clubData["Club Advisor"],
+        "President Email",
+        clubData["Club President(s)"],
+        "Next Meeting",
+        clubData["Room"]
       );
       console.log(`Created all drive content for ${folderName}!`);
     } catch (error) {
@@ -251,43 +283,22 @@ export const createClubTemplate = async (
     }
   }
 
-  createYearFolder();
+  await createYearFolder();
 
   res.json({
     message: "Successfully created all club folders for the school year!",
   });
 };
 
-const createClubMeta = async (
-  parentID: string,
-  email: string,
-  year: number
-) => {
-  //using user email for now
-  const userEmail = email;
-  const userSpreadsheet = new GoogleSpreadsheet(
-    process.env.USER_DATA_SPREADSHEET_ID as string,
-    serviceAccountAuth
-  );
-  const YearMeta = new GoogleSpreadsheet(
+const createClubMeta = async (parentID: string, year: number) => {
+  // Loads Spreadsheet that contains all the MetaSheets' Id
+  const AllMeta = new GoogleSpreadsheet(
     process.env.FOLDER_META_DATA_SPREADSHEET_ID as string,
     serviceAccountAuth
   );
-  await userSpreadsheet.loadInfo();
-  await YearMeta.loadInfo();
-  const userSheet = userSpreadsheet.sheetsByIndex[0];
-  const YearMetaSheet = YearMeta.sheetsByIndex[0];
-  const users = await userSheet.getRows();
+  await AllMeta.loadInfo();
+  const AllMetaSheet = AllMeta.sheetsByIndex[0];
 
-  //check if the user is an admin before performing
-  // const foundUser = users.filter(e => (e.get('Email') === userEmail) && (e.get('Client Authority') === 'admin'));
-  // if (foundUser.length === 0) {
-  //   // res.status(400);
-  //   console.log("Forbidden")
-  //   // res.json({ error: 'Forbidden'});
-  //   return
-  // }
-  console.log(`${userEmail} exists and is an admin`);
   try {
     const spreadsheet = await service.files.create({
       requestBody: {
@@ -298,12 +309,11 @@ const createClubMeta = async (
       fields: "id",
     });
     const spreadsheetId = spreadsheet.data.id as string;
-    const addMetaData = await YearMetaSheet.addRow({
+    const addMetaData = await AllMetaSheet.addRow({
       "Folder Name": `${year.toString()}-${(year + 1).toString()}`,
       "Folder Meta Sheet ID": spreadsheetId,
     });
-    console.log(`added { Year: ${year}, ID: ${spreadsheetId}`);
-    console.log(spreadsheetId, "278");
+
     const doc = new GoogleSpreadsheet(spreadsheetId, serviceAccountAuth);
     await doc.loadInfo();
 
@@ -311,8 +321,11 @@ const createClubMeta = async (
     await meta_sheet.setHeaderRow([
       "Club Name",
       "Advisor Email",
+      "Club Advisor",
       "President Email",
+      "Club President",
       "Next Meeting",
+      "Room",
       "QR Code",
       "Club Folder ID",
       "Club Spreadsheet",
@@ -320,9 +333,9 @@ const createClubMeta = async (
       "Club Code",
     ]);
     await meta_sheet.updateProperties({ title: "userMetaData" });
-    await meta_sheet.loadCells("A1:I1");
+    await meta_sheet.loadCells("A1:L1"); //maybe
 
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 12; i++) {
       const cell = meta_sheet.getCell(0, i); // access cells using a zero-based index
       console.log(cell.value);
       cell.textFormat = { fontFamily: "Times New Roman" };
