@@ -9,6 +9,7 @@ import {
 } from "../Folder_Meta_Utils/FindMeta_ParentFolder";
 import { createClubFolders } from "../Folder_Meta_Utils/CreateClub";
 import { v4 as uuidv4 } from "uuid";
+import { verifyAuthority } from "../user/verification";
 
 /**
  * Retrieves club data based on the provided club name and year.
@@ -47,6 +48,47 @@ export const getClubData = async (req: Request, res: Response) => {
   } catch (error) {
     res.json(error);
   }
+};
+
+export const getAllClubData = async (req: Request, res: Response) => {
+  try {
+    const { year } = req.params;
+
+    // Find the parent folder ID of the metadata sheet for the specified year
+    const metaSheetParentId = await findMeta_ParentFolder(year);
+
+    if (!metaSheetParentId) {
+      return res.status(404).json("Folder not found!");
+    }
+
+    // Retrieve the metadata sheet using the parent folder ID
+    const metaSheet = await getMetaSheet(
+      metaSheetParentId["Meta Sheet ID"],
+      null
+    );
+
+    if (!metaSheet) {
+      return res.json(false);
+    }
+
+    const metaSheetRows = await metaSheet.getRows();
+
+    const allClubData = metaSheetRows.map((row: any) => {
+      const club = row.toObject();
+      const clubData = {
+        clubName: club["Club Name"],
+        clubAdivsor: club["Club Advisor"],
+        clubAdvisorEmail: club["Advisor Email"],
+        clubPresident: club["Club President"],
+        clubPresidentEmail: club["President Email"],
+        nextMeeting: club["Next Meeting"],
+        room: club["Room"],
+      };
+      return clubData;
+    });
+
+    res.json(allClubData);
+  } catch (error) {}
 };
 
 /**

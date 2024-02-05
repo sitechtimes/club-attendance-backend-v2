@@ -7,6 +7,7 @@ import {
   deleteClubData,
   getClubMembers,
   removeStudentFromClub,
+  getAllClubData,
 } from "../middleware/club/clubData";
 
 import {
@@ -45,6 +46,11 @@ router.get("/oauth2callback", oauth2callback);
 
 // Club Data Routes ----------------------------------------------------------------------------------------------------------------
 router.get("/getClubData/:clubName/:year", getClubData);
+router.get(
+  "/getAllClubData/:year/:uuid",
+  verifyAuthority([Authority.admin]),
+  getAllClubData
+);
 router.get(
   "/getClubMembers/:clubName/:year/:uuid",
   verifyAuthority([Authority.admin, Authority.club_president]),

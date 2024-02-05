@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth } from "../../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { Authority } from "../../enums/authority";
-import { json } from "body-parser";
 
 /**
  * Middleware function to verify user authority.
@@ -40,19 +39,10 @@ export const verifyAuthority = (authority: string[]) => {
             next();
           } else {
             res
-            .status(403)
-            .json("User doesn't have permission to access this page");
-        }
+              .status(403)
+              .json("User doesn't have permission to access this page");
           }
-        } else {
-          res
-            .status(403)
-            .json("User doesn't have permission to access this page");
         }
-        /* if (authority.includes(userAuthority)) {
-          
-          
-        }  */
       } else {
         res.status(403).json("User not found");
       }
