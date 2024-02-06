@@ -94,12 +94,12 @@ router.patch(
   upload.array("image"),
   verifyAuthority([Authority.admin]),
   approveImage
-); // doesn't seem to work
+);
 router.get(
   "/getUnapprovedImages/:uuid",
   verifyAuthority([Authority.admin]),
   getUnapprovedImage
-); // doesn't seem to work
+);
 
 // add/delete club
 router.post("/addClub", verifyAuthority([Authority.admin]), addClubData);

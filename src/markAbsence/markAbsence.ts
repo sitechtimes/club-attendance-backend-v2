@@ -42,12 +42,12 @@ export async function markAbsence() {
             "Absence",
             parseInt(clubAttendanceRow.get("Absence")) + 1
           );
-
+          // Save changes to the club attendance sheet
           await clubAttendanceRow.save();
         }
       }
-
-      // Save changes to the club attendance sheet
+      // Clears the sheet after updating absence
+      await ClubsInAttendanceSheet.clearRows();
     }
   } catch (error) {
     console.error("An error occurred while marking absences:", error);
