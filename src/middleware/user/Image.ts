@@ -19,7 +19,7 @@ export const uploadImage = async (
 ) => {
   try {
     const { year, clubName } = req.body;
-    const photoFolderId = process.env.UNAPPROVED_CLUB_IMAGE_FOLDER as string;
+    const photoFolderId = process.env.CLUB_IMAGE_FOLDER_ID as string;
 
     if (!year || !clubName || !photoFolderId) {
       throw new Error("Missing required parameters");
@@ -84,7 +84,7 @@ export const approveImage = async (req: Request, res: Response) => {
       return res.json("Meta Not Found!");
     }
 
-    const query = `name = '${clubName}' and '${process.env.UNAPPROVED_CLUB_IMAGE_FOLDER}' in parents and appProperties has { key='year' and value='${year}' }`;
+    const query = `name = '${clubName}' and '${process.env.CLUB_IMAGE_FOLDER_ID}' in parents and appProperties has { key='year' and value='${year}' }`;
 
     const listImgs = await service.files.list({
       q: query,
