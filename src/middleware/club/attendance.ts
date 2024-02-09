@@ -13,6 +13,7 @@ import {
  */
 export const updateAttendance = async (req: Request, res: Response) => {
   try {
+    console.log(req.body)
     const { year, uuid, clubName } = req.body;
     const date = new Date().toLocaleDateString();
 
@@ -30,8 +31,8 @@ export const updateAttendance = async (req: Request, res: Response) => {
     // Find user by UUID
     const user = userSheetRows.find((row) => row.get("UID") === uuid);
     if (!user) {
-      return user
-      // return res.status(404).json("User not found!");
+      // return user
+      return res.status(404).json("User not found!");
     }
 
     const userObject = user.toObject();
