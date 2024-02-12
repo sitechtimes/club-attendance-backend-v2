@@ -127,7 +127,19 @@ export const getUnapprovedImage = async (req: Request, res: Response) => {
       spaces: "drive",
     });
 
-    res.json(images.data.files);
+    const imageUrls = images.data.files.map((file: any) => {
+      return {
+        link: `https://drive.google.com/uc?export=view&id=${file.id}`,
+        src: `https://drive.google.com/file/d/${file.id}`,
+        fileId: `${file.id}`,
+        downloadUrl: `https://drive.google.com/uc?id=${file.id}&export=download`,
+      }; /* fileId: `${file.id}`, */ /* https://drive.google.com/file/d/${file.id} */
+      /* file */
+      /* `${file.name}` */
+    });
+
+    /* res.json(images.data.files); */
+    res.json(imageUrls);
   } catch (error) {
     res.json(error);
   }
