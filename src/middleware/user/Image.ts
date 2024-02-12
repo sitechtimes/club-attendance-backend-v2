@@ -123,7 +123,7 @@ export const getUnapprovedImage = async (req: Request, res: Response) => {
   try {
     const images = await service.files.list({
       q: `'${process.env.CLUB_IMAGE_FOLDER_ID}' in parents`,
-      fields: " files(id, name, webViewLink)",
+      fields: " files(id, name, webViewLink, thumbnailLink,webContentLink)",
       spaces: "drive",
     });
 
