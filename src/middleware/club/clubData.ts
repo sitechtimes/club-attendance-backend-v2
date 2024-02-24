@@ -255,7 +255,7 @@ export const getClubMembers = async (req: Request, res: Response) => {
  */
 export const removeStudentFromClub = async (req: Request, res: Response) => {
   try {
-    const { year, clubName, memberId } = req.body;
+    const { year, clubName, uuid } = req.body;
 
     // Find the metadata sheet ID for the specified year
     const metaSheetId = await findMeta_ParentFolder(year);
@@ -290,7 +290,7 @@ export const removeStudentFromClub = async (req: Request, res: Response) => {
 
     // Find the row index corresponding to the memberId
     const rowNum = allClubMemberRows.findIndex(
-      (row) => row.get("UID") === memberId
+      (row) => row.get("UID") === uuid
     );
 
     if (rowNum === -1) {
