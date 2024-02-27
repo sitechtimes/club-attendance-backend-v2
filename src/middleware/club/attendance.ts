@@ -13,7 +13,7 @@ import {
  */
 export const updateAttendance = async (req: Request, res: Response) => {
   try {
-    console.log(req.body);
+    console.log(req.body, 'asdfa');
     const { year, uuid, clubName } = req.body;
     const date = new Date().toLocaleDateString();
 
