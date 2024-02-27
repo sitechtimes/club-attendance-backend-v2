@@ -37,12 +37,14 @@ import {
 } from "../middleware/scripts/utility";
 import { Authority } from "../enums/authority";
 import { createYearAttendanceFolder } from "../middleware/Folder_Meta_Utils/CreateClub";
+import { uploadCSV } from "../middleware/scripts/uploadCSV";
 
 const router = express.Router();
 
 // Auth Routes ---------------------------------------------------------------------------------------------------------------------
 router.get("/oauth2", oauth2);
 router.get("/oauth2callback", oauth2callback);
+router.get("/returnRedirectUrl", returnRedirecUrl);
 
 // Club Data Routes ----------------------------------------------------------------------------------------------------------------
 router.get("/getClubData/:clubName/:year", getClubData);
@@ -127,6 +129,7 @@ router.post(
 );
 router.post(
   "/createClubTemplate",
+  upload.single("csv"),
   verifyAuthority([Authority.admin]),
   createYearAttendanceFolder
 ); // could be made into an Admin Route, need to allow for uploading of the google sheet with all the approved clubs tho
@@ -135,7 +138,5 @@ router.delete("/listFilesAndRemove", listFileAndRemove);
 router.delete("/deleteFile", deleteFile);
 router.get("/listObject", listObject);
 
-// ???????
-router.get("/returnRedirectUrl", returnRedirecUrl);
-
+router.post("/createSheetFromCSV", upload.single("csv"), uploadCSV);
 export { router };

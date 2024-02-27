@@ -6,8 +6,12 @@ const upload = multer({
   },
   fileFilter(req, file, cb) {
     console.log(req.body);
-    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      return cb(new Error("Please upload a jpg, jpeg or png only"));
+    if (!file.originalname.match(/\.(jpg|jpeg|png|csv)$/)) {
+      return cb(
+        new Error(
+          "Image must be in the format .jpg, .jpeg, .png, Unless uploading a .csv"
+        )
+      );
     }
     cb(null, true);
   },

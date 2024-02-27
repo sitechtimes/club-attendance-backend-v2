@@ -6,6 +6,7 @@ import { Readable } from "stream";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { v4 as uuidv4 } from "uuid";
 import { Request, Response } from "express";
+import { uploadCSV } from "../scripts/uploadCSV";
 
 /**
  * Creates a new folder in Google Drive with the name of the current year and the next year.
@@ -18,6 +19,14 @@ export const createYearAttendanceFolder = async (
   res: Response
 ) => {
   try {
+    const csvAvailable = async () => {
+      if (req.file) {
+        return await uploadCSV(req.file);
+      }
+    };
+
+    const csvFileId = await csvAvailable();
+
     const currentYear = new Date().getFullYear();
     const folderName = `${currentYear}-${currentYear + 1}`;
     /* let metaData: any[] = []; */
@@ -46,6 +55,8 @@ export const createYearAttendanceFolder = async (
 
     const thisYearMetasheet = getThisYearMeta.sheetsByIndex[0];
 
+    await allMeta.loadInfo();
+
     const allMetaSheet = allMeta.sheetsByIndex[0];
     await allMetaSheet.addRow({
       "Folder Name": folderName,
@@ -54,8 +65,12 @@ export const createYearAttendanceFolder = async (
     });
     console.log("added to all meta sheet");
     // Get club data sheet
+    const clubDataSpreadSheetId = csvFileId
+      ? csvFileId
+      : (process.env.CLUB_DATA_SPREADSHEET_ID as string);
+
     const getClubSheet = new GoogleSpreadsheet(
-      process.env.CLUB_DATA_SPREADSHEET_ID as string,
+      clubDataSpreadSheetId,
       serviceAccountAuth
     );
     await getClubSheet.loadInfo();
@@ -124,7 +139,7 @@ export const createYearAttendanceFolder = async (
     await addClubs(0, clubSheetRows.length);
     // didn't test this part yet but probably works
     // Specify the path to the folder containing the files you want to delete
-    const folderPath = "src/imgs";
+    const folderPath = "src/images";
 
     // Call the function to delete files in the folder
     await deleteFilesInFolder(folderPath);
