@@ -144,3 +144,6 @@ export const getUnapprovedImage = async (req: Request, res: Response) => {
     res.json(error);
   }
 };
+
+// need a folder that contains all the club images
+// create urls with those files

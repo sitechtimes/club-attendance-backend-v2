@@ -33,8 +33,9 @@ export const verifyAuthority = (authority: string[]) => {
           next();
         } else if (authority.includes(Authority.club_president)) {
           const clubDataObject = JSON.parse(await userRow.get("Club Data"));
+          console.log(clubDataObject);
           const isPresident = clubDataObject.PresidentOf.includes(clubName);
-          console.log("isPresident: " + clubDataObject.PresidentOf);
+          console.log(isPresident);
           if (isPresident) {
             next();
           } else {

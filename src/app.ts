@@ -60,6 +60,8 @@ app.use(
   })
 );
 
+app.use("/images", express.static("src/ClubPhotos"));
+
 const userDataSpreadSheet = new GoogleSpreadsheet(
   process.env.USER_DATA_SPREADSHEET_ID as string,
   serviceAccountAuth

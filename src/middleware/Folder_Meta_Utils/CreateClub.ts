@@ -115,6 +115,7 @@ export const createYearAttendanceFolder = async (
         "Club Spreadsheet": data["Meta Data ID"].clubSheetId as any,
         "Club Photo Folder ID": data["Meta Data ID"].clubPhotoFolderId as any,
         "Club Code": uuidv4(),
+        "Club Attendance Photo": "No Photo Available",
       });
       console.log(data);
       await addClubs(index + 1, length);
