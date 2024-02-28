@@ -123,23 +123,10 @@ export const getUnapprovedImage = async (req: Request, res: Response) => {
   try {
     const images = await service.files.list({
       q: `'${process.env.CLUB_IMAGE_FOLDER_ID}' in parents`,
-      fields: " files(id, name, webViewLink, thumbnailLink,webContentLink)",
+      fields: "files(id, name, thumbnailLink)",
       spaces: "drive",
     });
-
-    const imageUrls = images.data.files.map((file: any) => {
-      return {
-        link: `https://drive.google.com/uc?export=view&id=${file.id}`,
-        src: `https://drive.google.com/file/d/${file.id}`,
-        fileId: `${file.id}`,
-        downloadUrl: `https://drive.google.com/uc?id=${file.id}&export=download`,
-      }; /* fileId: `${file.id}`, */ /* https://drive.google.com/file/d/${file.id} */
-      /* file */
-      /* `${file.name}` */
-    });
-
-    /* res.json(images.data.files); */
-    res.json(imageUrls);
+    res.json(images.data.files);
   } catch (error) {
     res.json(error);
   }
