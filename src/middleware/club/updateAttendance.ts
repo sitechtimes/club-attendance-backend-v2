@@ -170,6 +170,7 @@ async function createNewSheet(sheet: GoogleSpreadsheet, date: string) {
   return existingSheet;
 }
 
+// goin to have to redo this
 export const showAttendancePhotos = async (
   req: Request,
   res: Response,

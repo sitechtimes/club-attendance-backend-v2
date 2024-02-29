@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { service } from "../../app";
 import { Readable } from "stream";
 import {
@@ -12,11 +12,7 @@ import {
  * @param res The HTTP response object used to send a JSON response indicating the success of the upload.
  * @param next The next middleware function in the request-response cycle.
  */
-export const uploadImage = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const uploadImage = async (req: Request, res: Response) => {
   try {
     const { year, clubName } = req.body;
     const photoFolderId = process.env.CLUB_IMAGE_FOLDER_ID as string;
@@ -131,6 +127,3 @@ export const getUnapprovedImage = async (req: Request, res: Response) => {
     res.json(error);
   }
 };
-
-// need a folder that contains all the club images
-// create urls with those files
