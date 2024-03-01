@@ -40,6 +40,7 @@ export const getClubData = async (req: Request, res: Response) => {
         clubPresidentEmail: club["President Email"],
         nextMeeting: club["Next Meeting"],
         room: club["Room"],
+        thumbnailLink: club["Club Attendance Photo"],
       };
       res.json(clubData);
     }
@@ -81,6 +82,7 @@ export const getAllClubData = async (req: Request, res: Response) => {
         clubPresidentEmail: club["President Email"],
         nextMeeting: club["Next Meeting"],
         room: club["Room"],
+        thumbnailLink: club["Club Attendance Photo"],
       };
       return clubData;
     });

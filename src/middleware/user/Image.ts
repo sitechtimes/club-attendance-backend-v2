@@ -84,7 +84,7 @@ export const approveImage = async (req: Request, res: Response) => {
 
     const listImgs = await service.files.list({
       q: query,
-      fields: "files(id, name, parents)",
+      fields: "files(id, name, parents, thumbnailLink)",
       spaces: "drive",
     });
 
@@ -96,6 +96,14 @@ export const approveImage = async (req: Request, res: Response) => {
     const currentParent = listImgs.data.files[0].parents[0] as string;
     const newParent = metaSheet.get("Club Photo Folder ID") as string;
 
+    // add drive thumbnail link to meta
+    metaSheet.set(
+      "Club Attendance Photo",
+      listImgs.data.files[0].thumbnailLink
+    );
+
+    await metaSheet.save();
+
     const changeParentFolder = await service.files.update({
       fileId: imageId,
       addParents: newParent,
@@ -104,7 +112,7 @@ export const approveImage = async (req: Request, res: Response) => {
     });
 
     res.json(
-      `Moved Approved Image ${changeParentFolder.data.id} to ${changeParentFolder.data.parents[0]}`
+      `Moved Approved Image ${changeParentFolder.data.id} to ${changeParentFolder.data.parents[0]}, added ${listImgs.data.files[0].thumbnailLink} to the meta data for ${year}`
     );
   } catch (error) {
     console.log(error);
