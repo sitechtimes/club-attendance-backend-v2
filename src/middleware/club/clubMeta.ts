@@ -1,7 +1,4 @@
-import { Request, Response, NextFunction } from "express";
-import { GoogleSpreadsheet } from "google-spreadsheet";
-import { serviceAccountAuth, service } from "../../app";
-import { clubMeta } from "../../interface/interface";
+import { Request, Response } from "express";
 import {
   findMeta_ParentFolder,
   getMetaSheet,
@@ -82,11 +79,7 @@ export const getAllClubMeta = async (req: Request, res: Response) => {
  * @param res - The Express response object used to send the response.
  * @param next - The Express next function used to pass control to the next middleware.
  */
-export const addClubMeeting = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const addClubMeeting = async (req: Request, res: Response) => {
   try {
     const { year, clubName, nextMeeting } = req.body;
 
@@ -110,14 +103,9 @@ export const addClubMeeting = async (
  * Deletes the next meeting date of a club.
  * @param req - The request object containing the year and clubName properties in the body.
  * @param res - The response object used to send the JSON response.
- * @param next - The next function to be called in the middleware chain.
  * @returns A JSON object containing a success message indicating that the next meeting date has been deleted.
  */
-export const deleteClubMeeting = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const deleteClubMeeting = async (req: Request, res: Response) => {
   try {
     const { year, clubName } = req.body;
 

@@ -6,6 +6,7 @@ export interface clubData {
   "Club President": string;
   "Next Meeting": string;
   Room: string;
+  thumbnailLink: string;
 }
 
 export interface attendanceData {

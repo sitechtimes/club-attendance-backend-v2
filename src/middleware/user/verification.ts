@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { serviceAccountAuth } from "../../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { Authority } from "../../enums/authority";
-import { json } from "body-parser";
 
 /**
  * Middleware function to verify user authority.
@@ -34,25 +33,17 @@ export const verifyAuthority = (authority: string[]) => {
           next();
         } else if (authority.includes(Authority.club_president)) {
           const clubDataObject = JSON.parse(await userRow.get("Club Data"));
+          console.log(clubDataObject);
           const isPresident = clubDataObject.PresidentOf.includes(clubName);
-          console.log("isPresident: " + clubDataObject.PresidentOf);
+          console.log(isPresident);
           if (isPresident) {
             next();
           } else {
             res
-            .status(403)
-            .json("User doesn't have permission to access this page");
-        }
+              .status(403)
+              .json("User doesn't have permission to access this page");
           }
-        } else {
-          res
-            .status(403)
-            .json("User doesn't have permission to access this page");
         }
-        /* if (authority.includes(userAuthority)) {
-          
-          
-        }  */
       } else {
         res.status(403).json("User not found");
       }

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { service } from "../../app";
 import { Readable } from "stream";
 import {
@@ -12,14 +12,10 @@ import {
  * @param res The HTTP response object used to send a JSON response indicating the success of the upload.
  * @param next The next middleware function in the request-response cycle.
  */
-export const uploadImage = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const uploadImage = async (req: Request, res: Response) => {
   try {
     const { year, clubName } = req.body;
-    const photoFolderId = process.env.UNAPPROVED_CLUB_IMAGE_FOLDER as string;
+    const photoFolderId = process.env.CLUB_IMAGE_FOLDER_ID as string;
 
     if (!year || !clubName || !photoFolderId) {
       throw new Error("Missing required parameters");
@@ -84,11 +80,11 @@ export const approveImage = async (req: Request, res: Response) => {
       return res.json("Meta Not Found!");
     }
 
-    const query = `name = '${clubName}' and '${process.env.UNAPPROVED_CLUB_IMAGE_FOLDER}' in parents and appProperties has { key='year' and value='${year}' }`;
+    const query = `name = '${clubName}' and '${process.env.CLUB_IMAGE_FOLDER_ID}' in parents and appProperties has { key='year' and value='${year}' }`;
 
     const listImgs = await service.files.list({
       q: query,
-      fields: "files(id, name, parents)",
+      fields: "files(id, name, parents, thumbnailLink)",
       spaces: "drive",
     });
 
@@ -100,6 +96,14 @@ export const approveImage = async (req: Request, res: Response) => {
     const currentParent = listImgs.data.files[0].parents[0] as string;
     const newParent = metaSheet.get("Club Photo Folder ID") as string;
 
+    // add drive thumbnail link to meta
+    metaSheet.set(
+      "Club Attendance Photo",
+      listImgs.data.files[0].thumbnailLink
+    );
+
+    await metaSheet.save();
+
     const changeParentFolder = await service.files.update({
       fileId: imageId,
       addParents: newParent,
@@ -108,7 +112,7 @@ export const approveImage = async (req: Request, res: Response) => {
     });
 
     res.json(
-      `Moved Approved Image ${changeParentFolder.data.id} to ${changeParentFolder.data.parents[0]}`
+      `Moved Approved Image ${changeParentFolder.data.id} to ${changeParentFolder.data.parents[0]}, added ${listImgs.data.files[0].thumbnailLink} to the meta data for ${year}`
     );
   } catch (error) {
     console.log(error);
@@ -122,11 +126,10 @@ export const approveImage = async (req: Request, res: Response) => {
 export const getUnapprovedImage = async (req: Request, res: Response) => {
   try {
     const images = await service.files.list({
-      q: `'${process.env.UNAPPROVED_CLUB_IMAGE_FOLDER}' in parents`,
-      fields: " files(id, name, webViewLink)",
+      q: `'${process.env.CLUB_IMAGE_FOLDER_ID}' in parents`,
+      fields: "files(id, name, thumbnailLink)",
       spaces: "drive",
     });
-
     res.json(images.data.files);
   } catch (error) {
     res.json(error);

@@ -7,6 +7,7 @@ import {
   deleteClubData,
   getClubMembers,
   removeStudentFromClub,
+  getAllClubData,
 } from "../middleware/club/clubData";
 
 import {
@@ -20,7 +21,7 @@ import { updateQRCode } from "../middleware/club/updateQRCode";
 import {
   updateAttendance,
   showAttendancePhotos,
-} from "../middleware/club/attendance";
+} from "../middleware/club/updateAttendance";
 import { verifyAuthority } from "../middleware/user/verification";
 import {
   getAllClubMeta,
@@ -36,15 +37,22 @@ import {
 } from "../middleware/scripts/utility";
 import { Authority } from "../enums/authority";
 import { createYearAttendanceFolder } from "../middleware/Folder_Meta_Utils/CreateClub";
+import { uploadCSV } from "../middleware/scripts/uploadCSV";
 
 const router = express.Router();
 
 // Auth Routes ---------------------------------------------------------------------------------------------------------------------
 router.get("/oauth2", oauth2);
 router.get("/oauth2callback", oauth2callback);
+router.get("/returnRedirectUrl", returnRedirecUrl);
 
 // Club Data Routes ----------------------------------------------------------------------------------------------------------------
 router.get("/getClubData/:clubName/:year", getClubData);
+router.get(
+  "/getAllClubData/:year/:uuid",
+  verifyAuthority([Authority.admin]),
+  getAllClubData
+);
 router.get(
   "/getClubMembers/:clubName/:year/:uuid",
   verifyAuthority([Authority.admin, Authority.club_president]),
@@ -88,12 +96,12 @@ router.patch(
   upload.array("image"),
   verifyAuthority([Authority.admin]),
   approveImage
-); // doesn't seem to work
+);
 router.get(
   "/getUnapprovedImages/:uuid",
   verifyAuthority([Authority.admin]),
   getUnapprovedImage
-); // doesn't seem to work
+);
 
 // add/delete club
 router.post("/addClub", verifyAuthority([Authority.admin]), addClubData);
@@ -121,6 +129,7 @@ router.post(
 );
 router.post(
   "/createClubTemplate",
+  upload.single("csv"),
   verifyAuthority([Authority.admin]),
   createYearAttendanceFolder
 ); // could be made into an Admin Route, need to allow for uploading of the google sheet with all the approved clubs tho
@@ -129,7 +138,6 @@ router.delete("/listFilesAndRemove", listFileAndRemove);
 router.delete("/deleteFile", deleteFile);
 router.get("/listObject", listObject);
 
-// ???????
-router.get("/returnRedirectUrl", returnRedirecUrl);
-
+// router.post("/createSheetFromCSV", upload.single("csv"), uploadCSV);
+// only use if you need to create a google sheet from csv, this is for manual club creation, otherwise admin should be able to create the clubs by inputing a csv through the createClubTemplate
 export { router };

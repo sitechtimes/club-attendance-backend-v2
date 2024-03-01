@@ -18,7 +18,7 @@ export const createUserSheet = async (
         "Email",
         "Client Authority",
         "Club Data",
-        "Present Location",
+        "Present Location", // do we need this?
       ],
     });
     await sheet.updateProperties({ title: "User Data" });
