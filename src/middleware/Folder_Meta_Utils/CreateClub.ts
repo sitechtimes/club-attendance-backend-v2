@@ -202,6 +202,7 @@ export const createClubFolders = async (parentId: string, clubName: string) => {
       "# of Attedance",
       "Date Joined",
       "Last Signed In",
+      "Absence",
     ]);
     // formate the header to bold
 
