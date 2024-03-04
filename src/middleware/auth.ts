@@ -63,7 +63,7 @@ export const oauth2callback = async (req: Request, res: Response) => {
         role: userRow?.get("Client Authority"),
         osis: userRow?.get("OSIS"),
         grade: userRow?.get("Grade"),
-        isAuthenicated: true,
+        isAuthenticated: true,
         ClubData: JSON.parse(userRow?.get("Club Data")),
       },
       { maxAge: 900000 }

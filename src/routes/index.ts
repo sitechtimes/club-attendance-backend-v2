@@ -21,7 +21,7 @@ import { updateQRCode } from "../middleware/club/updateQRCode";
 import {
   updateAttendance,
   showAttendancePhotos,
-} from "../middleware/club/attendance";
+} from "../middleware/club/updateAttendance";
 import { verifyAuthority } from "../middleware/user/verification";
 import {
   getAllClubMeta,
@@ -138,5 +138,6 @@ router.delete("/listFilesAndRemove", listFileAndRemove);
 router.delete("/deleteFile", deleteFile);
 router.get("/listObject", listObject);
 
-router.post("/createSheetFromCSV", upload.single("csv"), uploadCSV);
+// router.post("/createSheetFromCSV", upload.single("csv"), uploadCSV);
+// only use if you need to create a google sheet from csv, this is for manual club creation, otherwise admin should be able to create the clubs by inputing a csv through the createClubTemplate
 export { router };

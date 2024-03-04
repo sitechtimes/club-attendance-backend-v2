@@ -4,7 +4,7 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
  * Marks absences in a club attendance sheet.
  * It loads the main attendance sheet, retrieves the club attendance sheets, and updates the absence count for each member who did not sign in on the current date.
  */
-export async function markAbsence() {
+export const markAbsence = async () => {
   try {
     console.log("Marking Absences");
 
@@ -52,31 +52,4 @@ export async function markAbsence() {
   } catch (error) {
     console.error("An error occurred while marking absences:", error);
   }
-}
-export function runAtSpecificTimeOfDay(
-  hour: number,
-  minutes: number,
-  func: Function
-) {
-  const twentyFourHours = 86400000;
-  const now = new Date() as any;
-  let eta_ms =
-    new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      hour,
-      minutes,
-      0,
-      0
-    ).getTime() - now;
-  if (eta_ms < 0) {
-    eta_ms += twentyFourHours;
-  }
-  setTimeout(function () {
-    //run once
-    func();
-    // run every 24 hours from now on
-    setInterval(func, twentyFourHours);
-  }, eta_ms);
-}
+};

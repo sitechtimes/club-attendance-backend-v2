@@ -9,7 +9,6 @@ import {
 } from "../Folder_Meta_Utils/FindMeta_ParentFolder";
 import { createClubFolders } from "../Folder_Meta_Utils/CreateClub";
 import { v4 as uuidv4 } from "uuid";
-import { verifyAuthority } from "../user/verification";
 
 /**
  * Retrieves club data based on the provided club name and year.
@@ -18,10 +17,9 @@ import { verifyAuthority } from "../user/verification";
  */
 export const getClubData = async (req: Request, res: Response) => {
   try {
-    /* const clubName: string = req.body.clubName
-        const year: string = req.body.year */
-    const clubName: string = req.params.clubName;
-    const year: string = req.params.year;
+    const { clubName, year } = req.params;
+    // const clubName: string = req.params.clubName;
+    // const year: string = req.params.year;
 
     const club: clubData | false = (await getSelectedClub(
       year,
@@ -42,6 +40,7 @@ export const getClubData = async (req: Request, res: Response) => {
         clubPresidentEmail: club["President Email"],
         nextMeeting: club["Next Meeting"],
         room: club["Room"],
+        thumbnailLink: club["Club Attendance Photo"],
       };
       res.json(clubData);
     }
@@ -83,6 +82,7 @@ export const getAllClubData = async (req: Request, res: Response) => {
         clubPresidentEmail: club["President Email"],
         nextMeeting: club["Next Meeting"],
         room: club["Room"],
+        thumbnailLink: club["Club Attendance Photo"],
       };
       return clubData;
     });
@@ -204,8 +204,9 @@ export const deleteClubData = async (req: Request, res: Response) => {
  */
 export const getClubMembers = async (req: Request, res: Response) => {
   try {
-    const year: string = req.params.year;
-    const clubName: string = req.params.clubName;
+    const { clubName, year } = req.params;
+    // const year: string = req.params.year;
+    // const clubName: string = req.params.clubName;
 
     // Find the metadata sheet ID for the specified year
     const metaSheetId = await findMeta_ParentFolder(year);

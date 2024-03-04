@@ -1,43 +1,41 @@
 import { service } from "../../app";
-import { Request, Response } from "express";
 import { Readable } from "stream";
 
 /**
  * Uploads a CSV file to Google Drive and converts it to a Google Spreadsheet.
- * @param req - The request object from Express.js.
- * @param res - The response object from Express.js.
+ * @param csv - The CSV file to be uploaded.
+ * @returns {Promise<string>} - The ID of the uploaded Google Spreadsheet.
  */
-export const uploadCSV = async (csv: any) => {
+export const uploadCSV = async (csv: any): Promise<string> => {
   try {
-    console.log(csv);
-    const currentYear = new Date().getFullYear();
-    const folderName = `${currentYear}-${currentYear + 1} CSV`;
-    // Upload the CSV file to Google Drive
-    const fileMetadata = {
-      name: folderName,
-      mimeType: "application/vnd.google-apps.spreadsheet",
-    };
-    const media = {
-      mimeType: "text/csv",
-      body: Readable.from([csv.buffer]),
-    };
+    const folderName = `${new Date().getFullYear()}-${
+      new Date().getFullYear() + 1
+    } CSV`;
 
+    // Upload the CSV file to Google Drive and convert it to Google Spreadsheet
     const response = await service.files.create({
-      requestBody: fileMetadata,
-      media: media,
+      requestBody: {
+        name: folderName,
+        mimeType: "application/vnd.google-apps.spreadsheet",
+      },
+      media: {
+        mimeType: "text/csv",
+        body: Readable.from([csv.buffer]),
+      },
       fields: "id",
     });
 
     const fileId = response.data.id;
 
-    // Convert the uploaded CSV file to Google Spreadsheet
+    // Add the uploaded Google Spreadsheet to the specified folder
     await service.files.update({
       addParents: [process.env.CLUB_ATTENDANCE_FOLDER_ID],
-      fileId: `${fileId}`,
+      fileId: fileId,
     });
 
     return fileId;
   } catch (error) {
-    console.error("Error converting CSV file to Google Spreadsheet:", error);
+    console.error("Error uploading and converting CSV file:", error);
+    throw error;
   }
 };

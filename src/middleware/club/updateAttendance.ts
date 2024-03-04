@@ -140,6 +140,24 @@ export const updateAttendance = async (req: Request, res: Response) => {
     // Add user to current attendance sheet
     await currentAttendanceSheet.addRow(rowData);
 
+    const masterAttendance = new GoogleSpreadsheet(
+      process.env.MASTER_ATTENDANCE_SHEET as string,
+      serviceAccountAuth
+    );
+
+    await masterAttendance.loadInfo();
+
+    const masterAttendanceSheet = masterAttendance.sheetsByIndex[0];
+
+    console.log("updating masterAttendanceSheet");
+
+    // if the object from addRow() is needed turn this into a add 'const addRowToMasterAttendanceSheet =' to the await function
+    await masterAttendanceSheet.addRow({
+      "First Name": userObject["First Name"],
+      "Last Name": userObject["Last Name"],
+      "Club Name": clubName,
+    });
+
     res.json(`Added ${uuid} to ${clubName}!`);
   } catch (error) {
     res.json(error);
@@ -171,6 +189,7 @@ async function createNewSheet(sheet: GoogleSpreadsheet, date: string) {
   return existingSheet;
 }
 
+// goin to have to redo this
 export const showAttendancePhotos = async (
   req: Request,
   res: Response,
