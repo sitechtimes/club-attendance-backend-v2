@@ -13,7 +13,10 @@ import {
  */
 export const updateAttendance = async (req: Request, res: Response) => {
   try {
+<<<<<<< HEAD:src/middleware/club/updateAttendance.ts
     console.log(req.body, 'asdfa');
+=======
+>>>>>>> parent of bee4475 (why wont this work qigupqfqpwfd):src/middleware/club/attendance.ts
     const { year, uuid, clubName } = req.body;
     const date = new Date().toLocaleDateString();
 
@@ -31,8 +34,8 @@ export const updateAttendance = async (req: Request, res: Response) => {
     // Find user by UUID
     const user = userSheetRows.find((row) => row.get("UID") === uuid);
     if (!user) {
-      // return user
-      return res.status(404).json("User not found!");
+      return user
+      // return res.status(404).json("User not found!");
     }
 
     const userObject = user.toObject();
