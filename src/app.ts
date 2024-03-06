@@ -38,7 +38,11 @@ const serviceAccountAuth = new GoogleAuth({
 
 const service = google.drive({ version: "v3", auth: serviceAccountAuth });
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "localhost:5173/",
+  })
+);
 app.use(
   session({
     resave: false,
