@@ -40,7 +40,7 @@ const service = google.drive({ version: "v3", auth: serviceAccountAuth });
 
 app.use(
   cors({
-    origin: "localhost:5173/",
+    origin: "http://localhost:5173",
   })
 );
 app.use(
