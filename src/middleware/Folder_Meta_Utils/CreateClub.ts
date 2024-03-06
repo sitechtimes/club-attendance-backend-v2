@@ -133,7 +133,10 @@ export const createYearAttendanceFolder = async (
         "Club Attendance Photo": "No Photo Available",
       });
       console.log(data);
-      await addClubs(index + 1, length);
+
+      setTimeout(async () => {
+        await addClubs(index + 1, length);
+      }, 3000); // Delay of 3 seconds so that we don't exceed quota limit for google api
     };
 
     await addClubs(0, clubSheetRows.length);
@@ -235,15 +238,15 @@ export const createClubFolders = async (parentId: string, clubName: string) => {
 /**
  * Adds metadata information to a 2D array.
  * @param meta - An array containing metadata information.
- */
-async function addMeta(meta: any[][]) {
-  const metaSheet = allMeta.sheetsByIndex[0];
-  // Iterate over each subarray in meta
-  for (const subarray of meta) {
-    // Push the subarray to the array
-    await metaSheet.addRow(subarray);
-  }
-}
+//  */
+// async function addMeta(meta: any[][]) {
+//   const metaSheet = allMeta.sheetsByIndex[0];
+//   // Iterate over each subarray in meta
+//   for (const subarray of meta) {
+//     // Push the subarray to the array
+//     await metaSheet.addRow(subarray);
+//   }
+// }
 
 /**
  * Creates a new Google Spreadsheet and sets the header row with specific column names.
@@ -311,7 +314,7 @@ async function createQRCode(parentID: string, folderName: string) {
 
     console.log(trimFolderName);
 
-    const link = `https://www.test.com/${trimFolderName}`;
+    const link = `https://localhost:5173/?club=${trimFolderName}`;
     const qrcode = await QRCode.toFile(`src/imgs/${trimFolderName}.png`, link, {
       type: "png",
     });
@@ -329,7 +332,10 @@ async function createQRCode(parentID: string, folderName: string) {
         body: Readable.from([buffer]),
       },
     });
-    console.log("File Id:", file.data.id);
+    console.log({
+      "File Id:": file.data.id,
+      "QRCode Link": link,
+    });
 
     return file.data.id;
   } catch (error) {
