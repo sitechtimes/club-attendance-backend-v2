@@ -142,7 +142,7 @@ export const createYearAttendanceFolder = async (
     await addClubs(0, clubSheetRows.length);
     // didn't test this part yet but probably works
     // Specify the path to the folder containing the files you want to delete
-    const folderPath = "src/images";
+    const folderPath = "src/imgs";
 
     // Call the function to delete files in the folder
     await deleteFilesInFolder(folderPath);
@@ -331,13 +331,29 @@ async function createQRCode(parentID: string, folderName: string) {
         mimeType: "image/png",
         body: Readable.from([buffer]),
       },
+      fields: "id,thumbnailLink",
     });
     console.log({
       "File Id:": file.data.id,
       "QRCode Link": link,
+      "Web View Link": file.data.thumbnailLink,
     });
 
-    return file.data.id;
+    // update files so that the qr code can be viewed by anyone with link
+
+    const updatePermission = await service.permissions.create({
+      fileId: file.data.id as string,
+      requestBody: {
+        role: "reader",
+        type: "anyone",
+      },
+    });
+
+    console.log(
+      `Permissions of the qr code has been updated. File ID: ${updatePermission.data.id}`
+    );
+
+    return file.data.thumbnailLink;
   } catch (error) {
     console.error(error);
     throw error;
