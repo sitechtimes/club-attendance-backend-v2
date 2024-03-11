@@ -38,9 +38,10 @@ export const oauth2callback = async (req: Request, res: Response) => {
     const rows = await userDataSheet.getRows();
     const userRow = rows.find((row) => row.get("Email") === email);
 
+
     if (!userRow) {
       // res.json({ message: 'User already exists!' });
-      await userDataSheet.addRow({
+      const user = await userDataSheet.addRow({
         UID: `${uid}`,
         "First Name": `${firstName}`,
         "Last Name": `${lastName}`,
@@ -49,26 +50,47 @@ export const oauth2callback = async (req: Request, res: Response) => {
         "Club Data": JSON.stringify({ PresidentOf: [], MemberOf: [] }),
         "Present Location": `${null}`,
       });
-      // res.send({ message: 'User added!' });
-    }
 
-    res.cookie(
-      "user_data",
-      {
-        uid: uid,
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        picture: userInfo.data.picture,
-        role: userRow?.get("Client Authority"),
-        osis: userRow?.get("OSIS"),
-        grade: userRow?.get("Grade"),
-        isAuthenticated: true,
-        ClubData: JSON.parse(userRow?.get("Club Data")),
-      },
-      { maxAge: 900000 }
-    );
-    res.redirect("http://localhost:5173");
+      console.log(user.get("Club Data"))
+
+      // sends cookie for new users
+      res.cookie(
+        "user_data",
+        {
+          uid: uid,
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          picture: userInfo.data.picture,
+          role: user?.get("Client Authority"),
+          osis: user?.get("OSIS"),
+          grade: user?.get("Grade"),
+          isAuthenticated: true,
+          ClubData: user?.get("Club Data"),
+        },
+        { maxAge: 900000 }
+      );
+      res.redirect("http://localhost:5173");
+    } else {
+      // sends cookie for existing users 
+      res.cookie(
+        "user_data",
+        {
+          uid: uid,
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          picture: userInfo.data.picture,
+          role: userRow?.get("Client Authority"),
+          osis: userRow?.get("OSIS"),
+          grade: userRow?.get("Grade"),
+          isAuthenticated: true,
+          ClubData: JSON.parse(userRow?.get("Club Data")),
+        },
+        { maxAge: 900000 }
+      );
+      res.redirect("http://localhost:5173");
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
