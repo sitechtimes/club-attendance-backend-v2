@@ -63,10 +63,8 @@ export const oauth2callback = async (req: Request, res: Response) => {
           email: email,
           picture: userInfo.data.picture,
           role: user?.get("Client Authority"),
-          osis: user?.get("OSIS"),
-          grade: user?.get("Grade"),
           isAuthenticated: true,
-          ClubData: user?.get("Club Data"),
+          ClubData: JSON.parse(user?.get("Club Data")),
         },
         { maxAge: 900000 }
       );
@@ -82,8 +80,6 @@ export const oauth2callback = async (req: Request, res: Response) => {
           email: email,
           picture: userInfo.data.picture,
           role: userRow?.get("Client Authority"),
-          osis: userRow?.get("OSIS"),
-          grade: userRow?.get("Grade"),
           isAuthenticated: true,
           ClubData: JSON.parse(userRow?.get("Club Data")),
         },
