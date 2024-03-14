@@ -6,7 +6,7 @@ import { Readable } from "stream";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { v4 as uuidv4 } from "uuid";
 import { Request, Response } from "express";
-import { uploadCSV } from "../scripts/uploadCSV";
+import { uploadCSV } from "./uploadCSV";
 
 /**
  * Creates a new folder in Google Drive with the name of the current year and the next year.
