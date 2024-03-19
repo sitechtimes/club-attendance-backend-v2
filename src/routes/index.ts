@@ -1,6 +1,6 @@
 import express from "express";
 import { oauth2, oauth2callback, returnRedirecUrl } from "../middleware/auth";
-import { createUserSheet } from "../middleware/user/userData";
+import { createUserSheet } from "../middleware/setup/createClubSheets";
 import {
   getClubData,
   addClubData,
@@ -15,14 +15,14 @@ import {
   getUnapprovedImage,
   uploadImage,
 } from "../middleware/user/Image";
-import { upload } from "../middleware/user/multer";
+import { upload } from "../multer";
 
 import { updateQRCode } from "../middleware/club/updateQRCode";
 import {
   updateAttendance,
   showAttendancePhotos,
 } from "../middleware/club/updateAttendance";
-import { verifyAuthority } from "../middleware/user/verification";
+import { verifyAuthority } from "../middleware/club/verification";
 import {
   getAllClubMeta,
   addClubMeeting,
@@ -34,10 +34,10 @@ import {
   deleteFile,
   listFileAndRemove,
   listObject,
-} from "../middleware/scripts/utility";
+} from "../middleware/setup/utility";
 import { Authority } from "../enums/authority";
-import { createYearAttendanceFolder } from "../middleware/Folder_Meta_Utils/CreateClub";
-import { uploadCSV } from "../middleware/scripts/uploadCSV";
+import { createYearAttendanceFolder } from "../middleware/setup/createClub";
+//import { uploadCSV } from "../middleware/scripts/uploadCSV"; uncomment to test only upload csv middleware
 
 const router = express.Router();
 

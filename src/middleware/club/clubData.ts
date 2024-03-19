@@ -7,7 +7,7 @@ import {
   findMeta_ParentFolder,
   getMetaSheet,
 } from "../Folder_Meta_Utils/FindMeta_ParentFolder";
-import { createClubFolders } from "../Folder_Meta_Utils/CreateClub";
+import { createClubFolders } from "../setup/createClub";
 import { v4 as uuidv4 } from "uuid";
 
 /**

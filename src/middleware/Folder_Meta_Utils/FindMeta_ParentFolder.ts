@@ -29,7 +29,6 @@ export const findMeta_ParentFolder = async (year: string) => {
     return yearMetaParentId;
   } catch (error) {
     console.error("Error finding metadata:", error);
-    throw error;
   }
 };
 
@@ -72,6 +71,5 @@ export const getMetaSheet = async (
     }
   } catch (error) {
     console.error("Error retrieving metadata:", error);
-    throw error;
   }
 };
