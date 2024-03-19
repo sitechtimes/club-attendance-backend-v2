@@ -1,18 +1,7 @@
-import { Request, Response, NextFunction } from "express";
 import { service, serviceAccountAuth } from "../../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 
-export const createSheets = async (
-  
-) = > {
-  
-}
-
-export const createUserSheet = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const createUserSheet = async () => {
   try {
     // await userDataSpreadSheet.loadInfo(); // loads document properties and worksheets
     // console.log(userDataSpreadSheet);
@@ -68,18 +57,15 @@ export const createUserSheet = async (
     }
     await userDataSheet.saveUpdatedCells();
 
-    res.json({ message: "User Data Sheet Created!" });
-    // might need next for each function or we could just put them all in one function idk
+    console.log({ message: "User Data Sheet Created!" });
+
+    return sheet.data.id;
   } catch (error) {
-    res.json(error);
+    console.log(error);
   }
 };
 
-export const createClubsInAttendanceSheet = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const createClubsInAttendanceSheet = async () => {
   try {
     const sheet = await service.files.create({
       requestBody: {
@@ -117,6 +103,9 @@ export const createClubsInAttendanceSheet = async (
 
     await clubsInAttendanceSheet.saveUpdatedCells();
 
+    console.log({ message: "Clubs In Attendance Sheet Created!" });
+
+    return sheet.data.id;
     // might need next for each function or we could just put them all in one function idk
   } catch (error) {
     console.log(error);
@@ -124,11 +113,7 @@ export const createClubsInAttendanceSheet = async (
 };
 
 // create master attendance sheet
-export const createMasterAttendanceSheet = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const createMasterAttendanceSheet = async () => {
   try {
     const sheet = await service.files.create({
       requestBody: {
@@ -167,18 +152,16 @@ export const createMasterAttendanceSheet = async (
 
     await masterAttendanceSheet.saveUpdatedCells();
 
-    // might need next for each function or we could just put them all in one function idk
+    console.log({ message: "Master Attendance Sheet Created!" });
+
+    return sheet.data.id;
   } catch (error) {
     console.log(error);
   }
 };
 
 // folder meta
-export const createFolderMeta = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const createFolderMeta = async () => {
   try {
     const sheet = await service.files.create({
       requestBody: {
@@ -217,7 +200,9 @@ export const createFolderMeta = async (
 
     await folderMetaSheet.saveUpdatedCells();
 
-    // might need next for each function or we could just put them all in one function idk
+    console.log({ message: "Folder Meta Sheet Created!" });
+
+    return sheet.data.id;
   } catch (error) {
     console.log(error);
   }
