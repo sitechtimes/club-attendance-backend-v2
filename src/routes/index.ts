@@ -115,12 +115,12 @@ router.delete(
   removeStudentFromClub
 );
 
-// Dev Route ---------------------------------------------------------------------------------------------------------------------
-router.post(
-  "/createUserSheet",
-  verifyAuthority([Authority.admin]),
-  createUserSheet
-);
+// Dev Route s---------------------------------------------------------------------------------------------------------------------
+// router.post(
+//   "/createUserSheet",
+//   verifyAuthority([Authority.admin]),
+//   createUserSheet
+// );
 router.post(
   "/createClubTemplate",
   upload.single("csv"),

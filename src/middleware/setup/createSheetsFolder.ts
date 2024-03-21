@@ -24,9 +24,8 @@ const createSheetsFolders = async () => {
       CLUB_IMAGE_FOLDER_ID=${createClubImageFolderId}
       `
     );
-    console.log(
-      "Paste the above contents into the env and remove old env with the same key value"
-    );
+
+    return true;
   } catch (error) {
     console.log(error);
   }
