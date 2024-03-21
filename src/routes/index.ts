@@ -84,6 +84,13 @@ router.post(
 // doesn't seem to work
 
 // Admin Routes --------------------------------------------------------------------------------------------------------------
+// creating club templates by uploading a csv file
+router.post(
+  "/createClubTemplate",
+  upload.single("csv"),
+  verifyAuthority([Authority.admin]),
+  createYearAttendanceFolder
+);
 // approve/unapprove image routes
 router.patch(
   "/approveImage",
@@ -115,19 +122,8 @@ router.delete(
   removeStudentFromClub
 );
 
-// Dev Route s---------------------------------------------------------------------------------------------------------------------
-// router.post(
-//   "/createUserSheet",
-//   verifyAuthority([Authority.admin]),
-//   createUserSheet
-// );
-router.post(
-  "/createClubTemplate",
-  upload.single("csv"),
-  verifyAuthority([Authority.admin]),
-  createYearAttendanceFolder
-); // could be made into an Admin Route, need to allow for uploading of the google sheet with all the approved clubs tho
-
+// Dev Testing Routes --------------------------------------------------------------------------------------------------------------------------------
+// uncomment to test only upload csv middleware
 // router.post("/createSheetFromCSV", upload.single("csv"), uploadCSV);
-// only use if you need to create a google sheet from csv, this is for manual club creation, otherwise admin should be able to create the clubs by inputing a csv through the createClubTemplate
+
 export { router };
