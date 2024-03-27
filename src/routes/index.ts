@@ -1,5 +1,5 @@
 import express from "express";
-import { oauth2, oauth2callback, returnRedirecUrl } from "../middleware/auth";
+import { oauth2, oauth2callback, redirectAuththing, returnRedirecUrl } from "../middleware/auth";
 import { createUserSheet } from "../middleware/setup/createClubSheets";
 import {
   getClubData,
@@ -31,6 +31,8 @@ import {
 
 import { Authority } from "../enums/authority";
 import { createYearAttendanceFolder } from "../middleware/setup/createClub";
+import { ssoAuth } from "../middleware/auth";
+
 //import { uploadCSV } from "../middleware/scripts/uploadCSV"; uncomment to test only upload csv middleware
 
 const router = express.Router();
@@ -39,6 +41,8 @@ const router = express.Router();
 router.get("/oauth2", oauth2);
 router.get("/oauth2callback", oauth2callback);
 router.get("/returnRedirectUrl", returnRedirecUrl);
+router.get("/ssoAuth", ssoAuth)
+router.get("/newRedirect", redirectAuththing)
 
 // Club Data Routes ----------------------------------------------------------------------------------------------------------------
 router.get("/getClubData/:clubName/:year", getClubData);
