@@ -41,7 +41,7 @@ const router = express.Router();
 router.get("/oauth2", oauth2);
 router.get("/oauth2callback", oauth2callback);
 router.get("/returnRedirectUrl", returnRedirecUrl);
-router.get("/ssoAuth", ssoAuth)
+router.post("/ssoAuth", ssoAuth)
 router.get("/newRedirect", redirectAuththing)
 
 // Club Data Routes ----------------------------------------------------------------------------------------------------------------
