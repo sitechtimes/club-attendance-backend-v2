@@ -3,6 +3,7 @@ import { google } from "googleapis";
 import { oauth2Client, redirectUri } from "../app";
 import { userDataSpreadSheet } from "../app";
 import { stringify } from "uuid";
+import { errorMonitor } from "stream";
 /**
  * Callback endpoint for the OAuth2 authentication process.
  * Handles the authentication code received from the OAuth2 provider,
@@ -105,23 +106,26 @@ export const returnRedirecUrl = (req: Request, res: Response) => {
 
 export const ssoAuth = async (req: Request, res: Response) => {
   try {
-    const response = await fetch("http://localhost:8000/o/token/", {
-      method: "POST", // *GET, POST, PUT, DELETE, etc.
-      mode: "no-cors", // no-cors, *cors, same-origin
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: "follow", // manual, *follow, error
-      // referrer: `http://localhost:8000/registration/login/?next=/o/authorize/?response_type=code&client_id=xzCx3rgs07o8C0uvil1hhkaXejsbE370aBci2Bb4&redirect_uri=http%3A%2F%2Flocalhost%3A5173&code_challenge=yJaxHcB8M4d_dj7ApOPFNLIkPV2Bk8N82tnl-PaGLDk&code_challenge_method=S256`,
-      referrerPolicy: "same-origin", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      body: req.body, // body data type must match "Content-Type" header
-    });
-    // return response.json(); // parses JSON response into native JavaScript objects
+    let form_data = new FormData();
+    for (let key in req.body) {
+      form_data.append(key, req.body[key])
+    }
 
+    const string = `${process.env.OAUTH_CLIENT_ID}:${process.env.OAUTH_CLIENT_SECRET}`
+    const encodedString = btoa(string)
+
+    const response = await fetch("http://127.0.0.1:8000/o/token/", {
+      method: "POST",
+      headers: {
+        'Authorization': `Basic ${encodedString}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: form_data
+    }).catch((error) => {
+      console.log(error)
+    });
     res.json(response.json())
+    return response.json(); // parses JSON response into native JavaScript objects
   } catch (error) {
     console.log(error)
   }
