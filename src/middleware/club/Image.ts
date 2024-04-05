@@ -18,13 +18,13 @@ export const uploadImage = async (req: Request, res: Response) => {
     const photoFolderId = process.env.CLUB_IMAGE_FOLDER_ID as string;
 
     if (!year || !clubName || !photoFolderId) {
-      throw new Error("Missing required parameters");
+      res.json("Missing required parameters");
     }
 
     const files = req.files;
 
     if (!files || files.length === 0) {
-      throw new Error("No files to upload");
+      res.json("No files to upload");
     }
 
     const uploadPromises = files.map(async (file: any) => {
