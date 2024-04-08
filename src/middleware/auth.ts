@@ -106,30 +106,23 @@ export const returnRedirecUrl = (req: Request, res: Response) => {
 
 export const ssoAuth = async (req: Request, res: Response) => {
   try {
-    let form_data = new FormData();
-    for (let key in req.body) {
-      form_data.append(key, req.body[key])
-    }
+    let thangy = new URLSearchParams()
+    thangy.append("redirect_uri", "http://localhost:5173")
+    thangy.append("code", `${req.body}`)
+    thangy.append("grant_type", "authorization_code")
 
-    const string = `${process.env.OAUTH_CLIENT_ID}:${process.env.OAUTH_CLIENT_SECRET}`
-    const encodedString = btoa(string)
-
-    const response = await fetch("http://127.0.0.1:8000/o/token/", {
+    const response = await fetch('http://localhost:8000/o/token', {
       method: "POST",
       headers: {
-        'Authorization': `Basic ${encodedString}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Authorization": `Basic Q2FTUDRKOEo4bml2VENEVHFlTTgwQkRKeVJJY3BKRmprbzJmNmpHNzpFbE53TGpzWk1sQzRSM2t4YVRiTDhySlBqd0QwR3VTbkZDVWFBVGZKNlo4RGpsQkU3RTNaYm5ibmNQaFM3eVh6dlBuNUd4Vm55c0ljbnZyUkJDT1FOYzJNQU43MHpnUG40SEJnaElVZXBDYW8wdWdUUVJ4S3VNQ0tRcWFUYWRsQg==`,
+        "Content-Type": "application/x-www-form-urlencoded"
       },
-      body: form_data
-    }).catch((error) => {
-      console.log(error)
-    });
+      body: thangy
+    })
     res.json(response.json())
-    return response.json(); // parses JSON response into native JavaScript objects
   } catch (error) {
-    console.log(error)
+    res.json(error)
   }
-
 }
 
 export const redirectAuththing = async (req: Request, res: Response) => {
