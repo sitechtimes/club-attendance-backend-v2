@@ -135,3 +135,20 @@ export const getUnapprovedImage = async (req: Request, res: Response) => {
     res.json(error);
   }
 };
+
+export const unapprovedImage = async (req: Request, res: Response) => {
+  try {
+    const { imageId } = req.body;
+
+    const image = await service.files.delete({
+      fileId: imageId,
+      fields: "files(id)",
+    });
+
+    console.log(image.data);
+
+    res.json("Image has been unapproved and has been deleted from the folder");
+  } catch (error) {
+    console.log(error);
+  }
+};

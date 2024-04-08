@@ -13,6 +13,7 @@ import {
 import {
   approveImage,
   getUnapprovedImage,
+  unapprovedImage,
   uploadImage,
 } from "../middleware/club/Image";
 import { upload } from "../multer";
@@ -104,6 +105,11 @@ router.get(
   getUnapprovedImage
 );
 
+router.patch(
+  "/unapproveImage",
+  verifyAuthority([Authority.admin]),
+  unapprovedImage
+);
 // add/delete club
 router.post("/addClub", verifyAuthority([Authority.admin]), addClubData);
 router.delete(
