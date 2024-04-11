@@ -103,7 +103,11 @@ export const oauth2 = (req: Request, res: Response) => {
 export const returnRedirecUrl = (req: Request, res: Response) => {
   res.json({ redirectUri: redirectUri });
 };
-
+//base create user on ssoAuth
+//response of the get request
+//create email: "edwinzhou259@gmail.com"​​
+// first_name: ""
+// last_name: ""
 export const ssoAuth = async (req: Request, res: Response) => {
   try {
     console.log(req.body.code, "heheha")
@@ -111,23 +115,25 @@ export const ssoAuth = async (req: Request, res: Response) => {
     thangy.append("redirect_uri", "http://localhost:5173")
     thangy.append("code", `${req.body.code}`)
     thangy.append("grant_type", "authorization_code")
+    //formdata that we make from the body from front end 
 
-    const response = await fetch('http://localhost:8000/o/token/', {
+    const response = await fetch('http://localhost:8000/o/token/', { //sends a post request to ssoAuth backend to get the code
       method: "POST",
       headers: {
         "Authorization": `Basic Q2FTUDRKOEo4bml2VENEVHFlTTgwQkRKeVJJY3BKRmprbzJmNmpHNzpFbE53TGpzWk1sQzRSM2t4YVRiTDhySlBqd0QwR3VTbkZDVWFBVGZKNlo4RGpsQkU3RTNaYm5ibmNQaFM3eVh6dlBuNUd4Vm55c0ljbnZyUkJDT1FOYzJNQU43MHpnUG40SEJnaElVZXBDYW8wdWdUUVJ4S3VNQ0tRcWFUYWRsQg==`,
         "Content-Type": "application/x-www-form-urlencoded"
       },
-      body: thangy
+      body: thangy //formdata
     })
-    const thing = await response.json()
-    const resp = await fetch('http://localhost:8000/users/get_user', {
+    const thing = await response.json() //response of post, we have the access_token
+    const resp = await fetch('http://localhost:8000/users/get_user', { //get request to ssoAuth backend to actually get the email, firstname, and lastname
       method: "GET",
       headers: {
         "Authorization": `Bearer ${thing.access_token}`
       }
     })
     res.json(await resp.json())
+    //make user and uuid for our sheets using this response
   } catch (error) {
     res.json(error)
   }
