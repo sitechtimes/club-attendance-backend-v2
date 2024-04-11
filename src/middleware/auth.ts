@@ -106,12 +106,13 @@ export const returnRedirecUrl = (req: Request, res: Response) => {
 
 export const ssoAuth = async (req: Request, res: Response) => {
   try {
+    console.log(req.body.code, "heheha")
     let thangy = new URLSearchParams()
     thangy.append("redirect_uri", "http://localhost:5173")
-    thangy.append("code", `${req.body}`)
+    thangy.append("code", `${req.body.code}`)
     thangy.append("grant_type", "authorization_code")
 
-    const response = await fetch('http://localhost:8000/o/token', {
+    const response = await fetch('http://localhost:8000/o/token/', {
       method: "POST",
       headers: {
         "Authorization": `Basic Q2FTUDRKOEo4bml2VENEVHFlTTgwQkRKeVJJY3BKRmprbzJmNmpHNzpFbE53TGpzWk1sQzRSM2t4YVRiTDhySlBqd0QwR3VTbkZDVWFBVGZKNlo4RGpsQkU3RTNaYm5ibmNQaFM3eVh6dlBuNUd4Vm55c0ljbnZyUkJDT1FOYzJNQU43MHpnUG40SEJnaElVZXBDYW8wdWdUUVJ4S3VNQ0tRcWFUYWRsQg==`,
@@ -119,7 +120,14 @@ export const ssoAuth = async (req: Request, res: Response) => {
       },
       body: thangy
     })
-    res.json(response.json())
+    const thing = await response.json()
+    const resp = await fetch('http://localhost:8000/users/get_user', {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${thing.access_token}`
+      }
+    })
+    res.json(await resp.json())
   } catch (error) {
     res.json(error)
   }
