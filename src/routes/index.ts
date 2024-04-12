@@ -1,5 +1,5 @@
 import express from "express";
-import { oauth2, oauth2callback, redirectAuththing, returnRedirecUrl } from "../middleware/auth";
+// import { oauth2, oauth2callback, redirectAuththing, returnRedirecUrl } from "../middleware/auth";
 import { createUserSheet } from "../middleware/setup/createClubSheets";
 import {
   getClubData,
@@ -38,11 +38,11 @@ import { ssoAuth } from "../middleware/auth";
 const router = express.Router();
 
 // Auth Routes ---------------------------------------------------------------------------------------------------------------------
-router.get("/oauth2", oauth2);
-router.get("/oauth2callback", oauth2callback);
-router.get("/returnRedirectUrl", returnRedirecUrl);
+// router.get("/oauth2", oauth2);
+// router.get("/oauth2callback", oauth2callback);
+// router.get("/returnRedirectUrl", returnRedirecUrl);
 router.post("/ssoAuth", ssoAuth)
-router.get("/newRedirect", redirectAuththing)
+// router.get("/newRedirect", redirectAuththing)
 
 // Club Data Routes ----------------------------------------------------------------------------------------------------------------
 router.get("/getClubData/:clubName/:year", getClubData);
