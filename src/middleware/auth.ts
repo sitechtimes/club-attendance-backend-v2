@@ -122,10 +122,11 @@ export const ssoAuth = async (req: Request, res: Response) => {
       },
       body: URLSearchParamsObj
     }).then(async (res) => {
-      const access_token = await res.json()
-      return access_token
+      const responseBody = await res.json()
+      return responseBody.access_token
     })
-    // console.log(response)
+
+    console.log(response)
     // response object
     // {
     //   access_token: 'KVwgX1ckF5py4A9MY833bjPIvzSRCC',
@@ -143,12 +144,14 @@ export const ssoAuth = async (req: Request, res: Response) => {
     const userData = await fetch('http://localhost:8000/users/get_user', { //get request to ssoAuth backend to actually get the email, firstname, and lastname
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${response.access_token}`
+        "Authorization": `Bearer ${response}`
       }
+    }).then(async (res) => {
+      console.log(res)
+      return await res.json()
     })
 
-    const userDataObj = await userData.json()
-    // userData object
+    // res object
     // {
     //   email: "edwinzhou259@gmail.com",
     //   first_name: "",
@@ -164,14 +167,14 @@ export const ssoAuth = async (req: Request, res: Response) => {
     const userDataSheetRow = await userDataSheet.getRows()
 
     // probably can use some other method to search faster
-    const selectedUser = userDataSheetRow.find((userEmail) => userEmail === userDataObj.email)
+    const selectedUser = userDataSheetRow.find((userEmail) => userEmail === response.email)
 
     if (selectedUser === undefined) {
       userDataSheet.addRow({
         UID: uuidv4(),
-        "First Name": userDataObj.first_name,
-        "Last Name": userDataObj.last_name,
-        Email: userDataObj.email,
+        "First Name": response.first_name,
+        "Last Name": response.last_name,
+        Email: response.email,
         "Client Authority": "user",
         "Club Data": `{
           "PresidentOf": [], "MemberOf": []
@@ -180,8 +183,8 @@ export const ssoAuth = async (req: Request, res: Response) => {
       })
       // need to do for presidents
     }
-    // cookie not just res
-    res.json(await userData.json())
+
+    res.json(userData)
 
   } catch (error) {
     res.json(error)
