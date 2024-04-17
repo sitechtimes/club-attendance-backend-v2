@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { serviceAccountAuth, userDataSpreadSheet } from "../app";
 import { GoogleSpreadsheet } from "google-spreadsheet";
+import { findMeta_ParentFolder } from "./Folder_Meta_Utils/FindMeta_ParentFolder";
 
 // /**
 //  * Callback endpoint for the OAuth2 authentication process.
@@ -39,7 +40,6 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
 //     const rows = await userDataSheet.getRows();
 //     const userRow = rows.find((row) => row.get("Email") === email);
 
-
 //     if (!userRow) {
 //       // res.json({ message: 'User already exists!' });
 //       const user = await userDataSheet.addRow({
@@ -71,7 +71,7 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
 //       );
 //       res.redirect("http://localhost:5173");
 //     } else {
-//       // sends cookie for existing users 
+//       // sends cookie for existing users
 //       res.cookie(
 //         "user_data",
 //         {
@@ -107,26 +107,26 @@ export const ssoAuth = async (req: Request, res: Response) => {
   try {
     // console.log(req.body.code, "code")
 
-    //formdata that we make from the body from front end 
-    let URLSearchParamsObj = new URLSearchParams()
-    URLSearchParamsObj.append("redirect_uri", "http://localhost:5173")
-    URLSearchParamsObj.append("code", `${req.body.code}`)
-    URLSearchParamsObj.append("grant_type", "authorization_code")
+    //formdata that we make from the body from front end
+    let URLSearchParamsObj = new URLSearchParams();
+    URLSearchParamsObj.append("redirect_uri", "http://localhost:5173");
+    URLSearchParamsObj.append("code", `${req.body.code}`);
+    URLSearchParamsObj.append("grant_type", "authorization_code");
 
     //sends a post request to ssoAuth backend to get the code
-    const response = await fetch('http://localhost:8000/o/token/', {
+    const response = await fetch("http://localhost:8000/o/token/", {
       method: "POST",
       headers: {
-        "Authorization": `Basic Q2FTUDRKOEo4bml2VENEVHFlTTgwQkRKeVJJY3BKRmprbzJmNmpHNzpFbE53TGpzWk1sQzRSM2t4YVRiTDhySlBqd0QwR3VTbkZDVWFBVGZKNlo4RGpsQkU3RTNaYm5ibmNQaFM3eVh6dlBuNUd4Vm55c0ljbnZyUkJDT1FOYzJNQU43MHpnUG40SEJnaElVZXBDYW8wdWdUUVJ4S3VNQ0tRcWFUYWRsQg==`,
-        "Content-Type": "application/x-www-form-urlencoded"
+        Authorization: `Basic Q2FTUDRKOEo4bml2VENEVHFlTTgwQkRKeVJJY3BKRmprbzJmNmpHNzpFbE53TGpzWk1sQzRSM2t4YVRiTDhySlBqd0QwR3VTbkZDVWFBVGZKNlo4RGpsQkU3RTNaYm5ibmNQaFM3eVh6dlBuNUd4Vm55c0ljbnZyUkJDT1FOYzJNQU43MHpnUG40SEJnaElVZXBDYW8wdWdUUVJ4S3VNQ0tRcWFUYWRsQg==`,
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: URLSearchParamsObj
+      body: URLSearchParamsObj,
     }).then(async (res) => {
-      const responseBody = await res.json()
-      return responseBody.access_token
-    })
+      const responseBody = await res.json();
+      return responseBody.access_token;
+    });
 
-    console.log(response)
+    console.log(response);
     // response object
     // {
     //   access_token: 'KVwgX1ckF5py4A9MY833bjPIvzSRCC',
@@ -141,15 +141,16 @@ export const ssoAuth = async (req: Request, res: Response) => {
     //   last_name: String
     // }
 
-    const userData = await fetch('http://localhost:8000/users/get_user', { //get request to ssoAuth backend to actually get the email, firstname, and lastname
+    const userData = await fetch("http://localhost:8000/users/get_user", {
+      //get request to ssoAuth backend to actually get the email, firstname, and lastname
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${response}`
-      }
+        Authorization: `Bearer ${response}`,
+      },
     }).then(async (res) => {
-      console.log(res)
-      return await res.json()
-    })
+      console.log(res);
+      return await res.json();
+    });
 
     // res object
     // {
@@ -158,38 +159,95 @@ export const ssoAuth = async (req: Request, res: Response) => {
     //   last_name: ""
     // }
 
-    // check for user or create new user  
-    const user = new GoogleSpreadsheet(process.env.USER_DATA_SPREADSHEET_ID as string, serviceAccountAuth)
+    // check for user or create new user
+    const user = new GoogleSpreadsheet(
+      process.env.USER_DATA_SPREADSHEET_ID as string,
+      serviceAccountAuth
+    );
 
-    await user.loadInfo()
+    await user.loadInfo();
 
-    const userDataSheet = user.sheetsByIndex[0]
-    const userDataSheetRow = await userDataSheet.getRows()
+    const userDataSheet = user.sheetsByIndex[0];
+    const userDataSheetRow = await userDataSheet.getRows();
 
     // probably can use some other method to search faster
-    const selectedUser = userDataSheetRow.find((userEmail) => userEmail === response.email)
+    const selectedUser = userDataSheetRow.find(
+      (userEmail) => userEmail === response.email
+    );
 
     if (selectedUser === undefined) {
+      const name = `${response.first_name} ${response.last_name}`;
+      const date = new Date().getFullYear();
+      const year = `${date}-${date + 1}`;
+      // load the club data only if user doens't exists so it don't make this application slow for existing users
+      const folderDataObj = await findMeta_ParentFolder(year);
+
+      const clubDataSheetId = folderDataObj["Club Data"];
+
+      const ClubData = new GoogleSpreadsheet(
+        clubDataSheetId as string,
+        serviceAccountAuth
+      );
+
+      await ClubData.loadInfo();
+
+      const clubDataSheet = ClubData.sheetsByIndex[0];
+      const clubDataSheetRows = await clubDataSheet.getRows();
+
+      const presidentOf = clubDataSheetRows
+        .filter((row) => row.toObject()["Club President(s)"].includes(name))
+        .map((row) => row.toObject()["Club Name"]);
+
+      const uuid = uuidv4();
       userDataSheet.addRow({
-        UID: uuidv4(),
+        uid: uuid,
         "First Name": response.first_name,
         "Last Name": response.last_name,
         Email: response.email,
         "Client Authority": "user",
-        "Club Data": `{
-          "PresidentOf": [], "MemberOf": []
-        }`,
-        "Present Location": "null"
-      })
+        "Club Data": {
+          PresidentOf: presidentOf,
+          MemberOf: [],
+        },
+        "Present Location": "null",
+      });
       // need to do for presidents
+
+      res.cookie(
+        "user_data",
+        {
+          uid: uuid,
+          "First Name": response.first_name,
+          "Last Name": response.last_name,
+          Email: response.email,
+          "Client Authority": "user",
+          "Club Data": {
+            PresidentOf: presidentOf,
+            MemberOf: [],
+          },
+        },
+        { maxAge: 900000 }
+      );
+    } else {
+      res.cookie(
+        "user_data",
+        {
+          uid: selectedUser.get("UID"),
+          "First Name": response.first_name,
+          "Last Name": response.last_name,
+          Email: response.email,
+          "Client Authority": selectedUser.get("Client Authority"),
+          "Club Data": JSON.parse(selectedUser?.get("Club Data")),
+        },
+        { maxAge: 900000 }
+      );
     }
 
-    res.json(userData)
-
+    res.json(userData);
   } catch (error) {
-    res.json(error)
+    res.json(error);
   }
-}
+};
 
 // export const redirectAuththing = async (req: Request, res: Response) => {
 //   try {
