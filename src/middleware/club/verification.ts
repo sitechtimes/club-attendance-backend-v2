@@ -43,6 +43,8 @@ export const verifyAuthority = (authority: string[]) => {
               .status(403)
               .json("User doesn't have permission to access this page");
           }
+        } else {
+          res.json("User doesn't have permission to access this page");
         }
       } else {
         res.status(403).json("User not found");

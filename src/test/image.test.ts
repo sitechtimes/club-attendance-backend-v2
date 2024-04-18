@@ -9,12 +9,14 @@ import path = require("path");
 // admin
 
 // image
+// upload image
 request(app)
   .post("/uploadImage")
   .attach("image", path.resolve(__dirname, "../../3d+rapid+prototyping.jpeg"))
   .field("year", "2024-2025")
   .field("clubName", "Anime Club")
   .field("uuid", "113380945040354412648")
+  .expect(200)
   .expect({ message: "File uploaded successfully!" })
   .end(function (err, res) {
     if (err) {
@@ -23,13 +25,13 @@ request(app)
   });
 request(app)
   .post("/uploadImage")
-  .attach("image", path.resolve(__dirname, "../../3d+rapid+prototyping.jpeg"))
-  .field("year", "2024-2025")
-  .field("clubName", "Anime Club")
-  .field("uuid", "113380945040354412648")
-  .expect({ message: "File uploaded successfully!" })
+  .expect(400)
+  .expect("Missing required parameters")
   .end(function (err, res) {
     if (err) {
       console.log(err);
     }
   });
+// 
+// approve image
+request(app).patch("/approveImage").
