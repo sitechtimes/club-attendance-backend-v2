@@ -147,9 +147,9 @@ export const ssoAuth = async (req: Request, res: Response) => {
       headers: {
         Authorization: `Bearer ${response}`,
       },
-    }).then(async (res) => {
-      console.log(res);
-      return await res.json();
+    }).then(async (user) => {
+      console.log(user);
+      return await user.json();
     });
 
     // res object
@@ -172,17 +172,21 @@ export const ssoAuth = async (req: Request, res: Response) => {
 
     // probably can use some other method to search faster
     const selectedUser = userDataSheetRow.find(
-      (userEmail) => userEmail === response.email
+      (row) => row === userData.emaild // remove d making intentioannly wrong to check other stuff
     );
+    console.log(selectedUser, "alksdjf")
 
     if (selectedUser === undefined) {
+      console.log("undefined")
       const name = `${response.first_name} ${response.last_name}`;
       const date = new Date().getFullYear();
       const year = `${date}-${date + 1}`;
       // load the club data only if user doens't exists so it don't make this application slow for existing users
       const folderDataObj = await findMeta_ParentFolder(year);
 
-      const clubDataSheetId = folderDataObj["Club Data"];
+      console.log(folderDataObj)
+
+      const clubDataSheetId = folderDataObj["Club Data Id"];
 
       const ClubData = new GoogleSpreadsheet(
         clubDataSheetId as string,
@@ -194,56 +198,56 @@ export const ssoAuth = async (req: Request, res: Response) => {
       const clubDataSheet = ClubData.sheetsByIndex[0];
       const clubDataSheetRows = await clubDataSheet.getRows();
 
-      const presidentOf = clubDataSheetRows
+      let presidentOf: any = clubDataSheetRows
         .filter((row) => row.toObject()["Club President(s)"].includes(name))
         .map((row) => row.toObject()["Club Name"]);
+      console.log(presidentOf)
 
+      const clubDataobj = { "PresidentOf": presidentOf, "MemberOf": [] }
+      console.log(clubDataobj)
       const uuid = uuidv4();
+      console.log(uuid)
       userDataSheet.addRow({
-        uid: uuid,
-        "First Name": response.first_name,
-        "Last Name": response.last_name,
-        Email: response.email,
+        UID: uuid,
+        "First Name": userData.first_name,
+        "Last Name": userData.last_name,
+        Email: userData.email,
         "Client Authority": "user",
-        "Club Data": {
-          PresidentOf: presidentOf,
-          MemberOf: [],
-        },
+        "Club Data": JSON.stringify(clubDataobj),
         "Present Location": "null",
       });
-      // need to do for presidents
-
+      console.log(userData)
       res.cookie(
         "user_data",
         {
           uid: uuid,
-          "First Name": response.first_name,
-          "Last Name": response.last_name,
-          Email: response.email,
+          "First Name": userData.first_name,
+          "Last Name": userData.last_name,
+          Email: userData.email,
           "Client Authority": "user",
           "Club Data": {
             PresidentOf: presidentOf,
-            MemberOf: [],
+            MemberOf: []
           },
         },
         { maxAge: 900000 }
       );
+      res.redirect("http://localhost:5173");
     } else {
       res.cookie(
         "user_data",
         {
           uid: selectedUser.get("UID"),
-          "First Name": response.first_name,
-          "Last Name": response.last_name,
-          Email: response.email,
+          "First Name": userData.first_name,
+          "Last Name": userData.last_name,
+          Email: userData.email,
           "Client Authority": selectedUser.get("Client Authority"),
           "Club Data": JSON.parse(selectedUser?.get("Club Data")),
         },
         { maxAge: 900000 }
       );
+      res.redirect("http://localhost:5173");
     }
-
-    res.json(userData);
   } catch (error) {
     res.json(error);
   }
