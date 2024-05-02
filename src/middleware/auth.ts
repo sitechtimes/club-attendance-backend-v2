@@ -207,7 +207,7 @@ export const ssoAuth = async (req: Request, res: Response) => {
       console.log(clubDataobj)
       const uuid = uuidv4();
       console.log(uuid)
-      userDataSheet.addRow({
+      await userDataSheet.addRow({
         UID: uuid,
         "First Name": userData.first_name,
         "Last Name": userData.last_name,
@@ -216,23 +216,25 @@ export const ssoAuth = async (req: Request, res: Response) => {
         "Club Data": JSON.stringify(clubDataobj),
         "Present Location": "null",
       });
-      console.log(userData)
+
+      console.log(selectedUser)
+      console.log(clubDataobj, "club Data object")
+      console.log(JSON.stringify(clubDataobj), "string club data object")
+      console.log(`"PresidentOf":[],"MemberOf":[]`)
       res.cookie(
         "user_data",
         {
-          uid: uuid,
+          uid: `${uuid}`,
           "First Name": userData.first_name,
           "Last Name": userData.last_name,
           Email: userData.email,
           "Client Authority": "user",
-          "Club Data": {
-            PresidentOf: presidentOf,
-            MemberOf: []
-          },
+          "Club Data": ";alsdjf",
         },
         { maxAge: 900000 }
       );
-      res.redirect("http://localhost:5173");
+      console.log("cookie set???????????")
+      res.json("cookie is set")
     } else {
       res.cookie(
         "user_data",
@@ -246,7 +248,7 @@ export const ssoAuth = async (req: Request, res: Response) => {
         },
         { maxAge: 900000 }
       );
-      res.redirect("http://localhost:5173");
+      res.json("a;lsdkjf;laskdjf")
     }
   } catch (error) {
     res.json(error);

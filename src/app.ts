@@ -12,6 +12,7 @@ import { markAbsence } from "./dailyOperations/markAbsence";
 import { runAtSpecificTimeOfDay } from "./dailyOperations/runAtSpecificTimeOfDay";
 import { clearMasterAttendance } from "./dailyOperations/clearMasterAttendance";
 
+
 dotenv.config();
 const port = process.env.PORT || 3000;
 const app = express();
@@ -41,6 +42,7 @@ const service = google.drive({ version: "v3", auth: serviceAccountAuth });
 app.use(
   cors({
     origin: "http://localhost:5173",
+    credentials: true
   })
 );
 app.use(
