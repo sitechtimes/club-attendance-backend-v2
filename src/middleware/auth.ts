@@ -172,7 +172,7 @@ export const ssoAuth = async (req: Request, res: Response) => {
 
     // probably can use some other method to search faster
     const selectedUser = userDataSheetRow.find(
-      (row) => row === userData.emaild // remove d making intentioannly wrong to check other stuff
+      (row) => row.get("Email") === userData.email
     );
     console.log(selectedUser, "alksdjf")
 
@@ -225,11 +225,12 @@ export const ssoAuth = async (req: Request, res: Response) => {
         "user_data",
         {
           uid: `${uuid}`,
-          "First Name": userData.first_name,
-          "Last Name": userData.last_name,
-          Email: userData.email,
-          "Client Authority": "user",
-          "Club Data": ";alsdjf",
+          firstName: userData.first_name,
+          lastName: userData.last_name,
+          email: userData.email,
+          role: "user",
+          isAuthenticated: true,
+          ClubData: ";alsdjf",
         },
         { maxAge: 900000 }
       );
