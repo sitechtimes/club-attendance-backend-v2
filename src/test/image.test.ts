@@ -2,13 +2,6 @@ import request from "supertest";
 import { app } from ".././app";
 import path = require("path");
 
-// i hate this
-
-// auth
-
-// admin
-
-// image
 // upload image
 request(app)
 	.post("/uploadImage")
