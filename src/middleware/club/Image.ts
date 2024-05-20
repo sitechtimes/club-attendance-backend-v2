@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { service } from "../../app";
 import { Readable } from "stream";
 import {
@@ -44,11 +44,15 @@ export const uploadImage = async (req: Request, res: Response) => {
       });
 
       console.log("File Id:", response.data.id);
+      return response.data.id;
     });
 
-    await Promise.all(uploadPromises);
+    const fileId = await Promise.all(uploadPromises);
 
-    res.status(200).json({ message: "File uploaded successfully!" });
+    res.status(200).json({
+      message: "File uploaded successfully!",
+      fileId: fileId,
+    });
   } catch (err) {
     res.json(err);
   }
@@ -60,6 +64,7 @@ export const uploadImage = async (req: Request, res: Response) => {
  * @param res - The response object used to send the result of the function.
  */
 export const approveImage = async (req: Request, res: Response) => {
+  // update documentation for this
   try {
     const { year, clubName, fileId } = req.body;
 

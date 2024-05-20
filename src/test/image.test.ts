@@ -2,13 +2,7 @@ import request from "supertest";
 import { app } from ".././app";
 import path = require("path");
 
-// i hate this
-
-// auth
-
-// admin
-
-// image
+let fileId = "";
 // upload image
 request(app)
   .post("/uploadImage")
@@ -17,12 +11,17 @@ request(app)
   .field("clubName", "Anime Club")
   .field("uuid", "113380945040354412648")
   .expect(200)
-  .expect({ message: "File uploaded successfully!" })
+  .expect({ message: "File uploaded successfully!", fileId: !null })
   .end(function (err, res) {
+    if (res) {
+      console.log(res.body);
+      fileId = res.body.fileId;
+    }
     if (err) {
       console.log(err);
     }
   });
+
 request(app)
   .post("/uploadImage")
   .expect(400)
@@ -37,7 +36,7 @@ request(app)
 
 request(app)
   .patch("/approveImage")
-  .attach("image", path.resolve(__dirname, "../../3d+rapid+prototyping.jpeg"))
+  .field("fileId", fileId)
   .field("uuid", "116015436799734947995")
   .field("year", "2024-2025")
   .field("clubName", "Anime Club")
