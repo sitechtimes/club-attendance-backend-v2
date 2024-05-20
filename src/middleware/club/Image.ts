@@ -83,14 +83,6 @@ export const approveImage = async (req: Request, res: Response) => {
       res.status(404).json("Meta Not Found!");
     }
 
-    // const query = `name = '${clubName}' and '${process.env.CLUB_IMAGE_FOLDER_ID}' in parents and appProperties has { key='year' and value='${year}' }`;
-
-    // const listImgs = await service.files.list({
-    //   q: query,
-    //   fields: "files(id, name, parents, thumbnailLink)",
-    //   spaces: "drive",
-    // });
-
     const getImage = await service.files.get({
       fileId: fileId,
       fields: "id, name, parents, thumbnailLink",
