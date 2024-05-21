@@ -148,7 +148,7 @@ export const unapprovedImage = async (req: Request, res: Response) => {
     const { imageId } = req.body;
 
     if (!imageId) {
-      res.status(400).json("Missing required parameters");
+      res.status(400).json("Missing required parameters!");
     }
 
     const image = await service.files.delete({

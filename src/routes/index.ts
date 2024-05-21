@@ -94,7 +94,7 @@ router.post(
 );
 // approve/unapprove image routes
 router.patch(
-  "/approveImage",
+  "/approveImage/:uuid",
   upload.array("image"),
   verifyAuthority([Authority.admin]),
   approveImage
@@ -105,8 +105,8 @@ router.get(
   getUnapprovedImage
 );
 
-router.patch(
-  "/unapproveImage",
+router.delete(
+  "/unapproveImage/:uuid",
   verifyAuthority([Authority.admin]),
   unapprovedImage
 );
