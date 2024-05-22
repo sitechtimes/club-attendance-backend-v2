@@ -13,11 +13,10 @@ import {
  */
 export const updateAttendance = async (req: Request, res: Response) => {
   try {
-<<<<<<< HEAD:src/middleware/club/updateAttendance.ts
-    console.log(req.body, 'asdfa');
-=======
->>>>>>> parent of bee4475 (why wont this work qigupqfqpwfd):src/middleware/club/attendance.ts
     const { year, uuid, clubName } = req.body;
+    if (!year || !uuid || !clubName) {
+      res.status(400).json("Missing required parameters");
+    }
     const date = new Date().toLocaleDateString();
 
     // Load user data spreadsheet
@@ -34,8 +33,7 @@ export const updateAttendance = async (req: Request, res: Response) => {
     // Find user by UUID
     const user = userSheetRows.find((row) => row.get("UID") === uuid);
     if (!user) {
-      return user
-      // return res.status(404).json("User not found!");
+      res.status(404).json("User not found!");
     }
 
     const userObject = user.toObject();
@@ -43,7 +41,7 @@ export const updateAttendance = async (req: Request, res: Response) => {
     // Find the parent folder ID of the metadata sheet for the specified year
     const metaSheetParentId = await findMeta_ParentFolder(year);
     if (!metaSheetParentId) {
-      return res.status(404).json("Folder not found!");
+      res.status(404).json("Folder not found!");
     }
 
     // Retrieve the metadata sheet using the parent folder ID
@@ -161,7 +159,7 @@ export const updateAttendance = async (req: Request, res: Response) => {
       "Club Name": clubName,
     });
 
-    res.json(`Added ${uuid} to ${clubName}!`);
+    res.status(200).json(`Added ${uuid} to ${clubName}!`);
   } catch (error) {
     res.json(error);
   }
