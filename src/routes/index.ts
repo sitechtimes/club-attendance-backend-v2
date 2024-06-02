@@ -118,7 +118,7 @@ router.delete(
   deleteClubData
 );
 // other Admin routes
-router.patch("/updateQRCode", updateQRCode);
+//router.patch("/updateQRCode", updateQRCode);
 
 // both Admin and Club President routes ------------------------------------------------------------------------------------------
 //remove student from club

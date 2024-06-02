@@ -166,6 +166,10 @@ export const deleteClubData = async (req: Request, res: Response) => {
 	try {
 		const { year, clubName } = req.body;
 
+		if (!year || !clubName) {
+			return res.status(400).json("Missing required parameters!");
+		}
+
 		// Retrieve the metadata sheet ID for the given year
 		const metaSheetId = await findMeta_ParentFolder(year);
 
@@ -193,7 +197,7 @@ export const deleteClubData = async (req: Request, res: Response) => {
 		// Delete the corresponding row from the metadata sheet
 		await metaSheet.delete();
 
-		res.json(deleteClubFolder);
+		res.status(200).json(deleteClubFolder);
 	} catch (error) {
 		res.json(error);
 	}
@@ -207,8 +211,10 @@ export const deleteClubData = async (req: Request, res: Response) => {
 export const getClubMembers = async (req: Request, res: Response) => {
 	try {
 		const { clubName, year } = req.params;
-		// const year: string = req.params.year;
-		// const clubName: string = req.params.clubName;
+
+		if (!year || !clubName) {
+			return res.status(400).json("Missing required parameters!");
+		}
 
 		// Find the metadata sheet ID for the specified year
 		const metaSheetId = await findMeta_ParentFolder(year);
@@ -224,7 +230,7 @@ export const getClubMembers = async (req: Request, res: Response) => {
 		);
 
 		if (!metaSheet) {
-			return res.json(false);
+			return res.status(404).json(false);
 		}
 
 		// Create a new GoogleSpreadsheet object using the club spreadsheet ID from the metadata sheet
@@ -244,7 +250,7 @@ export const getClubMembers = async (req: Request, res: Response) => {
 		// Convert each row to an object and store them in an array
 		const allClubMembers = allClubMemberRows.map((row: any) => row.toObject());
 
-		res.json(allClubMembers);
+		res.status(200).json(allClubMembers);
 	} catch (error) {
 		res.json(error);
 	}
@@ -260,6 +266,9 @@ export const removeStudentFromClub = async (req: Request, res: Response) => {
 	try {
 		const { year, clubName, uuid } = req.body;
 
+		if (!year || !clubName || !uuid) {
+			return res.status(400).json("Missing required parameters!");
+		}
 		// Find the metadata sheet ID for the specified year
 		const metaSheetId = await findMeta_ParentFolder(year);
 
@@ -274,7 +283,7 @@ export const removeStudentFromClub = async (req: Request, res: Response) => {
 		);
 
 		if (!metaSheet) {
-			return res.json(false);
+			return res.status(404).json(false);
 		}
 
 		// Create a new GoogleSpreadsheet object using the club spreadsheet ID from the metadata sheet
@@ -303,7 +312,7 @@ export const removeStudentFromClub = async (req: Request, res: Response) => {
 		// Delete the row
 		await allClubMemberRows[rowNum].delete();
 
-		return res.json("Member has been deleted");
+		res.status(200).json("Member has been deleted");
 	} catch (error) {
 		return res.json(error);
 	}
