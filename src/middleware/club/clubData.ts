@@ -18,16 +18,16 @@ import { v4 as uuidv4 } from "uuid";
 export const getClubData = async (req: Request, res: Response) => {
 	try {
 		const { clubName, year } = req.params;
-		// const clubName: string = req.params.clubName;
-		// const year: string = req.params.year;
+
+		if (!clubName || !year) {
+			res.status(400).json("Missing required parameters!");
+		}
 
 		const club: clubData | false = (await getSelectedClub(
 			year,
 			clubName,
 			"object"
 		)) as clubData;
-
-		//console.log(club);
 
 		if (!club) {
 			res.status(404).json("Club not found!");
@@ -52,6 +52,10 @@ export const getClubData = async (req: Request, res: Response) => {
 export const getAllClubData = async (req: Request, res: Response) => {
 	try {
 		const { year } = req.params;
+
+		if (!year) {
+			return res.status(400).json("Missing required parameters!");
+		}
 
 		// Find the parent folder ID of the metadata sheet for the specified year
 		const metaSheetParentId = await findMeta_ParentFolder(year);
@@ -111,26 +115,40 @@ export const addClubData = async (req: Request, res: Response) => {
 			room,
 		} = req.body;
 
+		if (
+			!year ||
+			!clubName ||
+			!clubAdvisor ||
+			!advisorEmail ||
+			!clubPresident ||
+			!presidentEmail ||
+			!room
+		) {
+			return res.status(400).json("Missing required parameters!");
+		}
+
 		// Find the parent folder ID of the metadata sheet for the specified year
 		const metaSheetParentId = await findMeta_ParentFolder(year);
 
 		if (!metaSheetParentId) {
+			console.log("Folder not found!");
 			return res.status(404).json("Folder not found!");
 		}
 
 		// Retrieve the metadata sheet using the parent folder ID
 		const metaSheet = await getMetaSheet(
-			metaSheetParentId["Meta Sheet ID"],
+			metaSheetParentId["Meta Sheet ID"] as string,
 			null
 		);
 
 		if (!metaSheet) {
-			return res.status(404).json(false);
+			console.log("Meta Sheet not found!");
+			return res.status(404).json("Meta Sheet not found!");
 		}
 
 		// Create the required club folders using the parent folder ID and club name
 		const createClub = await createClubFolders(
-			metaSheetParentId["Folder Id"],
+			metaSheetParentId["Folder Id"] as string,
 			clubName
 		);
 
@@ -152,7 +170,7 @@ export const addClubData = async (req: Request, res: Response) => {
 
 		res.status(200).json(`${clubName} has been added!`);
 	} catch (error) {
-		res.staus(400).json(error);
+		res.status(400).json(error);
 	}
 };
 
@@ -264,9 +282,9 @@ export const getClubMembers = async (req: Request, res: Response) => {
  */
 export const removeStudentFromClub = async (req: Request, res: Response) => {
 	try {
-		const { year, clubName, uuid } = req.body;
+		const { year, clubName, studentId } = req.body;
 
-		if (!year || !clubName || !uuid) {
+		if (!year || !clubName || !studentId) {
 			return res.status(400).json("Missing required parameters!");
 		}
 		// Find the metadata sheet ID for the specified year
@@ -302,7 +320,7 @@ export const removeStudentFromClub = async (req: Request, res: Response) => {
 
 		// Find the row index corresponding to the memberId
 		const rowNum = allClubMemberRows.findIndex(
-			(row) => row.get("UID") === uuid
+			(row) => row.get("UID") === studentId
 		);
 
 		if (rowNum === -1) {

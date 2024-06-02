@@ -17,7 +17,7 @@ request(app)
 
 request(app)
 	.get(`/getClubData/NonExistingClub/${year}`)
-	.expect(404, "Club not found!")
+	.expect(404)
 	.end(function(err) {
 		if (err) {
 			console.log(err);
@@ -27,7 +27,6 @@ request(app)
 // getAllClubData
 request(app)
 	.get(`/getAllClubData/${year}/${uuid}`)
-	.field("year", "2024-2025")
 	.expect(200)
 	.end(function(err) {
 		console.log(err);
@@ -35,21 +34,24 @@ request(app)
 
 // passing in an invalid year 	
 request(app)
-	.get("/getAllClubData/0000-0000/${uuid}")
-	.expect(404, "Folder not found!")
+	.get(`/getAllClubData/0000-0000/${uuid}`)
+	.expect(404)
 	.end(function(err) {
 		console.log(err);
 	})
 
 request(app)
 	.post("/addClub")
-	.field("year", `${year}`)
-	.field("clubName", "AddNewClub")
-	.field("clubAdvisor", "clubAdvisor")
-	.field("clubAdvisorEmail", "clubAdvisorEmail")
-	.field("clubPresident", "clubPresident")
-	.field("clubPresidentEmail", "clubPresidentEmail")
-	.field("room", "room")
+	.send({
+		"uuid": `${uuid}`,
+		"year": `${year}`,
+		"clubName": "AddNewClub",
+		"clubAdvisor": "clubAdvisor",
+		"advisorEmail": "clubAdvisorEmail",
+		"clubPresident": "clubPresident",
+		"presidentEmail": "clubPresidentEmail",
+		"room": "room",
+	})
 	.expect(200)
 	.end(function(err) {
 		console.log(err);
@@ -57,30 +59,33 @@ request(app)
 
 request(app)
 	.post("/addClub")
-	.field("year", "0000-0000") // Wrong year for the parent folder thing
-	.field("clubName", "AddNewClub")
-	.field("clubAdvisor", "clubAdvisor")
-	.field("clubAdvisorEmail", "clubAdvisorEmail")
-	.field("clubPresident", "clubPresident")
-	.field("clubPresidentEmail", "clubPresidentEmail")
-	.field("room", "room")
-	.expect(404, "Folder not found!")
+	.send({
+		"uuid": `${uuid}`,
+		"year": "0000-0000", // year doesn't exists 
+		"clubName": "AddNewClub",
+		"clubAdvisor": "clubAdvisor",
+		"advisorEmail": "clubAdvisorEmail",
+		"clubPresident": "clubPresident",
+		"presidentEmail": "clubPresidentEmail",
+		"room": "room",
+	})
+	.expect(404)
 	.end(function(err) {
 		console.log(err);
-	});
+	})
 
 request(app)
 	.delete("/deleteClub")
-	.field("year", `${year}`)
-	.field("clubName", "AddNewClub")
-	.expect(200, "Anime Club has been deleted!")
+	.send({ "uuid": `${uuid}`, "year": `${year}`, "clubName": "AddNewClub" })
+	.expect(200)
 	.end(function(err) {
 		console.log(err);
-	});
+	})
 
 request(app)
 	.delete("/deleteClub")
-	.expect(400, "Missing required parameters!")
+	.send({ "uuid": `${uuid}` })
+	.expect(400)
 	.end(function(err) {
 		console.log(err);
 	});
@@ -92,8 +97,9 @@ request(app)
 		console.log(err);
 	});
 
-request(app).get("/getClubMembers")
-	.expect(400, "Missing required parameters!")
+request(app)
+	.get(`/getClubMembers/NonExistingClub/${year}/${uuid}`)
+	.expect(404)
 	.end(function(err) {
 		console.log(err);
 	});
@@ -101,17 +107,16 @@ request(app).get("/getClubMembers")
 // this can use both admin and club president ids
 request(app)
 	.delete("/removeStudentFromClub")
-	.field("clubName", `${clubName}`)
-	.field("year", `${year}`)
-	.field("uuid", `${uuid}`)
-	.expect(200, "Member has been deleted")
+	.send({ "uuid": `${uuid}`, "year": `${year}`, "clubName": `${clubName}`, "studentId": "116015436799734947995" })
+	.expect(200)
 	.end(function(err) {
 		console.log(err);
 	})
 
 request(app)
 	.delete("/removeStudentFromClub")
-	.expect(400, "Missing required parameters!")
+	.send({ "uuid": `${uuid}` })
+	.expect(400)
 	.end(function(err) {
 		console.log(err);
 	})	

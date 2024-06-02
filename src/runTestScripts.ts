@@ -3,7 +3,7 @@ import path from 'path';
 import { exec } from 'child_process';
 
 // Path to the directory containing scripts
-const scriptsDir = path.join(__dirname, 'scripts');
+const scriptsDir = path.join(__dirname, 'test');
 
 // Function to execute a single script
 const runScript = (scriptPath: string) => {
