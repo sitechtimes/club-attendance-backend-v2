@@ -1,12 +1,13 @@
 import request from "supertest";
 import { app } from ".././app";
 
-const id = "116015436799734947995"
+const uuid = "113380945040354412648"
+const adminUuid = "116015436799734947995"
 const year = "Test"
 
 //get all club meta
 request(app)
-	.get(`/getAllClubMeta/${id}/${year}`)
+	.get(`/getAllClubMeta/${adminUuid}/${year}`)
 	.expect(200)
 	.end(function(err) {
 		if (err) {
@@ -15,8 +16,8 @@ request(app)
 	});
 
 request(app)
-	.get(`/getAllClubMeta/${id}`) // has no year
-	.expect(400, "Missing required parameters!")
+	.get(`/getAllClubMeta/${adminUuid}/0000-0000`) // has no year
+	.expect(404)
 	.end(function(err) {
 		if (err) {
 			console.log(err);
@@ -26,9 +27,9 @@ request(app)
 // get club meeting
 request(app)
 	.post("/addClubMeeting")
-	.field("year", "2024-2025")
-	.field("clubName", "Anime Club")
-	.field("nextMeeting", "Test Date Place Holder")
+	.send({
+		"uuid": `${uuid}`, "year": `${year}`, "clubName": "Anime Club", "nextMeeting": "Test Date Place Holder"
+	})
 	.expect(200)
 	.end(function(err) {
 		if (err) {
@@ -38,7 +39,8 @@ request(app)
 
 request(app)
 	.post("/addClubMeeting")
-	.expect(400, "Missing required parameters!")
+	.send({ "uuid": `${uuid}`, "clubName": "Anime Club" })
+	.expect(400)
 	.end(function(err) {
 		if (err) {
 			console.log(err);
@@ -48,8 +50,7 @@ request(app)
 // delete club meeting
 request(app)
 	.post("/deleteClubMeeting")
-	.field("year", "2024-2025")
-	.field("clubName", "Anime Club")
+	.send({ "uuid": `${uuid}`, "year": `${year}`, "clubName": "Anime Club" })
 	.expect(200)
 	.end(function(err) {
 		if (err) {
@@ -59,7 +60,8 @@ request(app)
 
 request(app)
 	.post("/deleteClubMeeting")
-	.expect(400, "Missing required parameters!")
+	.send({ "uuid": `${uuid}`, "clubName": "Anime Club" })
+	.expect(400)
 	.end(function(err) {
 		if (err) {
 			console.log(err);

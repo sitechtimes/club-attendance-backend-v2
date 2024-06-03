@@ -5,9 +5,7 @@ const year = "Test"
 
 request(app)
 	.patch("/updateAttendance")
-	.field("year", `${year}`)
-	.field("clubName", "Art Club")
-	.field("uuid", "113380945040354412648")
+	.send({ "year": `${year}`, "clubName": "Art Club", "uuid": "113380945040354412648" })
 	.expect(200)
 	.end(function(err) {
 		if (err) {
@@ -17,9 +15,7 @@ request(app)
 
 request(app)
 	.patch("/updateAttendance")
-	.field("year", `${year}`)
-	.field("clubName", "Art Club")
-	.field("uuid", "12345678990") // this user should not exist
+	.send({ "year": `${year}`, "clubName": "Art Club", "uuid": "12345678990" })
 	.expect(404)
 	.end(function(err) {
 		if (err) {
