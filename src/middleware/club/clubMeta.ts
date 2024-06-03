@@ -1,10 +1,7 @@
-import { Request, Response, NextFunction } from "express";
-import { GoogleSpreadsheet } from "google-spreadsheet";
-import { serviceAccountAuth, service } from "../../app";
-import { clubMeta } from "../../interface/interface";
+import { Request, Response } from "express";
 import {
-  findMeta_ParentFolder,
-  getMetaSheet,
+	findMeta_ParentFolder,
+	getMetaSheet,
 } from "../Folder_Meta_Utils/FindMeta_ParentFolder";
 
 /**
@@ -15,28 +12,28 @@ import {
  * @returns The selected club's information in the specified data type.
  */
 export async function getSelectedClub(
-  year: string,
-  clubName: string,
-  dataType: string
+	year: string,
+	clubName: string,
+	dataType: string
 ) {
-  const MetaSheetId = await findMeta_ParentFolder(year);
+	const MetaSheetId = await findMeta_ParentFolder(year);
 
-  if (!MetaSheetId) {
-    return false;
-  }
+	if (!MetaSheetId) {
+		return false;
+	}
 
-  const findClub = await getMetaSheet(MetaSheetId["Meta Sheet ID"], clubName);
+	const findClub = await getMetaSheet(MetaSheetId["Meta Sheet ID"], clubName);
 
-  if (!findClub) {
-    return false;
-  }
+	if (!findClub) {
+		return false;
+	}
 
-  // Return the selected club's information in the specified data type
-  if (dataType === "object") {
-    return findClub.toObject();
-  } else if (dataType === "raw data") {
-    return findClub;
-  }
+	// Return the selected club's information in the specified data type
+	if (dataType === "object") {
+		return findClub.toObject();
+	} else if (dataType === "raw data") {
+		return findClub;
+	}
 }
 
 /**
@@ -46,34 +43,38 @@ export async function getSelectedClub(
  * @returns The club data as a JSON response.
  */
 export const getAllClubMeta = async (req: Request, res: Response) => {
-  try {
-    const { year } = req.params;
+	try {
+		const { year } = req.params;
 
-    // Find the parent folder ID of the metadata sheet for the specified year
-    const metaSheetParentId = await findMeta_ParentFolder(year);
+		if (!year) {
+			res.status(400).json("Missing required parameters");
+		}
 
-    if (!metaSheetParentId) {
-      return res.status(404).json("Folder not found!");
-    }
+		// Find the parent folder ID of the metadata sheet for the specified year
+		const metaSheetParentId = await findMeta_ParentFolder(year);
 
-    // Retrieve the metadata sheet using the parent folder ID
-    const metaSheet = await getMetaSheet(
-      metaSheetParentId["Meta Sheet ID"],
-      null
-    );
+		if (!metaSheetParentId) {
+			return res.status(404).json("Folder not found!");
+		}
 
-    if (!metaSheet) {
-      return res.json(false);
-    }
+		// Retrieve the metadata sheet using the parent folder ID
+		const metaSheet = await getMetaSheet(
+			metaSheetParentId["Meta Sheet ID"],
+			null
+		);
 
-    const metaSheetRows = await metaSheet.getRows();
+		if (!metaSheet) {
+			return res.json(false);
+		}
 
-    const allClubData = metaSheetRows.map((row: any) => row.toObject());
+		const metaSheetRows = await metaSheet.getRows();
 
-    res.json(allClubData);
-  } catch (error) {
-    res.json(error);
-  }
+		const allClubData = metaSheetRows.map((row: any) => row.toObject());
+
+		res.status(200).json(allClubData);
+	} catch (error) {
+		res.json(error);
+	}
 };
 
 /**
@@ -82,53 +83,54 @@ export const getAllClubMeta = async (req: Request, res: Response) => {
  * @param res - The Express response object used to send the response.
  * @param next - The Express next function used to pass control to the next middleware.
  */
-export const addClubMeeting = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { year, clubName, nextMeeting } = req.body;
+export const addClubMeeting = async (req: Request, res: Response) => {
+	try {
+		const { year, clubName, nextMeeting } = req.body;
 
-    const selectedClub = await getSelectedClub(year, clubName, "raw data");
+		if (!year || !clubName || !nextMeeting) {
+			res.status(400).json("Missing required parameters!");
+		}
 
-    selectedClub?.set("Next Meeting", nextMeeting);
+		const selectedClub = await getSelectedClub(year, clubName, "raw data");
 
-    await selectedClub?.save();
+		selectedClub?.set("Next Meeting", nextMeeting);
 
-    const updatedNextMeeting = selectedClub?.get("Next Meeting");
+		await selectedClub?.save();
 
-    res.json({
-      message: `Successfully added next meeting date as ${updatedNextMeeting}!`,
-    });
-  } catch (error) {
-    res.json(error);
-  }
+		const updatedNextMeeting = selectedClub?.get("Next Meeting");
+
+		res.status(200).json({
+			message: `Successfully added next meeting date as ${updatedNextMeeting}!`,
+		});
+	} catch (error) {
+		res.json(error);
+	}
 };
 
 /**
  * Deletes the next meeting date of a club.
  * @param req - The request object containing the year and clubName properties in the body.
  * @param res - The response object used to send the JSON response.
- * @param next - The next function to be called in the middleware chain.
  * @returns A JSON object containing a success message indicating that the next meeting date has been deleted.
  */
-export const deleteClubMeeting = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { year, clubName } = req.body;
+export const deleteClubMeeting = async (req: Request, res: Response) => {
+	try {
+		const { year, clubName } = req.body;
 
-    const selectedClub = await getSelectedClub(year, clubName, "raw data");
+		if (!year || !clubName) {
+			res.status(400).json("Missing required parameters!");
+		}
 
-    selectedClub?.set("Next Meeting", "No Meeting Scheduled");
+		const selectedClub = await getSelectedClub(year, clubName, "raw data");
 
-    await selectedClub?.save();
+		selectedClub?.set("Next Meeting", "No Meeting Scheduled");
 
-    res.json({ message: `Successfully deleted next meeting date!` });
-  } catch (error) {
-    res.json(error);
-  }
+		await selectedClub?.save();
+
+		res
+			.status(200)
+			.json({ message: `Successfully deleted next meeting date!` });
+	} catch (error) {
+		res.json(error);
+	}
 };

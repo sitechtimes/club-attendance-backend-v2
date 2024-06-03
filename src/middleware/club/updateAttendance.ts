@@ -14,6 +14,9 @@ import {
 export const updateAttendance = async (req: Request, res: Response) => {
   try {
     const { year, uuid, clubName } = req.body;
+    if (!year || !uuid || !clubName) {
+      res.status(400).json("Missing required parameters");
+    }
     const date = new Date().toLocaleDateString();
 
     // Load user data spreadsheet
@@ -30,7 +33,7 @@ export const updateAttendance = async (req: Request, res: Response) => {
     // Find user by UUID
     const user = userSheetRows.find((row) => row.get("UID") === uuid);
     if (!user) {
-      return res.status(404).json("User not found!");
+      res.status(404).json("User not found!");
     }
 
     const userObject = user.toObject();
@@ -38,7 +41,7 @@ export const updateAttendance = async (req: Request, res: Response) => {
     // Find the parent folder ID of the metadata sheet for the specified year
     const metaSheetParentId = await findMeta_ParentFolder(year);
     if (!metaSheetParentId) {
-      return res.status(404).json("Folder not found!");
+      res.status(404).json("Folder not found!");
     }
 
     // Retrieve the metadata sheet using the parent folder ID
@@ -138,7 +141,25 @@ export const updateAttendance = async (req: Request, res: Response) => {
     // Add user to current attendance sheet
     await currentAttendanceSheet.addRow(rowData);
 
-    res.json(`Added ${uuid} to ${clubName}!`);
+    const masterAttendance = new GoogleSpreadsheet(
+      process.env.MASTER_ATTENDANCE_SHEET as string,
+      serviceAccountAuth
+    );
+
+    await masterAttendance.loadInfo();
+
+    const masterAttendanceSheet = masterAttendance.sheetsByIndex[0];
+
+    console.log("updating masterAttendanceSheet");
+
+    // if the object from addRow() is needed turn this into a add 'const addRowToMasterAttendanceSheet =' to the await function
+    await masterAttendanceSheet.addRow({
+      "First Name": userObject["First Name"],
+      "Last Name": userObject["Last Name"],
+      "Club Name": clubName,
+    });
+
+    res.status(200).json(`Added ${uuid} to ${clubName}!`);
   } catch (error) {
     res.json(error);
   }
@@ -169,6 +190,7 @@ async function createNewSheet(sheet: GoogleSpreadsheet, date: string) {
   return existingSheet;
 }
 
+// goin to have to redo this
 export const showAttendancePhotos = async (
   req: Request,
   res: Response,

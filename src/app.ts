@@ -6,9 +6,11 @@ import { google } from "googleapis";
 import dotenv from "dotenv";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import bodyParser from "body-parser";
-import { JWT, GoogleAuth } from "google-auth-library";
+import { GoogleAuth } from "google-auth-library";
 import keys from "../keys.json";
-import { markAbsence, runAtSpecificTimeOfDay } from "./markAbsence/markAbsence";
+import { markAbsence } from "./dailyOperations/markAbsence";
+import { runAtSpecificTimeOfDay } from "./dailyOperations/runAtSpecificTimeOfDay";
+import { clearMasterAttendance } from "./dailyOperations/clearMasterAttendance";
 
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -36,7 +38,11 @@ const serviceAccountAuth = new GoogleAuth({
 
 const service = google.drive({ version: "v3", auth: serviceAccountAuth });
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
 app.use(
   session({
     resave: false,
@@ -59,6 +65,8 @@ app.use(
     extended: true,
   })
 );
+
+app.use("/images", express.static("src/ClubPhotos"));
 
 const userDataSpreadSheet = new GoogleSpreadsheet(
   process.env.USER_DATA_SPREADSHEET_ID as string,
@@ -101,7 +109,7 @@ app.use("/", router);
 
 // 24-hour time
 // Currently set to run at 18:00 EST / 6:00pm EST
-runAtSpecificTimeOfDay(18, 0, markAbsence);
+runAtSpecificTimeOfDay(18, 0, [markAbsence, clearMasterAttendance]);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}!`);
