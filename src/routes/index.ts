@@ -13,6 +13,7 @@ import {
 import {
   approveImage,
   getUnapprovedImage,
+  unapprovedImage,
   uploadImage,
 } from "../middleware/club/Image";
 import { upload } from "../multer";
@@ -97,7 +98,7 @@ router.post(
 );
 // approve/unapprove image routes
 router.patch(
-  "/approveImage",
+  "/approveImage/:uuid",
   upload.array("image"),
   verifyAuthority([Authority.admin]),
   approveImage
@@ -108,6 +109,11 @@ router.get(
   getUnapprovedImage
 );
 
+router.delete(
+  "/unapproveImage/:uuid",
+  verifyAuthority([Authority.admin]),
+  unapprovedImage
+);
 // add/delete club
 router.post("/addClub", verifyAuthority([Authority.admin]), addClubData);
 router.delete(
@@ -116,7 +122,7 @@ router.delete(
   deleteClubData
 );
 // other Admin routes
-router.patch("/updateQRCode", updateQRCode);
+//router.patch("/updateQRCode", updateQRCode);
 
 // both Admin and Club President routes ------------------------------------------------------------------------------------------
 //remove student from club

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { service } from "../../app";
 import { Readable } from "stream";
 import {
@@ -18,13 +18,13 @@ export const uploadImage = async (req: Request, res: Response) => {
     const photoFolderId = process.env.CLUB_IMAGE_FOLDER_ID as string;
 
     if (!year || !clubName || !photoFolderId) {
-      throw new Error("Missing required parameters");
+      res.status(400).json("Missing required parameters");
     }
 
     const files = req.files;
 
     if (!files || files.length === 0) {
-      throw new Error("No files to upload");
+      res.json("No files to upload");
     }
 
     const uploadPromises = files.map(async (file: any) => {
@@ -44,11 +44,15 @@ export const uploadImage = async (req: Request, res: Response) => {
       });
 
       console.log("File Id:", response.data.id);
+      return response.data.id;
     });
 
-    await Promise.all(uploadPromises);
+    const fileId = await Promise.all(uploadPromises);
 
-    res.json({ message: "File uploaded successfully!" });
+    res.status(200).json({
+      message: "File uploaded successfully!",
+      fileId: fileId,
+    });
   } catch (err) {
     res.json(err);
   }
@@ -60,9 +64,13 @@ export const uploadImage = async (req: Request, res: Response) => {
  * @param res - The response object used to send the result of the function.
  */
 export const approveImage = async (req: Request, res: Response) => {
+  // update documentation for this
   try {
-    const { year, clubName } = req.body;
+    const { year, clubName, fileId } = req.body;
 
+    if (!year || !clubName || !fileId) {
+      res.json(400).json("Missing required parameters");
+    }
     // Retrieve the metadata sheet ID for the given year
     const metaSheetId = await findMeta_ParentFolder(year);
 
@@ -77,43 +85,38 @@ export const approveImage = async (req: Request, res: Response) => {
     );
 
     if (!metaSheet) {
-      return res.json("Meta Not Found!");
+      res.status(404).json("Meta Not Found!");
     }
 
-    const query = `name = '${clubName}' and '${process.env.CLUB_IMAGE_FOLDER_ID}' in parents and appProperties has { key='year' and value='${year}' }`;
-
-    const listImgs = await service.files.list({
-      q: query,
-      fields: "files(id, name, parents, thumbnailLink)",
-      spaces: "drive",
+    const getImage = await service.files.get({
+      fileId: fileId,
+      fields: "id, name, parents, thumbnailLink",
     });
 
-    if (listImgs.data.files.length === 0) {
-      return res.json("No images found!");
+    console.log(getImage.data);
+    if (!getImage) {
+      return res.status(404).json("No images found!");
     }
 
-    const imageId = listImgs.data.files[0].id as string;
-    const currentParent = listImgs.data.files[0].parents[0] as string;
+    const imageId = getImage.data.id as string;
+    const currentParent = getImage.data.parents[0] as string;
     const newParent = metaSheet.get("Club Photo Folder ID") as string;
 
     // add drive thumbnail link to meta
-    metaSheet.set(
-      "Club Attendance Photo",
-      listImgs.data.files[0].thumbnailLink
-    );
+    metaSheet.set("Club Attendance Photo", getImage.data.thumbnailLink);
 
     await metaSheet.save();
 
-    const changeParentFolder = await service.files.update({
+    await service.files.update({
       fileId: imageId,
       addParents: newParent,
       removeParents: currentParent,
       fields: "id, parents",
     });
 
-    res.json(
-      `Moved Approved Image ${changeParentFolder.data.id} to ${changeParentFolder.data.parents[0]}, added ${listImgs.data.files[0].thumbnailLink} to the meta data for ${year}`
-    );
+    res
+      .status(200)
+      .json("Image has been approved and has been moved to the new folder");
   } catch (error) {
     console.log(error);
   }
@@ -130,8 +133,35 @@ export const getUnapprovedImage = async (req: Request, res: Response) => {
       fields: "files(id, name, thumbnailLink)",
       spaces: "drive",
     });
-    res.json(images.data.files);
+    if (images.data.files.length > 0) {
+      res.status(200).json(images.data.files);
+    } else {
+      res.status(204).json("No Images to be Approved");
+    }
   } catch (error) {
-    res.json(error);
+    res.status(400).json(error);
+  }
+};
+
+export const unapprovedImage = async (req: Request, res: Response) => {
+  try {
+    const { imageId } = req.body;
+
+    if (!imageId) {
+      res.status(400).json("Missing required parameters!");
+    }
+
+    const image = await service.files.delete({
+      fileId: imageId,
+      fields: "files(id)",
+    });
+
+    console.log(image.data);
+
+    res
+      .status(200)
+      .json("Image has been unapproved and has been deleted from the folder");
+  } catch (error) {
+    console.log(error);
   }
 };

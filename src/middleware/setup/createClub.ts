@@ -19,6 +19,7 @@ export const createYearAttendanceFolder = async (
   res: Response
 ) => {
   try {
+    // checks for availability of csv if no available csv uses the process.env.CLUB_DATA_SPREADSHEET_ID and creates from the sheet with corresponsding Id
     const csvAvailable = async () => {
       if (req.file) {
         return await uploadCSV(req.file);

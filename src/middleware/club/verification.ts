@@ -12,16 +12,20 @@ export const verifyAuthority = (authority: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const uuid = req.params.uuid || req.body.uuid;
+
       const clubName = req.params.clubName || req.body.clubName;
-      const userSheetID = process.env.USER_DATA_SPREADSHEET_ID as string;
-      const user = new GoogleSpreadsheet(userSheetID, serviceAccountAuth);
+
+      const user = new GoogleSpreadsheet(
+        process.env.USER_DATA_SPREADSHEET_ID as string,
+        serviceAccountAuth
+      );
 
       await user.loadInfo();
 
       const userSheet = user.sheetsByIndex[0];
       const userRows = await userSheet.getRows();
 
-      const userRow = userRows.find((row) => row.get("UID") === uuid);
+      const userRow = userRows.find((row) => row.get("UID") == uuid);
 
       if (userRow) {
         const userAuthority = userRow.get("Client Authority");
@@ -43,6 +47,8 @@ export const verifyAuthority = (authority: string[]) => {
               .status(403)
               .json("User doesn't have permission to access this page");
           }
+        } else {
+          res.json("User doesn't have permission to access this page");
         }
       } else {
         res.status(403).json("User not found");
