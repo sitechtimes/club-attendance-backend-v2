@@ -4,8 +4,8 @@ import { clubData } from "../../interface/interface";
 import { getSelectedClub } from "./clubMeta";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import {
-	findMeta_ParentFolder,
-	getMetaSheet,
+  findMeta_ParentFolder,
+  getMetaSheet,
 } from "../Folder_Meta_Utils/FindMeta_ParentFolder";
 import { createClubFolders } from "../setup/createClub";
 import { v4 as uuidv4 } from "uuid";
@@ -16,81 +16,86 @@ import { v4 as uuidv4 } from "uuid";
  * @param res - The response object used to send the club data or error message.
  */
 export const getClubData = async (req: Request, res: Response) => {
-	try {
-		const { clubName, year } = req.params;
-		// const clubName: string = req.params.clubName;
-		// const year: string = req.params.year;
+  try {
+    const { clubName, year } = req.params;
 
-		const club: clubData | false = (await getSelectedClub(
-			year,
-			clubName,
-			"object"
-		)) as clubData;
+    if (!clubName || !year) {
+      res.status(400).json("Missing required parameters!");
+    }
 
-		//console.log(club);
+    const club: clubData | false = (await getSelectedClub(
+      year,
+      clubName,
+      "object"
+    )) as clubData;
 
-		if (!club) {
-			res.status(404).json("Club not found!");
-		} else {
-			const clubData = {
-				clubName: club["Club Name"],
-				clubAdivsor: club["Club Advisor"],
-				clubAdvisorEmail: club["Advisor Email"],
-				clubPresident: club["Club President"],
-				clubPresidentEmail: club["President Email"],
-				nextMeeting: club["Next Meeting"],
-				room: club["Room"],
-				thumbnailLink: club["Club Attendance Photo"],
-			};
-			res.status(200).json(clubData);
-		}
-	} catch (error) {
-		res.status(400).json(error);
-	}
+    if (!club) {
+      res.status(404).json("Club not found!");
+    } else {
+      const clubData = {
+        clubName: club["Club Name"],
+        clubAdivsor: club["Club Advisor"],
+        clubAdvisorEmail: club["Advisor Email"],
+        clubPresident: club["Club President"],
+        clubPresidentEmail: club["President Email"],
+        nextMeeting: club["Next Meeting"],
+        room: club["Room"],
+        qrCodeLink: `https://drive.google.com/uc?id=${club["QR Code"]}`,
+        thumbnailLink: club["Club Attendance Photo"],
+      };
+      res.status(200).json(clubData);
+    }
+  } catch (error) {
+    res.status(400).json(error);
+  }
 };
 
 export const getAllClubData = async (req: Request, res: Response) => {
-	try {
-		const { year } = req.params;
+  try {
+    const { year } = req.params;
 
-		// Find the parent folder ID of the metadata sheet for the specified year
-		const metaSheetParentId = await findMeta_ParentFolder(year);
+    if (!year) {
+      return res.status(400).json("Missing required parameters!");
+    }
 
-		if (!metaSheetParentId) {
-			return res.status(404).json("Folder not found!");
-		}
+    // Find the parent folder ID of the metadata sheet for the specified year
+    const metaSheetParentId = await findMeta_ParentFolder(year);
 
-		// Retrieve the metadata sheet using the parent folder ID
-		const metaSheet = await getMetaSheet(
-			metaSheetParentId["Meta Sheet ID"],
-			null
-		);
+    if (!metaSheetParentId) {
+      return res.status(404).json("Folder not found!");
+    }
 
-		if (!metaSheet) {
-			return res.status(404).json(false);
-		}
+    // Retrieve the metadata sheet using the parent folder ID
+    const metaSheet = await getMetaSheet(
+      metaSheetParentId["Meta Sheet ID"],
+      null
+    );
 
-		const metaSheetRows = await metaSheet.getRows();
+    if (!metaSheet) {
+      return res.status(404).json(false);
+    }
 
-		const allClubData = metaSheetRows.map((row: any) => {
-			const club = row.toObject();
-			const clubData = {
-				clubName: club["Club Name"],
-				clubAdivsor: club["Club Advisor"],
-				clubAdvisorEmail: club["Advisor Email"],
-				clubPresident: club["Club President"],
-				clubPresidentEmail: club["President Email"],
-				nextMeeting: club["Next Meeting"],
-				room: club["Room"],
-				thumbnailLink: club["Club Attendance Photo"],
-			};
-			return clubData;
-		});
+    const metaSheetRows = await metaSheet.getRows();
 
-		res.status(200).json(allClubData);
-	} catch (error) {
-		res.status(400).json(error);
-	}
+    const allClubData = metaSheetRows.map((row: any) => {
+      const club = row.toObject();
+      const clubData = {
+        clubName: club["Club Name"],
+        clubAdivsor: club["Club Advisor"],
+        clubAdvisorEmail: club["Advisor Email"],
+        clubPresident: club["Club President"],
+        clubPresidentEmail: club["President Email"],
+        nextMeeting: club["Next Meeting"],
+        room: club["Room"],
+        thumbnailLink: club["Club Attendance Photo"],
+      };
+      return clubData;
+    });
+
+    res.status(200).json(allClubData);
+  } catch (error) {
+    res.status(400).json(error);
+  }
 };
 
 /**
@@ -100,60 +105,74 @@ export const getAllClubData = async (req: Request, res: Response) => {
  * @returns A JSON response indicating the success or error that occurred.
  */
 export const addClubData = async (req: Request, res: Response) => {
-	try {
-		const {
-			year,
-			clubName,
-			clubAdvisor,
-			advisorEmail,
-			clubPresident,
-			presidentEmail,
-			room,
-		} = req.body;
+  try {
+    const {
+      year,
+      clubName,
+      clubAdvisor,
+      advisorEmail,
+      clubPresident,
+      presidentEmail,
+      room,
+    } = req.body;
 
-		// Find the parent folder ID of the metadata sheet for the specified year
-		const metaSheetParentId = await findMeta_ParentFolder(year);
+    if (
+      !year ||
+      !clubName ||
+      !clubAdvisor ||
+      !advisorEmail ||
+      !clubPresident ||
+      !presidentEmail ||
+      !room
+    ) {
+      return res.status(400).json("Missing required parameters!");
+    }
 
-		if (!metaSheetParentId) {
-			return res.status(404).json("Folder not found!");
-		}
+    // Find the parent folder ID of the metadata sheet for the specified year
+    const metaSheetParentId = await findMeta_ParentFolder(year);
 
-		// Retrieve the metadata sheet using the parent folder ID
-		const metaSheet = await getMetaSheet(
-			metaSheetParentId["Meta Sheet ID"],
-			null
-		);
+    if (!metaSheetParentId) {
+      console.log("Folder not found!");
+      return res.status(404).json("Folder not found!");
+    }
 
-		if (!metaSheet) {
-			return res.status(404).json(false);
-		}
+    // Retrieve the metadata sheet using the parent folder ID
+    const metaSheet = await getMetaSheet(
+      metaSheetParentId["Meta Sheet ID"] as string,
+      null
+    );
 
-		// Create the required club folders using the parent folder ID and club name
-		const createClub = await createClubFolders(
-			metaSheetParentId["Folder Id"],
-			clubName
-		);
+    if (!metaSheet) {
+      console.log("Meta Sheet not found!");
+      return res.status(404).json("Meta Sheet not found!");
+    }
 
-		// Add a new row to the metadata sheet with the club data and other relevant information
-		await metaSheet.addRow({
-			"Club Name": clubName,
-			"Advisor Email": advisorEmail,
-			"Club Advisor": clubAdvisor,
-			"President Email": presidentEmail,
-			"Club President(s)": clubPresident,
-			"Next Meeting": "No Meeting Scheduled",
-			Room: room,
-			"QR Code": createClub.qrCodeId,
-			"Club Folder ID": createClub.clubFolderId,
-			"Club Spreadsheet": createClub.clubSheetId,
-			"Club Photo Folder ID": createClub.clubPhotoFolderId,
-			"Club Code": uuidv4(),
-		});
+    // Create the required club folders using the parent folder ID and club name
+    const createClub = await createClubFolders(
+      metaSheetParentId["Folder Id"] as string,
+      clubName
+    );
 
-		res.status(200).json(`${clubName} has been added!`);
-	} catch (error) {
-		res.staus(400).json(error);
-	}
+    // Add a new row to the metadata sheet with the club data and other relevant information
+    await metaSheet.addRow({
+      "Club Name": clubName,
+      "Advisor Email": advisorEmail,
+      "Club Advisor": clubAdvisor,
+      "President Email": presidentEmail,
+      "Club President(s)": clubPresident,
+      "Next Meeting": "No Meeting Scheduled",
+      Room: room,
+      "QR Code": createClub.qrCodeId,
+      "Club Folder ID": createClub.clubFolderId,
+      "Club Spreadsheet": createClub.clubSheetId,
+      "Club Photo Folder ID": createClub.clubPhotoFolderId,
+      "Club Code": uuidv4(),
+    });
+
+    res.status(200).json(`${clubName} has been added!`);
+  } catch (error) {
+    res.status(400).json(error);
+  }
 };
 
 /**
@@ -163,44 +182,44 @@ export const addClubData = async (req: Request, res: Response) => {
  * @returns The deleted club folder object, or a 404 response if the folder is not found, or false if the club is not found in the metadata sheet.
  */
 export const deleteClubData = async (req: Request, res: Response) => {
-	try {
-		const { year, clubName } = req.body;
+  try {
+    const { year, clubName } = req.body;
 
-		if (!year || !clubName) {
-			return res.status(400).json("Missing required parameters!");
-		}
+    if (!year || !clubName) {
+      return res.status(400).json("Missing required parameters!");
+    }
 
-		// Retrieve the metadata sheet ID for the given year
-		const metaSheetId = await findMeta_ParentFolder(year);
+    // Retrieve the metadata sheet ID for the given year
+    const metaSheetId = await findMeta_ParentFolder(year);
 
-		if (!metaSheetId) {
-			return res.status(404).json("Folder not found!");
-		}
+    if (!metaSheetId) {
+      return res.status(404).json("Folder not found!");
+    }
 
-		// Retrieve the metadata sheet for the specified club
-		const metaSheet = await getMetaSheet(
-			metaSheetId["Meta Sheet ID"],
-			clubName
-		);
+    // Retrieve the metadata sheet for the specified club
+    const metaSheet = await getMetaSheet(
+      metaSheetId["Meta Sheet ID"],
+      clubName
+    );
 
-		if (!metaSheet) {
-			return res.json(false);
-		}
+    if (!metaSheet) {
+      return res.json(false);
+    }
 
-		const metaObject = metaSheet.toObject();
+    const metaObject = metaSheet.toObject();
 
-		// Delete the club's folder from Google Drive
-		const deleteClubFolder = await service.files.delete({
-			fileId: metaObject["Club Folder ID"],
-		});
+    // Delete the club's folder from Google Drive
+    const deleteClubFolder = await service.files.delete({
+      fileId: metaObject["Club Folder ID"],
+    });
 
-		// Delete the corresponding row from the metadata sheet
-		await metaSheet.delete();
+    // Delete the corresponding row from the metadata sheet
+    await metaSheet.delete();
 
-		res.status(200).json(deleteClubFolder);
-	} catch (error) {
-		res.json(error);
-	}
+    res.status(200).json(deleteClubFolder);
+  } catch (error) {
+    res.json(error);
+  }
 };
 
 /**
@@ -209,51 +228,51 @@ export const deleteClubData = async (req: Request, res: Response) => {
  * @param res - The response object used to send the club members data.
  */
 export const getClubMembers = async (req: Request, res: Response) => {
-	try {
-		const { clubName, year } = req.params;
+  try {
+    const { clubName, year } = req.params;
 
-		if (!year || !clubName) {
-			return res.status(400).json("Missing required parameters!");
-		}
+    if (!year || !clubName) {
+      return res.status(400).json("Missing required parameters!");
+    }
 
-		// Find the metadata sheet ID for the specified year
-		const metaSheetId = await findMeta_ParentFolder(year);
+    // Find the metadata sheet ID for the specified year
+    const metaSheetId = await findMeta_ParentFolder(year);
 
-		if (!metaSheetId) {
-			return res.status(404).json("Folder not found!");
-		}
+    if (!metaSheetId) {
+      return res.status(404).json("Folder not found!");
+    }
 
-		// Retrieve the metadata sheet for the specified club
-		const metaSheet = await getMetaSheet(
-			metaSheetId["Meta Sheet ID"],
-			clubName
-		);
+    // Retrieve the metadata sheet for the specified club
+    const metaSheet = await getMetaSheet(
+      metaSheetId["Meta Sheet ID"],
+      clubName
+    );
 
-		if (!metaSheet) {
-			return res.status(404).json(false);
-		}
+    if (!metaSheet) {
+      return res.status(404).json(false);
+    }
 
-		// Create a new GoogleSpreadsheet object using the club spreadsheet ID from the metadata sheet
-		const clubSpreadSheet = new GoogleSpreadsheet(
-			metaSheet.get("Club Spreadsheet") as string,
-			serviceAccountAuth
-		);
+    // Create a new GoogleSpreadsheet object using the club spreadsheet ID from the metadata sheet
+    const clubSpreadSheet = new GoogleSpreadsheet(
+      metaSheet.get("Club Spreadsheet") as string,
+      serviceAccountAuth
+    );
 
-		await clubSpreadSheet.loadInfo();
+    await clubSpreadSheet.loadInfo();
 
-		// Get the first sheet of the club spreadsheet
-		const allClubMemberSheet = clubSpreadSheet.sheetsByIndex[0];
+    // Get the first sheet of the club spreadsheet
+    const allClubMemberSheet = clubSpreadSheet.sheetsByIndex[0];
 
-		// Retrieve all rows from the sheet
-		const allClubMemberRows = await allClubMemberSheet.getRows();
+    // Retrieve all rows from the sheet
+    const allClubMemberRows = await allClubMemberSheet.getRows();
 
-		// Convert each row to an object and store them in an array
-		const allClubMembers = allClubMemberRows.map((row: any) => row.toObject());
+    // Convert each row to an object and store them in an array
+    const allClubMembers = allClubMemberRows.map((row: any) => row.toObject());
 
-		res.status(200).json(allClubMembers);
-	} catch (error) {
-		res.json(error);
-	}
+    res.status(200).json(allClubMembers);
+  } catch (error) {
+    res.json(error);
+  }
 };
 
 /**
@@ -263,57 +282,57 @@ export const getClubMembers = async (req: Request, res: Response) => {
  * @returns A response indicating whether the deletion was successful or not.
  */
 export const removeStudentFromClub = async (req: Request, res: Response) => {
-	try {
-		const { year, clubName, uuid } = req.body;
+  try {
+    const { year, clubName, studentId } = req.body;
 
-		if (!year || !clubName || !uuid) {
-			return res.status(400).json("Missing required parameters!");
-		}
-		// Find the metadata sheet ID for the specified year
-		const metaSheetId = await findMeta_ParentFolder(year);
+    if (!year || !clubName || !studentId) {
+      return res.status(400).json("Missing required parameters!");
+    }
+    // Find the metadata sheet ID for the specified year
+    const metaSheetId = await findMeta_ParentFolder(year);
 
-		if (!metaSheetId) {
-			return res.status(404).json("Folder not found!");
-		}
+    if (!metaSheetId) {
+      return res.status(404).json("Folder not found!");
+    }
 
-		// Retrieve the metadata sheet for the specified club
-		const metaSheet = await getMetaSheet(
-			metaSheetId["Meta Sheet ID"],
-			clubName
-		);
+    // Retrieve the metadata sheet for the specified club
+    const metaSheet = await getMetaSheet(
+      metaSheetId["Meta Sheet ID"],
+      clubName
+    );
 
-		if (!metaSheet) {
-			return res.status(404).json(false);
-		}
+    if (!metaSheet) {
+      return res.status(404).json(false);
+    }
 
-		// Create a new GoogleSpreadsheet object using the club spreadsheet ID from the metadata sheet
-		const clubSpreadSheet = new GoogleSpreadsheet(
-			metaSheet.get("Club Spreadsheet") as string,
-			serviceAccountAuth
-		);
+    // Create a new GoogleSpreadsheet object using the club spreadsheet ID from the metadata sheet
+    const clubSpreadSheet = new GoogleSpreadsheet(
+      metaSheet.get("Club Spreadsheet") as string,
+      serviceAccountAuth
+    );
 
-		await clubSpreadSheet.loadInfo();
+    await clubSpreadSheet.loadInfo();
 
-		// Get the first sheet of the club spreadsheet
-		const allClubMemberSheet = clubSpreadSheet.sheetsByIndex[0];
+    // Get the first sheet of the club spreadsheet
+    const allClubMemberSheet = clubSpreadSheet.sheetsByIndex[0];
 
-		// Retrieve all rows from the sheet
-		const allClubMemberRows = await allClubMemberSheet.getRows();
+    // Retrieve all rows from the sheet
+    const allClubMemberRows = await allClubMemberSheet.getRows();
 
-		// Find the row index corresponding to the memberId
-		const rowNum = allClubMemberRows.findIndex(
-			(row) => row.get("UID") === uuid
-		);
+    // Find the row index corresponding to the memberId
+    const rowNum = allClubMemberRows.findIndex(
+      (row) => row.get("UID") === studentId
+    );
 
-		if (rowNum === -1) {
-			return res.json("Member not found!");
-		}
+    if (rowNum === -1) {
+      return res.json("Member not found!");
+    }
 
-		// Delete the row
-		await allClubMemberRows[rowNum].delete();
+    // Delete the row
+    await allClubMemberRows[rowNum].delete();
 
-		res.status(200).json("Member has been deleted");
-	} catch (error) {
-		return res.json(error);
-	}
+    res.status(200).json("Member has been deleted");
+  } catch (error) {
+    return res.json(error);
+  }
 };
